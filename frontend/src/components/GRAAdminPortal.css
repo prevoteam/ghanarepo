@@ -1,0 +1,391 @@
+/* GRA Portal Page Styles - Matching Figma Design */
+
+.gra-portal-page {
+  min-height: 100vh;
+  background: #F3F4F6;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Header */
+.gra-header {
+  background: #2D3B8F;
+  color: white;
+  padding: 1rem 0;
+}
+
+.gra-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gra-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gra-logo-circle {
+  flex-shrink: 0;
+}
+
+.gra-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.gra-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.gra-subtitle {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin-top: 0.2rem;
+  opacity: 0.9;
+}
+
+.gra-header-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.gra-header-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  font-family: inherit;
+}
+
+.gra-header-link:hover {
+  opacity: 0.8;
+}
+
+.gra-help-info {
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.gra-help-label {
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.gra-help-phone {
+  font-weight: 500;
+}
+
+/* Navigation */
+.gra-navigation {
+  background: white;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+.gra-nav-item {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #e5e7eb;
+  color: #3F4D67;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  font-family: inherit;
+}
+
+.gra-nav-item:last-child {
+  border-right: none;
+}
+
+.gra-nav-item:hover {
+  background: #f9fafb;
+}
+
+.gra-nav-item.active {
+  color: #2D3B8F;
+  background: rgba(45, 59, 143, 0.05);
+}
+
+.gra-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2D3B8F;
+}
+
+/* Main Content */
+.gra-main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+/* Background Circles */
+.gra-bg-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gra-bg-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.gra-bg-circle-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(45, 59, 143, 0.08);
+  top: -50px;
+  right: 5%;
+}
+
+.gra-bg-circle-2 {
+  width: 200px;
+  height: 200px;
+  border: 30px solid rgba(45, 59, 143, 0.06);
+  bottom: 10%;
+  left: 3%;
+}
+
+.gra-bg-circle-3 {
+  width: 150px;
+  height: 150px;
+  background: rgba(45, 59, 143, 0.05);
+  bottom: 30%;
+  left: 8%;
+}
+
+.gra-bg-circle-4 {
+  width: 250px;
+  height: 250px;
+  border: 25px solid rgba(45, 59, 143, 0.06);
+  top: 20%;
+  right: -50px;
+}
+
+/* Login Card */
+.gra-login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  max-width: 580px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.gra-card-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2D3B8F;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.gra-card-subtitle {
+  font-size: 0.95rem;
+  color: #6B7280;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Options Container */
+.gra-options-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+/* Option Card */
+.gra-option-card {
+  background: white;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 1.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.gra-option-card:hover {
+  border-color: #2D3B8F;
+  box-shadow: 0 4px 12px rgba(45, 59, 143, 0.1);
+}
+
+.gra-option-card.selected {
+  background: rgba(45, 59, 143, 0.08);
+  border-color: #2D3B8F;
+}
+
+.gra-option-icon {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border: 2px solid #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  color: #3F4D67;
+  transition: all 0.3s;
+}
+
+.gra-option-card:hover .gra-option-icon,
+.gra-option-card.selected .gra-option-icon {
+  border-color: #2D3B8F;
+  color: #2D3B8F;
+}
+
+.gra-option-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 0.5rem;
+}
+
+.gra-option-description {
+  font-size: 0.85rem;
+  color: #6B7280;
+  line-height: 1.5;
+}
+
+/* Footer */
+.gra-footer {
+  background: #2D3B8F;
+  color: white;
+  padding: 1.5rem 0;
+  margin-top: auto;
+}
+
+.gra-footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gra-footer-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.gra-footer-copyright {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.gra-assistant-button {
+  background: #F59E0B;
+  color: #1f2937;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.gra-assistant-button:hover {
+  background: #D97706;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gra-header-content {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1.5rem;
+  }
+
+  .gra-header-right {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .gra-navigation {
+    flex-wrap: wrap;
+  }
+
+  .gra-nav-item {
+    flex: 1 1 50%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .gra-main {
+    padding: 2rem 1rem;
+  }
+
+  .gra-login-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .gra-card-title {
+    font-size: 1.5rem;
+  }
+
+  .gra-options-container {
+    grid-template-columns: 1fr;
+  }
+
+  .gra-footer-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 0 1.5rem;
+  }
+}
