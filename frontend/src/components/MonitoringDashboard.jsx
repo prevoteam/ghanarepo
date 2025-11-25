@@ -116,68 +116,72 @@ const MonitoringDashboard = ({ onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <svg width="40" height="40" viewBox="0 0 40 40">
-              <rect width="40" height="40" rx="8" fill="#F59E0B"/>
-              <text x="20" y="26" fontSize="16" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-            </svg>
-          </div>
-          <div className="sidebar-title">
-            <span className="sidebar-title-main">Monitoring</span>
-            <span className="sidebar-title-sub">GRA Admin Portal</span>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              className={`sidebar-nav-item ${activeMenu === item.id ? 'active' : ''}`}
-              onClick={() => setActiveMenu(item.id)}
-            >
-              {getIcon(item.icon)}
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-decoration">
-          <div className="sidebar-circle sidebar-circle-1"></div>
-          <div className="sidebar-circle sidebar-circle-2"></div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="dashboard-main">
-        {/* Top Bar */}
-        <header className="dashboard-topbar">
-          <h1 className="topbar-title">{getPageTitle()}</h1>
-          <div className="topbar-actions">
-            <div className="system-status">
-              <span className="status-dot"></span>
-              <span>System Operation</span>
-            </div>
-            <button className="initiate-btn">Initiate Crawlers</button>
-            <button className="logout-btn" onClick={onLogout} title="Logout">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
+      <div className="dashboard-wrapper">
+        {/* Sidebar */}
+        <aside className="dashboard-sidebar">
+          <div className="sidebar-header">
+            <div className="sidebar-logo">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <rect width="40" height="40" rx="8" fill="#F59E0B"/>
+                <text x="20" y="26" fontSize="16" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
               </svg>
-            </button>
+            </div>
+            <div className="sidebar-title">
+              <span className="sidebar-title-main">Monitoring</span>
+              <span className="sidebar-title-sub">GRA Admin Portal</span>
+            </div>
           </div>
-        </header>
 
-        {/* Page Content */}
-        <div className="dashboard-content">
-          {renderContent()}
-        </div>
+          <nav className="sidebar-nav">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                className={`sidebar-nav-item ${activeMenu === item.id ? 'active' : ''}`}
+                onClick={() => setActiveMenu(item.id)}
+              >
+                {getIcon(item.icon)}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
 
-        {/* Footer */}
-        <footer className="dashboard-footer">
+          <div className="sidebar-decoration">
+            <div className="sidebar-circle sidebar-circle-1"></div>
+            <div className="sidebar-circle sidebar-circle-2"></div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="dashboard-main">
+          {/* Top Bar */}
+          <header className="dashboard-topbar">
+            <h1 className="topbar-title">{getPageTitle()}</h1>
+            <div className="topbar-actions">
+              <div className="system-status">
+                <span className="status-dot"></span>
+                <span>System Operation</span>
+              </div>
+              <button className="initiate-btn">Initiate Crawlers</button>
+              <button className="logout-btn" onClick={onLogout} title="Logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <div className="dashboard-content">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
+
+      {/* Footer - Outside wrapper for full width */}
+      <footer className="dashboard-footer">
+        <div className="footer-content">
           <div className="footer-left">Integrity. Fairness. Service</div>
           <div className="footer-center">© 2025 Ghana Revenue Authority. All rights reserved.</div>
           <button className="footer-assistant-btn">
@@ -189,8 +193,8 @@ const MonitoringDashboard = ({ onLogout }) => {
             </svg>
             Ask GRA Assistant
           </button>
-        </footer>
-      </main>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -1,27 +1,32 @@
+import { useState, useEffect } from 'react';
 import './DashboardPages.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const MerchantDiscovery = () => {
-  const tableData = [
-    { srNo: '01', pspName: 'Stripe', merchantDiscovered: '1,240', registered: '450', unregistered: '790', vatEligible: '320', complianceRate: 36 },
-    { srNo: '02', pspName: 'PayPal', merchantDiscovered: '980', registered: '450', unregistered: '360', vatEligible: '150', complianceRate: 63 },
-    { srNo: '03', pspName: 'Paystack', merchantDiscovered: '850', registered: '450', unregistered: '650', vatEligible: '400', complianceRate: 24 },
-    { srNo: '04', pspName: 'Flutterwave', merchantDiscovered: '620', registered: '450', unregistered: '470', vatEligible: '320', complianceRate: 24 },
-    { srNo: '05', pspName: 'Paddle', merchantDiscovered: '310', registered: '450', unregistered: '230', vatEligible: '110', complianceRate: 26 },
-    { srNo: '06', pspName: '2Checkout', merchantDiscovered: '180', registered: '450', unregistered: '90', vatEligible: '45', complianceRate: 50 },
-  ];
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const totals = {
-    merchantDiscovered: '4,180',
-    registered: '1,590',
-    unregistered: '2,590',
-    vatEligible: '1,345'
+  // Fetch merchant discovery data
+  const fetchMerchantData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/merchant-discovery?limit=100`);
+      const data = await response.json();
+
+      if (data.status) {
+        setTableData(data.results.merchants);
+      }
+    } catch (error) {
+      console.error('Error fetching merchant data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getComplianceColor = (rate) => {
-    if (rate >= 50) return '#10B981';
-    if (rate >= 30) return '#F59E0B';
-    return '#F59E0B';
-  };
+  useEffect(() => {
+    fetchMerchantData();
+  }, []);
 
   return (
     <div className="page-content">
@@ -50,54 +55,44 @@ const MerchantDiscovery = () => {
         </div>
 
         <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Sr No.</th>
-                <th>PSP Name</th>
-                <th>Merchant Discovered</th>
-                <th>Registered</th>
-                <th>Unregistered</th>
-                <th>VAT Eligible</th>
-                <th>Compliance Rate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.srNo}</td>
-                  <td className="font-medium">{row.pspName}</td>
-                  <td>{row.merchantDiscovered}</td>
-                  <td>{row.registered}</td>
-                  <td>{row.unregistered}</td>
-                  <td>{row.vatEligible}</td>
-                  <td>
-                    <div className="compliance-cell">
-                      <span style={{ color: getComplianceColor(row.complianceRate) }}>{row.complianceRate}%</span>
-                      <div className="compliance-bar">
-                        <div
-                          className="compliance-fill"
-                          style={{
-                            width: `${row.complianceRate}%`,
-                            background: getComplianceColor(row.complianceRate)
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Sr No.</th>
+                  <th>PSP Name</th>
+                  <th>Merchant Discovered</th>
+                  <th>Registered</th>
+                  <th>Unregistered</th>
+                  <th>VAT Eligible</th>
+                  <th>Compliance Rate</th>
                 </tr>
-              ))}
-              <tr className="total-row">
-                <td><strong>Total</strong></td>
-                <td></td>
-                <td><strong>{totals.merchantDiscovered}</strong></td>
-                <td><strong>{totals.registered}</strong></td>
-                <td><strong>{totals.unregistered}</strong></td>
-                <td><strong>{totals.vatEligible}</strong></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {tableData.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>
+                      No data found
+                    </td>
+                  </tr>
+                ) : (
+                  tableData.map((row, index) => (
+                    <tr key={row.id || index}>
+                      <td>{String(index + 1).padStart(2, '0')}</td>
+                      <td className="font-medium">{row.psp_provider || '-'}</td>
+                      <td>{row.transaction_id || '-'}</td>
+                      <td>{row.sender_account || '-'}</td>
+                      <td>{row.receiver_account || '-'}</td>
+                      <td>{row.amount_ghs || '0.00'}</td>
+                      <td>{row.e_levy_amount || '0.00'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

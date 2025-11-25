@@ -1,70 +1,40 @@
+import { useState, useEffect } from 'react';
 import './DashboardPages.css';
 
-const MerchantStatistics = () => {
-  const tableData = [
-    {
-      srNo: '01',
-      merchantName: 'Course Hero Global',
-      email: 'compliance@coursehero.com',
-      sourcePSP: 'Stripe',
-      transactionValue: 'GH₵450,000.00',
-      estVATApplicable: 'GH₵85,000.00',
-      riskScore: 'High'
-    },
-    {
-      srNo: '02',
-      merchantName: 'StreamFlix Inc',
-      email: 'tax@streamflix.com',
-      sourcePSP: 'PayPal',
-      transactionValue: 'GH₵1,250,000.00',
-      estVATApplicable: 'GH₵230,000.00',
-      riskScore: 'High'
-    },
-    {
-      srNo: '03',
-      merchantName: 'DesignTools Pro',
-      email: 'finance@designtools.com',
-      sourcePSP: 'Paddle',
-      transactionValue: 'GH₵89,000.00',
-      estVATApplicable: 'GH₵16,500.00',
-      riskScore: 'Medium'
-    },
-    {
-      srNo: '04',
-      merchantName: 'CloudHost NV',
-      email: 'billing@cloudhost.nv',
-      sourcePSP: '2Checkout',
-      transactionValue: 'GH₵320,000.00',
-      estVATApplicable: 'GH₵60,000.00',
-      riskScore: 'Low'
-    },
-    {
-      srNo: '05',
-      merchantName: 'GamingPlus',
-      email: 'legal@gamingplus.net',
-      sourcePSP: 'Stripe',
-      transactionValue: 'GH₵670,000.00',
-      estVATApplicable: 'GH₵125,000.00',
-      riskScore: 'High'
-    },
-    {
-      srNo: '06',
-      merchantName: 'EduLearn Systems',
-      email: 'accounts@edulearn.com',
-      sourcePSP: 'Paystack',
-      transactionValue: 'GH₵150,000.00',
-      estVATApplicable: 'GH₵28,000.00',
-      riskScore: 'Medium'
-    },
-  ];
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  const getRiskBadge = (risk) => {
+const MerchantStatistics = () => {
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch merchant statistics data
+  const fetchMerchantStatistics = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/merchant-statistics?limit=100`);
+      const data = await response.json();
+
+      if (data.status) {
+        setTableData(data.results.merchants);
+      }
+    } catch (error) {
+      console.error('Error fetching merchant statistics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMerchantStatistics();
+  }, []);
+
+  const getRiskBadge = (status) => {
     const colors = {
-      High: { bg: '#FEE2E2', text: '#DC2626' },
-      Medium: { bg: '#FEF3C7', text: '#D97706' },
-      Low: { bg: '#DBEAFE', text: '#2563EB' }
+      FAILED: { bg: '#FEE2E2', text: '#DC2626', label: 'High' },
+      PENDING: { bg: '#FEF3C7', text: '#D97706', label: 'Medium' },
+      SUCCESS: { bg: '#DBEAFE', text: '#2563EB', label: 'Low' }
     };
-    return colors[risk] || colors.Medium;
+    return colors[status?.toUpperCase()] || colors.PENDING;
   };
 
   return (
@@ -86,51 +56,63 @@ const MerchantStatistics = () => {
         </div>
 
         <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Sr No.</th>
-                <th>Merchant Name</th>
-                <th>Source PSP</th>
-                <th>Transaction Value</th>
-                <th>Est. VAT Applicable</th>
-                <th>Risk Score</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.srNo}</td>
-                  <td>
-                    <div className="merchant-cell">
-                      <a href="#" className="merchant-name">{row.merchantName}</a>
-                      <span className="merchant-email">{row.email}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="psp-badge">{row.sourcePSP}</span>
-                  </td>
-                  <td>{row.transactionValue}</td>
-                  <td>{row.estVATApplicable}</td>
-                  <td>
-                    <span
-                      className="risk-badge"
-                      style={{
-                        background: getRiskBadge(row.riskScore).bg,
-                        color: getRiskBadge(row.riskScore).text
-                      }}
-                    >
-                      {row.riskScore}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="initiate-action-btn">Initiate</button>
-                  </td>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Sr No.</th>
+                  <th>Merchant Name</th>
+                  <th>Source PSP</th>
+                  <th>Transaction Value</th>
+                  <th>Est. VAT Applicable</th>
+                  <th>Risk Score</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {tableData.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>
+                      No data found
+                    </td>
+                  </tr>
+                ) : (
+                  tableData.map((row, index) => (
+                    <tr key={row.id || index}>
+                      <td>{String(index + 1).padStart(2, '0')}</td>
+                      <td>
+                        <div className="merchant-cell">
+                          <a href="#" className="merchant-name">{row.receiver_account || '-'}</a>
+                          <span className="merchant-email">{row.sender_account || '-'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="psp-badge">{row.psp_provider || '-'}</span>
+                      </td>
+                      <td>GH₵{row.amount_ghs || '0.00'}</td>
+                      <td>GH₵{row.e_levy_amount || '0.00'}</td>
+                      <td>
+                        <span
+                          className="risk-badge"
+                          style={{
+                            background: getRiskBadge(row.status).bg,
+                            color: getRiskBadge(row.status).text
+                          }}
+                        >
+                          {getRiskBadge(row.status).label}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="initiate-action-btn">Initiate</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

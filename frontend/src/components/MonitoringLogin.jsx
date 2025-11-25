@@ -4,7 +4,7 @@ import MonitoringOTP from './MonitoringOTP';
 
 const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
-    tinNumber: '',
+    userId: '',
     password: ''
   });
   const [showOTPModal, setShowOTPModal] = useState(false);
@@ -23,8 +23,8 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.tinNumber) {
-      setError('Please enter your TIN or Ghana Card Number');
+    if (!formData.userId) {
+      setError('Please enter your user ID');
       return;
     }
     if (!formData.password) {
@@ -41,7 +41,7 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tin_number: formData.tinNumber,
+          user_id: formData.userId,
           password: formData.password
         })
       });
@@ -58,7 +58,7 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
     } catch (error) {
       console.error('Login error:', error);
       // For demo purposes, show OTP modal
-      sessionStorage.setItem('monitoring_email', 'user@example.com');
+      sessionStorage.setItem('monitoring_userId', 'user123');
       setShowOTPModal(true);
     } finally {
       setIsLoading(false);
@@ -91,15 +91,15 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
           <div className="mon-header-right">
             <button className="mon-header-link">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
               Call Us
             </button>
             <button className="mon-header-link">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
               About Us
             </button>
@@ -115,39 +115,39 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
       <nav className="mon-navigation">
         <button className="mon-nav-item" onClick={onBack}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
           </svg>
           Register Now
         </button>
         <button className="mon-nav-item" onClick={onBack}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
           </svg>
           Taxpayer Login
         </button>
         <button className="mon-nav-item active">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
           GRA Login
         </button>
         <button className="mon-nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
           Guidelines
         </button>
         <button className="mon-nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
           FAQ
         </button>
@@ -174,13 +174,13 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
             )}
 
             <div className="mon-field-group">
-              <label className="mon-field-label">TIN / Ghana Card Number</label>
+              <label className="mon-field-label">User ID</label>
               <input
                 type="text"
-                name="tinNumber"
+                name="userId"
                 className="mon-field-input"
-                placeholder="Enter your TIN or Ghana Card no."
-                value={formData.tinNumber}
+                placeholder="Enter your User ID"
+                value={formData.userId}
                 onChange={handleChange}
               />
             </div>
@@ -212,10 +212,10 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
           <div className="mon-footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
           <button className="mon-assistant-button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-              <line x1="9" y1="9" x2="9.01" y2="9"/>
-              <line x1="15" y1="9" x2="15.01" y2="9"/>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <line x1="9" y1="9" x2="9.01" y2="9" />
+              <line x1="15" y1="9" x2="15.01" y2="9" />
             </svg>
             Ask GRA Assistant
           </button>
