@@ -1,16 +1,41 @@
 import { useState } from 'react';
-import './GRAAdminPortal.css';
-import ConfigurationLogin from './ConfigurationLogin';
+import './ConfigurationLogin.css';
+import ConfigOTPVerification from './ConfigOTPVerification';
+import ConfigDashboard from './ConfigDashboard';
 
-const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
-  const [showConfigLogin, setShowConfigLogin] = useState(false);
+const ConfigurationLogin = ({ onBack }) => {
+  const [userRole, setUserRole] = useState('maker');
+  const [tinNumber, setTinNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (showConfigLogin) {
-    return <ConfigurationLogin onBack={() => setShowConfigLogin(false)} />;
+  const handleLoginViaOTP = async (e) => {
+    e.preventDefault();
+    if (!tinNumber || !password) {
+      alert('Please enter TIN/Ghana Card Number and Password');
+      return;
+    }
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowOTPModal(true);
+    }, 500);
+  };
+
+  const handleOTPVerified = (role) => {
+    setShowOTPModal(false);
+    setShowDashboard(true);
+  };
+
+  if (showDashboard) {
+    return <ConfigDashboard onBack={() => setShowDashboard(false)} userRole={userRole} />;
   }
 
   return (
-    <div className="admin-portal-container">
+    <div className="config-login-container">
       {/* Top Header */}
       <header className="top-header">
         <div className="header-content">
@@ -94,7 +119,7 @@ const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
       </nav>
 
       {/* Main Content Section */}
-      <section className="admin-main-section">
+      <section className="config-login-main">
         {/* Decorative Circles */}
         <div className="decorative-circles">
           <div className="deco-circle deco-circle-1"></div>
@@ -104,45 +129,69 @@ const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
           <div className="deco-circle deco-circle-5"></div>
         </div>
 
-        {/* Admin Portal Card */}
-        <div className="admin-portal-card">
-          <h1 className="admin-portal-title">GRA Admin Portal</h1>
-          <p className="admin-portal-subtitle">
-            Restricted access for GRA personnel only. Select your system.
+        {/* Login Card */}
+        <div className="config-login-card">
+          <h1 className="config-login-title">Configuration Login</h1>
+          <p className="config-login-subtitle">
+            Your detail will be verified by a secure OTP
           </p>
 
-          <div className="admin-options">
-            <div
-              className="admin-option-card"
-              onClick={() => onSelectPortal && onSelectPortal('monitoring')}
-            >
-              <div className="admin-option-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
+          <form onSubmit={handleLoginViaOTP}>
+            {/* User Role Selection */}
+            <div className="form-group">
+              <label className="form-label">Select User Role</label>
+              <div className="role-buttons">
+                <button
+                  type="button"
+                  className={`role-btn ${userRole === 'maker' ? 'role-btn-active' : ''}`}
+                  onClick={() => setUserRole('maker')}
+                >
+                  Maker
+                </button>
+                <button
+                  type="button"
+                  className={`role-btn ${userRole === 'checker' ? 'role-btn-active' : ''}`}
+                  onClick={() => setUserRole('checker')}
+                >
+                  Checker
+                </button>
               </div>
-              <h3 className="admin-option-title">Monitoring</h3>
-              <p className="admin-option-description">
-                Real-time system status and transaction logs.
-              </p>
             </div>
 
-            <div
-              className="admin-option-card"
-              onClick={() => setShowConfigLogin(true)}
-            >
-              <div className="admin-option-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-              </div>
-              <h3 className="admin-option-title">Configuration Management</h3>
-              <p className="admin-option-description">
-                System parameters and tax rule settings.
-              </p>
+            {/* TIN / Ghana Card Number */}
+            <div className="form-group">
+              <label className="form-label">TIN / Ghana Card Number</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Enter your TIN or Ghana Card no."
+                value={tinNumber}
+                onChange={(e) => setTinNumber(e.target.value)}
+              />
             </div>
-          </div>
+
+            {/* Password */}
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Enter Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div className="forgot-password-wrapper">
+                <button type="button" className="forgot-password-link">
+                  Forgot Password?
+                </button>
+              </div>
+            </div>
+
+            {/* Login Button */}
+            <button type="submit" className="login-btn" disabled={isLoading}>
+              {isLoading ? 'Processing...' : 'Login via OTP'}
+            </button>
+          </form>
         </div>
       </section>
 
@@ -159,8 +208,18 @@ const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
           </button>
         </div>
       </footer>
+
+      {/* OTP Verification Modal */}
+      {showOTPModal && (
+        <ConfigOTPVerification
+          contactInfo="megha@proteantech.com"
+          onClose={() => setShowOTPModal(false)}
+          onVerified={handleOTPVerified}
+          userRole={userRole}
+        />
+      )}
     </div>
   );
 };
 
-export default GRAAdminPortal;
+export default ConfigurationLogin;
