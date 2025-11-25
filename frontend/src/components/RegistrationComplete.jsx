@@ -1,0 +1,423 @@
+import { useState, useEffect, useRef } from 'react';
+import './RegistrationComplete.css';
+import { registrationApi } from '../utils/api';
+import { useApi } from '../utils/useApi';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
+
+const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirect }) => {
+  const [credentialData, setCredentialData] = useState(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const { loading, error, execute } = useApi();
+  const qrCanvasRef = useRef(null);
+
+  const steps = [
+    { number: 1, label: 'Verification', completed: true },
+    { number: 2, label: 'Entity Type', completed: true },
+    { number: 3, label: 'Identity', completed: true },
+    { number: 4, label: 'Agent', completed: true },
+    { number: 5, label: 'Market', completed: true },
+    { number: 6, label: 'Payment', completed: true },
+    { number: 7, label: 'Eligibility', completed: true },
+    { number: 8, label: 'Completed', active: true },
+  ];
+
+  useEffect(() => {
+    completeRegistration();
+  }, []);
+
+  useEffect(() => {
+    if (credentialData) {
+      generateQRCode();
+    }
+  }, [credentialData]);
+
+  const completeRegistration = async () => {
+    const result = await execute(
+      registrationApi.completeRegistration,
+      uniqueId
+    );
+
+    if (result.success) {
+      setCredentialData(result.data.results || result.data.data);
+    }
+  };
+
+  const generateQRCode = async () => {
+    try {
+      if (credentialData) {
+        const qrData = JSON.stringify({
+          tin: credentialData.tin || 'GHA21984335',
+          credential_id: credentialData.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91',
+          subject_name: credentialData.subject_name || 'Student',
+          issue_date: credentialData.issue_date || new Date().toISOString()
+        });
+
+        const url = await QRCode.toDataURL(qrData, {
+          width: 140,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        });
+
+        setQrCodeUrl(url);
+      }
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Add header background
+      doc.setFillColor(45, 59, 143); // Navy blue #2D3B8F
+      doc.rect(0, 0, 210, 40, 'F');
+
+      // Add gold accent
+      doc.setFillColor(245, 158, 11); // Gold #F59E0B
+      doc.rect(180, 0, 30, 40, 'F');
+
+      // Add GRA title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ghana Revenue Authority', 15, 20);
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Official E-Commerce TIN Credential', 15, 30);
+
+      // Reset text color for body
+      doc.setTextColor(0, 0, 0);
+
+      // Add title
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129); // Green
+      doc.text('Registration Complete!', 105, 60, { align: 'center' });
+
+      // Add credential information
+      doc.setFontSize(11);
+      doc.setTextColor(107, 114, 128); // Gray
+      doc.setFont('helvetica', 'normal');
+
+      const leftMargin = 20;
+      let yPosition = 80;
+
+      // Subject Name
+      doc.text('Subject Name', leftMargin, yPosition);
+      doc.setFontSize(14);
+      doc.setTextColor(26, 32, 44);
+      doc.setFont('helvetica', 'bold');
+      doc.text(credentialData?.subject_name || 'Student', leftMargin, yPosition + 7);
+
+      // TIN
+      yPosition += 25;
+      doc.setFontSize(11);
+      doc.setTextColor(107, 114, 128);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Tax Identification Number (TIN)', leftMargin, yPosition);
+      doc.setFontSize(18);
+      doc.setTextColor(245, 158, 11); // Gold
+      doc.setFont('courier', 'bold');
+      doc.text(credentialData?.tin || 'GHA21984335', leftMargin, yPosition + 10);
+
+      // Date of Issue
+      yPosition += 25;
+      doc.setFontSize(11);
+      doc.setTextColor(107, 114, 128);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Date of Issue', leftMargin, yPosition);
+      doc.setFontSize(14);
+      doc.setTextColor(26, 32, 44);
+      doc.setFont('helvetica', 'bold');
+      doc.text(credentialData?.issue_date ? formatDate(credentialData.issue_date) : '20 November 2025', leftMargin, yPosition + 7);
+
+      // Credential ID
+      yPosition += 20;
+      doc.setFontSize(11);
+      doc.setTextColor(107, 114, 128);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Credential ID', leftMargin, yPosition);
+      doc.setFontSize(9);
+      doc.setFont('courier', 'normal');
+      const credId = credentialData?.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91';
+      doc.text(credId, leftMargin, yPosition + 7, { maxWidth: 170 });
+
+      // Add QR Code
+      if (qrCodeUrl) {
+        doc.addImage(qrCodeUrl, 'PNG', 155, 80, 40, 40);
+        doc.setFontSize(9);
+        doc.setTextColor(107, 114, 128);
+        doc.text('Scan to verify', 175, 125, { align: 'center' });
+      }
+
+      // Add footer
+      doc.setFillColor(45, 59, 143);
+      doc.rect(0, 270, 210, 27, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Integrity. Fairness. Service', 105, 282, { align: 'center' });
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('© 2025 Ghana Revenue Authority. All rights reserved.', 105, 290, { align: 'center' });
+
+      // Save the PDF
+      const fileName = `GRA_TIN_Credential_${credentialData?.tin || 'GHA21984335'}.pdf`;
+      doc.save(fileName);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
+
+  return (
+    <div className="register-container">
+      {/* Header */}
+      <header className="top-header">
+        <div className="header-content">
+          <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onRegisterNow}>
+            <div className="logo-circle">
+              <img
+                src="/assets/logo.png"
+                alt="GRA Logo"
+                style={{
+                  width: '52px',
+                  height: '50px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </div>
+            <div className="logo-text">
+              <div className="gra-text">GRA</div>
+              <div className="gra-subtext">GHANA REVENUE AUTHORITY</div>
+            </div>
+          </div>
+          <div className="header-right">
+            <button className="header-link">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              Call Us
+            </button>
+            <button className="header-link">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              About Us
+            </button>
+            <div className="help-info">
+              <div className="help-label">Need Help?</div>
+              <div className="help-phone">+233 (0) 302 123 456</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="navigation">
+        <button className="nav-item active" onClick={onRegisterNow}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Register Now
+        </button>
+        <button className="nav-item" onClick={onLoginRedirect}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Taxpayer Login
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          GRA Login
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Guidelines
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          FAQ
+        </button>
+      </nav>
+
+      {/* Main Content */}
+      <main className="complete-main">
+        <div className="content-wrapper">
+          <h1 className="page-title">Registration Complete</h1>
+          <p className="page-description">
+            Your e-VAT registration has been successfully completed. Download your TIN credentials below.
+          </p>
+
+          {/* Progress Steps */}
+          <div className="progress-container">
+            <div className="progress-steps">
+              {steps.map((step, index) => (
+                <div key={step.number} className="progress-step-wrapper">
+                  <div className="progress-step-info">
+                    <div className="progress-step-label">Step {step.number} of 8</div>
+                    <div className={`progress-circle ${step.completed ? 'completed' : ''} ${step.active ? 'active' : ''}`}>
+                      {step.completed ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      ) : (
+                        <span></span>
+                      )}
+                    </div>
+                    <div className="progress-step-name">{step.label}</div>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`progress-line ${step.completed ? 'completed' : ''}`}></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className="error-banner">
+              {error}
+            </div>
+          )}
+
+          {loading && !credentialData ? (
+            <div className="loading-state">
+              <div className="spinner-large"></div>
+              <p>Generating your TIN credentials...</p>
+            </div>
+          ) : credentialData ? (
+            <>
+              {/* Success Icon */}
+              <div className="success-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+
+              {/* Success Title */}
+              <h2 className="success-title">Registration Complete !</h2>
+
+              {/* Credential Card */}
+              <div className="credential-card">
+                <div className="card-header">
+                  <div className="header-content">
+                    <div className="gra-text">
+                      <h3>Ghana Revenue Authority</h3>
+                      <p>Official E-Commerce TIN Credential</p>
+                    </div>
+                  </div>
+                  <div className="gold-accent"></div>
+                </div>
+
+                <div className="card-body">
+                  <div className="credential-left">
+                    <div className="field-group">
+                      <label>Subject Name</label>
+                      <div className="field-value">{credentialData.subject_name || 'Student'}</div>
+                    </div>
+
+                    <div className="field-group tin-field">
+                      <label>Tax identification number (TIN)</label>
+                      <div className="tin-value">{credentialData.tin || 'GHA21984335'}</div>
+                    </div>
+
+                    <div className="field-group">
+                      <label>Date of Issue</label>
+                      <div className="field-value">
+                        {credentialData.issue_date ? formatDate(credentialData.issue_date) : '20 November 2025'}
+                      </div>
+                    </div>
+
+                    <div className="field-group">
+                      <label>Credential ID:</label>
+                      <div className="credential-id">
+                        {credentialData.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="credential-right">
+                    <div className="qr-code">
+                      {qrCodeUrl ? (
+                        <img src={qrCodeUrl} alt="QR Code" width="140" height="140" />
+                      ) : (
+                        <div className="qr-loading">Generating QR...</div>
+                      )}
+                    </div>
+                    <p className="qr-label">Scan to download</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="action-buttons">
+                <button className="btn-download" onClick={handleDownloadPDF}>
+                  Download PDF
+                </button>
+                <button className="btn-proceed" onClick={onLogin}>
+                  Proceed to Login
+                </button>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="complete-footer">
+        <div className="footer-content">
+          <div className="footer-text">Integrity. Fairness. Service</div>
+          <div className="footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
+          <button className="assistant-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Ask GRA Assistant
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default RegistrationComplete;

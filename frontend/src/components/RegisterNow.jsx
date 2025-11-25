@@ -2,24 +2,40 @@ import { useState } from 'react';
 import './RegisterNow.css';
 import RegistrationForm from './RegistrationForm';
 
-const RegisterNow = () => {
+const RegisterNow = ({ onLoginClick }) => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   if (showRegistrationForm) {
-    return <RegistrationForm onBack={() => setShowRegistrationForm(false)} />;
+    return (
+      <RegistrationForm
+        onBack={() => setShowRegistrationForm(false)}
+        onLoginRedirect={onLoginClick}
+      />
+    );
   }
+
+  const handleLogoClick = () => {
+    // Scroll to top or refresh to home
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="register-container">
       {/* Top Header */}
       <header className="top-header">
         <div className="header-content">
-          <div className="logo-section">
+          <div className="logo-section" style={{ cursor: 'pointer' }} onClick={handleLogoClick}>
             <div className="logo-circle">
-              <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="#F59E0B" />
-                <text x="25" y="32" fontSize="20" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-              </svg>
+              <img
+                src="/assets/logo.png"
+                alt="GRA Logo"
+                style={{
+                  width: '52px',
+                  height: '50px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
             </div>
             <div className="logo-text">
               <div className="gra-text">GRA</div>
@@ -59,7 +75,7 @@ const RegisterNow = () => {
           </svg>
           Register Now
         </button>
-        <button className="nav-item">
+        <button className="nav-item" onClick={onLoginClick}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>

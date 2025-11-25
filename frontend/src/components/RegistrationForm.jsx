@@ -1,22 +1,33 @@
 import { useState } from 'react';
 import './RegistrationForm.css';
+import './RegisterNow.css';
 import OTPVerification from './OTPVerification';
 import EntityType from './EntityType';
 import Identity from './Identity';
 import Agent from './Agent';
+import MarketDeclaration from './MarketDeclaration';
+import PaymentGateway from './PaymentGateway';
+import VATObligations from './VATObligations';
+import RegistrationComplete from './RegistrationComplete';
 import { setUniqueId, setContact, setVerified, getUniqueId } from '../utils/sessionManager';
+import { registrationApi } from '../utils/api';
+import { useApi } from '../utils/useApi';
 
-const RegistrationForm = ({ onBack }) => {
+const RegistrationForm = ({ onBack, onLoginRedirect }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [formData, setFormData] = useState({
     mobileNumber: '',
-    countryCode: '+91',
+    countryCode: '+233',
     email: ''
   });
+  const { loading, error, execute, clearError } = useApi();
+
+  // Debug: Check if onLoginRedirect is defined
+  console.log('RegistrationForm - onLoginRedirect:', typeof onLoginRedirect);
 
   // Helper function to get unique_id from session storage
-  const getUniqueId = () => {
+  const getStoredUniqueId = () => {
     return sessionStorage.getItem('unique_id');
   };
 
@@ -47,34 +58,17 @@ const RegistrationForm = ({ onBack }) => {
       return;
     }
 
-    try {
-      const contact = formData.email || (formData.mobileNumber ? `${formData.countryCode}${formData.mobileNumber}` : null);
-      const method = formData.email ? 'email' : 'mobile';
+    const contact = formData.email || (formData.mobileNumber ? `${formData.countryCode}${formData.mobileNumber}` : null);
+    const method = formData.email ? 'email' : 'mobile';
 
-      const response = await fetch('http://localhost:3000/v1/home/Register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contact: contact,
-          method: method
-        })
-      });
+    const result = await execute(registrationApi.register, contact, method);
 
-      const data = await response.json();
-
-      if (data.status && data.code === 200) {
-        // Store unique_id for OTP verification
-        setUniqueId(data.results.unique_id);
-        setContact(contact);
-        setShowOTPModal(true);
-      } else {
-        alert(data.message || 'Failed to send OTP');
-      }
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      alert('Failed to send OTP. Please try again.');
+    if (result.success) {
+      // Backend returns { status, code, message, results: { unique_id } }
+      const uniqueIdValue = result.data.results?.unique_id || result.data.unique_id;
+      setUniqueId(uniqueIdValue);
+      setContact(contact);
+      setShowOTPModal(true);
     }
   };
 
@@ -126,6 +120,39 @@ const RegistrationForm = ({ onBack }) => {
     setCurrentStep(3);
   };
 
+  const handleMarketNext = () => {
+    console.log('Market declaration saved');
+    // Move to next step (Step 6: Payment)
+    setCurrentStep(6);
+  };
+
+  const handleMarketPrevious = () => {
+    // Go back to step 4 (Agent)
+    setCurrentStep(4);
+  };
+
+  const handlePaymentNext = () => {
+    console.log('Payment gateway connected');
+    // Move to next step (Step 7: VAT)
+    setCurrentStep(7);
+  };
+
+  const handlePaymentPrevious = () => {
+    // Go back to step 5 (Market)
+    setCurrentStep(5);
+  };
+
+  const handleVATNext = () => {
+    console.log('VAT obligations calculated');
+    // Move to next step (Step 8: Complete)
+    setCurrentStep(8);
+  };
+
+  const handleVATPrevious = () => {
+    // Go back to step 6 (Payment)
+    setCurrentStep(6);
+  };
+
   // If user completed OTP verification, show Entity Type selection
   if (currentStep === 2) {
     return (
@@ -133,6 +160,8 @@ const RegistrationForm = ({ onBack }) => {
         onNext={handleEntityTypeNext}
         onPrevious={handleEntityTypePrevious}
         currentStep={currentStep}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
       />
     );
   }
@@ -144,6 +173,8 @@ const RegistrationForm = ({ onBack }) => {
         onNext={handleIdentityNext}
         onPrevious={handleIdentityPrevious}
         currentStep={currentStep}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
       />
     );
   }
@@ -155,21 +186,81 @@ const RegistrationForm = ({ onBack }) => {
         onNext={handleAgentNext}
         onPrevious={handleAgentPrevious}
         currentStep={currentStep}
+        uniqueId={getStoredUniqueId()}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
+      />
+    );
+  }
+
+  // Step 5: Market Declaration
+  if (currentStep === 5) {
+    return (
+      <MarketDeclaration
+        onNext={handleMarketNext}
+        onBack={handleMarketPrevious}
+        uniqueId={getStoredUniqueId()}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
+      />
+    );
+  }
+
+  // Step 6: Payment Gateway
+  if (currentStep === 6) {
+    return (
+      <PaymentGateway
+        onNext={handlePaymentNext}
+        onBack={handlePaymentPrevious}
+        uniqueId={getStoredUniqueId()}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
+      />
+    );
+  }
+
+  // Step 7: VAT Obligations
+  if (currentStep === 7) {
+    return (
+      <VATObligations
+        onNext={handleVATNext}
+        onBack={handleVATPrevious}
+        uniqueId={getStoredUniqueId()}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
+      />
+    );
+  }
+
+  // Step 8: Registration Complete
+  if (currentStep === 8) {
+    return (
+      <RegistrationComplete
+        uniqueId={getStoredUniqueId()}
+        onLogin={onLoginRedirect}
+        onRegisterNow={onBack}
+        onLoginRedirect={onLoginRedirect}
       />
     );
   }
 
   return (
-    <div className="registration-page">
+    <div className="register-container">
       {/* Header */}
       <header className="reg-header">
         <div className="reg-header-content">
-          <div className="reg-logo-section">
+          <div className="reg-logo-section" style={{ cursor: 'pointer' }} onClick={onBack}>
             <div className="reg-logo-circle">
-              <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="#F59E0B" />
-                <text x="25" y="32" fontSize="20" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-              </svg>
+              <img
+                src="/assets/logo.png"
+                alt="GRA Logo"
+                style={{
+                  width: '52px',
+                  height: '50px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
             </div>
             <div className="reg-logo-text">
               <div className="reg-gra-text">GRA</div>
@@ -200,16 +291,16 @@ const RegistrationForm = ({ onBack }) => {
         </div>
       </header>
 
-      {/* Navigation */}
-      <nav className="reg-navigation">
-        <button className="reg-nav-item active" onClick={onBack}>
+
+ <nav className="navigation">
+       <button className="nav-item active" onClick={onBack}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
           Register Now
         </button>
-        <button className="reg-nav-item">
+     <button className="nav-item" onClick={onLoginRedirect}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
@@ -217,20 +308,23 @@ const RegistrationForm = ({ onBack }) => {
           </svg>
           Taxpayer Login
         </button>
-        <button className="reg-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
           GRA Login
         </button>
-        <button className="reg-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
           </svg>
           Guidelines
         </button>
-        <button className="reg-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -239,6 +333,49 @@ const RegistrationForm = ({ onBack }) => {
           FAQ
         </button>
       </nav>
+
+      {/* Navigation */}
+      {/* <nav className="navigation">
+        <button className="nav-item active" onClick={onBack}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Register Now
+        </button>
+        <button className="nav-item" onClick={onLoginRedirect}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Taxpayer Login
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          GRA Login
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Guidelines
+        </button>
+        <button className="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          FAQ
+        </button>
+      </nav> */}
 
       {/* Main Content */}
       <main className="reg-main">
@@ -266,20 +403,48 @@ const RegistrationForm = ({ onBack }) => {
                         className={`progress-circle ${currentStep === step.number ? 'active' : ''} ${currentStep > step.number ? 'completed' : ''}`}
                       >
                         {currentStep > step.number ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                             <polyline points="20 6 9 17 4 12"/>
                           </svg>
                         ) : (
-                          <span>{step.number}</span>
+                          <span></span>
                         )}
                       </div>
                       <div className="progress-step-name">{step.label}</div>
                     </div>
-                    {index < steps.length - 1 && <div className="progress-line"></div>}
+                    {index < steps.length - 1 && (
+                      <div className={`progress-line ${currentStep > step.number ? 'completed' : ''}`}></div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="error-message" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: '#fee',
+                border: '1px solid #fcc',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                color: '#c00',
+                marginBottom: '20px',
+                fontSize: '14px'
+              }}>
+                {error}
+                <button onClick={clearError} style={{
+                  marginLeft: 'auto',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  color: '#c00',
+                  cursor: 'pointer'
+                }}>×</button>
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSendOTP} className="reg-form">
@@ -324,8 +489,8 @@ const RegistrationForm = ({ onBack }) => {
                 </div>
               </div>
 
-              <button type="submit" className="send-otp-btn">
-                Send OTP
+              <button type="submit" className="send-otp-btn" disabled={loading}>
+                {loading ? 'Sending OTP...' : 'Send OTP'}
               </button>
 
               <div className="login-link">

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import './Identity.css';
+import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
 
-const Identity = ({ onNext, onPrevious, currentStep }) => {
+const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [passportFile, setPassportFile] = useState(null);
   const [selfieFile, setSelfieFile] = useState(null);
   const [passportProgress, setPassportProgress] = useState(0);
@@ -11,17 +12,6 @@ const Identity = ({ onNext, onPrevious, currentStep }) => {
 
   const passportInputRef = useRef(null);
   const selfieInputRef = useRef(null);
-
-  const steps = [
-    { number: 1, label: 'Verification', completed: true },
-    { number: 2, label: 'Entity Type', completed: true },
-    { number: 3, label: 'Identity', active: true },
-    { number: 4, label: 'Agent' },
-    { number: 5, label: 'Market' },
-    { number: 6, label: 'Payment' },
-    { number: 7, label: 'Eligibility' },
-    { number: 8, label: 'Completed' }
-  ];
 
   const handleFileSelect = (e, type) => {
     const file = e.target.files[0];
@@ -157,31 +147,37 @@ const Identity = ({ onNext, onPrevious, currentStep }) => {
   };
 
   return (
-    <div className="identity-page">
+    <div className="register-container">
       {/* Header */}
-      <header className="identity-header">
-        <div className="identity-header-content">
-          <div className="identity-logo-section">
-            <div className="identity-logo-circle">
-              <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="#F59E0B" />
-                <text x="25" y="32" fontSize="20" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-              </svg>
+      <header className="top-header">
+        <div className="header-content">
+          <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onRegisterNow}>
+            <div className="logo-circle">
+              <img
+                src="/assets/logo.png"
+                alt="GRA Logo"
+                style={{
+                  width: '52px',
+                  height: '50px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
             </div>
-            <div className="identity-logo-text">
-              <div className="identity-gra-text">GRA</div>
-              <div className="identity-gra-subtext">GHANA REVENUE AUTHORITY</div>
+            <div className="logo-text">
+              <div className="gra-text">GRA</div>
+              <div className="gra-subtext">GHANA REVENUE AUTHORITY</div>
             </div>
           </div>
 
-          <div className="identity-header-right">
-            <button className="identity-header-link">
+          <div className="header-right">
+            <button className="header-link">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
               Call Us
             </button>
-            <button className="identity-header-link">
+            <button className="header-link">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="16" x2="12" y2="12"/>
@@ -189,24 +185,24 @@ const Identity = ({ onNext, onPrevious, currentStep }) => {
               </svg>
               About Us
             </button>
-            <div className="identity-help-info">
-              <div className="identity-help-label">Need Help?</div>
-              <div className="identity-help-phone">+233 (0) 302 123 456</div>
+            <div className="help-info">
+              <div className="help-label">Need Help?</div>
+              <div className="help-phone">+233 (0) 302 123 456</div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Navigation */}
-      <nav className="identity-navigation">
-        <button className="identity-nav-item active">
+      <nav className="navigation">
+        <button className="nav-item active" onClick={onRegisterNow}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
           Register Now
         </button>
-        <button className="identity-nav-item">
+        <button className="nav-item" onClick={onLoginRedirect}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
@@ -214,20 +210,23 @@ const Identity = ({ onNext, onPrevious, currentStep }) => {
           </svg>
           Taxpayer Login
         </button>
-        <button className="identity-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
           GRA Login
         </button>
-        <button className="identity-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
           </svg>
           Guidelines
         </button>
-        <button className="identity-nav-item">
+        <button className="nav-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -252,32 +251,7 @@ const Identity = ({ onNext, onPrevious, currentStep }) => {
             </p>
 
             {/* Progress Steps */}
-            <div className="identity-progress-container">
-              <div className="identity-progress-steps">
-                {steps.map((step, index) => (
-                  <div key={step.number} className="identity-progress-step-wrapper">
-                    <div className="identity-progress-step-info">
-                      <div className="identity-progress-step-label">Step {step.number} of 8</div>
-                      <div
-                        className={`identity-progress-circle ${step.active ? 'active' : ''} ${step.completed ? 'completed' : ''}`}
-                      >
-                        {step.completed ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        ) : (
-                          <span>{step.number}</span>
-                        )}
-                      </div>
-                      <div className="identity-progress-step-name">{step.label}</div>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div className={`identity-progress-line ${step.completed ? 'completed' : ''}`}></div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <StepBar currentStep={currentStep} />
 
             {/* Upload Sections */}
             <div className="identity-uploads">
