@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import './ConfigOTPVerification.css';
 
-const ConfigOTPVerification = ({ contactInfo, onClose, onVerified, userRole }) => {
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+const ConfigOTPVerification = ({ contactInfo, uniqueId, onClose, onVerified, userRole }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(116); // 01:56 in seconds
   const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState('');
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -40,6 +43,7 @@ const ConfigOTPVerification = ({ contactInfo, onClose, onVerified, userRole }) =
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+    setError('');
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -70,25 +74,67 @@ const ConfigOTPVerification = ({ contactInfo, onClose, onVerified, userRole }) =
     inputRefs.current[lastIndex]?.focus();
   };
 
-  const handleResendOTP = () => {
-    setTimer(116);
-    setOtp(['', '', '', '', '', '']);
-    inputRefs.current[0]?.focus();
+  const handleResendOTP = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-resend-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ unique_id: uniqueId }),
+      });
+
+      const data = await response.json();
+
+      if (data.status) {
+        setTimer(116);
+        setOtp(['', '', '', '', '', '']);
+        setError('');
+        inputRefs.current[0]?.focus();
+      } else {
+        setError(data.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      console.error('Resend OTP error:', err);
+      setError('Network error. Please try again.');
+    }
   };
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
     const otpValue = otp.join('');
     if (otpValue.length !== 6) {
-      alert('Please enter complete OTP');
+      setError('Please enter complete OTP');
       return;
     }
 
     setIsVerifying(true);
-    // Simulate API verification
-    setTimeout(() => {
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          unique_id: uniqueId,
+          otp: otpValue
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.status) {
+        onVerified(userRole, data.results?.user);
+      } else {
+        setError(data.message || 'Invalid OTP. Please try again.');
+      }
+    } catch (err) {
+      console.error('Verify OTP error:', err);
+      setError('Network error. Please try again.');
+    } finally {
       setIsVerifying(false);
-      onVerified(userRole);
-    }, 1000);
+    }
   };
 
   const handleOverlayClick = (e) => {
@@ -127,6 +173,12 @@ const ConfigOTPVerification = ({ contactInfo, onClose, onVerified, userRole }) =
             />
           ))}
         </div>
+
+        {error && (
+          <div style={{ color: '#DC2626', fontSize: '14px', marginTop: '8px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
 
         <div className="config-otp-timer-row">
           <span className="config-otp-timer">{formatTime(timer)}</span>

@@ -1,0 +1,62 @@
+const monitoringService = require('../services/monitoringService');
+
+module.exports = ({ config }) => {
+    const router = config.express.Router();
+
+    // POST /v1/admin/monitoring/login - Login with TIN/Ghana Card and password
+    router.post('/login', (req, res, next) => {
+        return monitoringService.MonitoringLogin(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/verify-otp - Verify OTP and complete login
+    router.post('/verify-otp', (req, res, next) => {
+        return monitoringService.MonitoringVerifyOTP(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/resend-otp - Resend OTP
+    router.post('/resend-otp', (req, res, next) => {
+        return monitoringService.MonitoringResendOTP(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/logout - Logout user
+    router.post('/logout', (req, res, next) => {
+        return monitoringService.MonitoringLogout(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/set-password - Set user password
+    router.post('/set-password', (req, res, next) => {
+        return monitoringService.SetPassword(req, res, next);
+    });
+
+    // GET /v1/admin/monitoring/merchant-discovery - Get merchant discovery list
+    router.get('/merchant-discovery', (req, res, next) => {
+        return monitoringService.GetMerchantDiscovery(req, res, next);
+    });
+
+    // GET /v1/admin/monitoring/merchant-discovery/stats - Get merchant discovery stats
+    router.get('/merchant-discovery/stats', (req, res, next) => {
+        return monitoringService.GetMerchantDiscoveryStats(req, res, next);
+    });
+
+    // GET /v1/admin/monitoring/merchant-statistics - Get merchant statistics
+    router.get('/merchant-statistics', (req, res, next) => {
+        return monitoringService.GetMerchantStatistics(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/config-login - Configuration Login (TIN/Ghana Card)
+    router.post('/config-login', (req, res, next) => {
+        return monitoringService.ConfigurationLogin(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/config-verify-otp - Configuration Verify OTP
+    router.post('/config-verify-otp', (req, res, next) => {
+        return monitoringService.ConfigurationVerifyOTP(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/config-resend-otp - Configuration Resend OTP
+    router.post('/config-resend-otp', (req, res, next) => {
+        return monitoringService.ConfigurationResendOTP(req, res, next);
+    });
+
+    return router;
+};

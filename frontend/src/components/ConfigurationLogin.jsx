@@ -3,26 +3,56 @@ import './ConfigurationLogin.css';
 import ConfigOTPVerification from './ConfigOTPVerification';
 import ConfigDashboard from './ConfigDashboard';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const ConfigurationLogin = ({ onBack }) => {
   const [userRole, setUserRole] = useState('maker');
   const [tinNumber, setTinNumber] = useState('');
-  const [password, setPassword] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [uniqueId, setUniqueId] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
+  const [error, setError] = useState('');
 
   const handleLoginViaOTP = async (e) => {
     e.preventDefault();
-    if (!tinNumber || !password) {
-      alert('Please enter TIN/Ghana Card Number and Password');
+    setError('');
+
+    if (!tinNumber) {
+      setError('Please enter TIN/Ghana Card Number');
       return;
     }
+
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tin_ghana_card: tinNumber,
+          user_role: userRole
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.status) {
+        setUniqueId(data.results.unique_id);
+        setMaskedEmail(data.results.email);
+        setShowOTPModal(true);
+      } else {
+        setError(data.message || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Network error. Please try again.');
+    } finally {
       setIsLoading(false);
-      setShowOTPModal(true);
-    }, 500);
+    }
   };
 
   const handleOTPVerified = (role) => {
@@ -170,22 +200,12 @@ const ConfigurationLogin = ({ onBack }) => {
               />
             </div>
 
-            {/* Password */}
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-input"
-                placeholder="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <div className="forgot-password-wrapper">
-                <button type="button" className="forgot-password-link">
-                  Forgot Password?
-                </button>
+            {/* Error Message */}
+            {error && (
+              <div style={{ color: '#DC2626', fontSize: '14px', marginBottom: '16px' }}>
+                {error}
               </div>
-            </div>
+            )}
 
             {/* Login Button */}
             <button type="submit" className="login-btn" disabled={isLoading}>
@@ -212,7 +232,8 @@ const ConfigurationLogin = ({ onBack }) => {
       {/* OTP Verification Modal */}
       {showOTPModal && (
         <ConfigOTPVerification
-          contactInfo="megha@proteantech.com"
+          contactInfo={maskedEmail}
+          uniqueId={uniqueId}
           onClose={() => setShowOTPModal(false)}
           onVerified={handleOTPVerified}
           userRole={userRole}

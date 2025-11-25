@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './GRAAdminPortal.css';
 import ConfigurationLogin from './ConfigurationLogin';
 
-const GRAAdminPortal = ({ onBack }) => {
+const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
   const [showConfigLogin, setShowConfigLogin] = useState(false);
 
   if (showConfigLogin) {
@@ -112,7 +112,10 @@ const GRAAdminPortal = ({ onBack }) => {
           </p>
 
           <div className="admin-options">
-            <div className="admin-option-card">
+            <div
+              className="admin-option-card"
+              onClick={() => onSelectPortal && onSelectPortal('monitoring')}
+            >
               <div className="admin-option-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -125,7 +128,7 @@ const GRAAdminPortal = ({ onBack }) => {
             </div>
 
             <div
-              className="admin-option-card admin-option-active"
+              className="admin-option-card"
               onClick={() => setShowConfigLogin(true)}
             >
               <div className="admin-option-icon">
