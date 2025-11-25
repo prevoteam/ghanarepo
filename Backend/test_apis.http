@@ -1,0 +1,127 @@
+### Ghana Revenue Authority API Tests
+### Use this file with REST Client extension in VS Code
+
+@baseUrl = http://localhost:3000/v1/home
+@uniqueId = 550e8400-e29b-41d4-a716-446655440000
+
+### 1. Register User
+POST {{baseUrl}}/Register
+Content-Type: application/json
+
+{
+  "contact": "test@example.com",
+  "method": "email"
+}
+
+### 2. Verify OTP (use OTP from email or console)
+POST {{baseUrl}}/VerifyOTP
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "otp": "123456"
+}
+
+### 3. Set Entity Type
+POST {{baseUrl}}/SetEntity
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "entity_type": "NonResident"
+}
+
+### 4. Update Agent Details
+POST {{baseUrl}}/UpdateAgentDetails
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "full_name": "John Doe",
+  "date_of_birth": "1990-01-01",
+  "ghana_card_number": "GHA-123456789-0",
+  "agent_full_name": "Jane Agent",
+  "agent_email": "agent@example.com",
+  "agent_ghana_id": "GHA-987654321-0",
+  "agent_mobile": "+233123456789"
+}
+
+### 5. Update Market Declaration (Step 5)
+POST {{baseUrl}}/UpdateMarketDeclaration
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "sells_digital_services": true,
+  "annual_sales_volume": "500000"
+}
+
+### 6. Update Payment Gateway (Step 6)
+POST {{baseUrl}}/UpdatePaymentGateway
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "payment_provider": "PayPal"
+}
+
+### 7. Disconnect Payment Gateway
+POST {{baseUrl}}/DisconnectPaymentGateway
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}"
+}
+
+### 8. Calculate VAT Obligation (Step 7)
+POST {{baseUrl}}/CalculateVATObligation
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}"
+}
+
+### 9. Complete Registration (Step 8)
+POST {{baseUrl}}/CompleteRegistration
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}"
+}
+
+### 10. Send Login OTP
+POST {{baseUrl}}/send-otp
+Content-Type: application/json
+
+{
+  "credential": "GHA21984395"
+}
+
+### 11. Verify Login OTP
+POST {{baseUrl}}/verify-otp
+Content-Type: application/json
+
+{
+  "credential": "GHA21984395",
+  "otp": "123456"
+}
+
+### 12. Get Dashboard
+GET {{baseUrl}}/GetDashboard?unique_id={{uniqueId}}
+
+### 13. Update Sales Data
+POST {{baseUrl}}/UpdateSalesData
+Content-Type: application/json
+
+{
+  "unique_id": "{{uniqueId}}",
+  "total_sales": 50000.00
+}
+
+### 14. Resend OTP
+POST {{baseUrl}}/ResendOTP
+Content-Type: application/json
+
+{
+  "contact": "test@example.com"
+}
