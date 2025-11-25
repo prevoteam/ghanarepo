@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import './RegisterNow.css';
 import RegistrationForm from './RegistrationForm';
+import GRAAdminPortal from './GRAAdminPortal';
 
 const RegisterNow = () => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
 
   if (showRegistrationForm) {
     return <RegistrationForm onBack={() => setShowRegistrationForm(false)} />;
+  }
+
+  if (showGRAAdminPortal) {
+    return <GRAAdminPortal onBack={() => setShowGRAAdminPortal(false)} />;
   }
 
   return (
@@ -67,7 +73,7 @@ const RegisterNow = () => {
           </svg>
           Taxpayer Login
         </button>
-        <button className="nav-item">
+        <button className="nav-item" onClick={() => setShowGRAAdminPortal(true)}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
