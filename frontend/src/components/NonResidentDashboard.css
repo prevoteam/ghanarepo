@@ -1,0 +1,633 @@
+/* Non-Resident Dashboard */
+.nrd-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+}
+
+.nrd-main {
+  flex: 1;
+  padding: 30px 40px;
+  position: relative;
+}
+
+.nrd-main::before,
+.nrd-main::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(45, 59, 143, 0.08) 0%, rgba(45, 59, 143, 0.03) 100%);
+  z-index: 0;
+}
+
+.nrd-main::before {
+  width: 300px;
+  height: 300px;
+  bottom: 50px;
+  left: -100px;
+}
+
+.nrd-main::after {
+  width: 200px;
+  height: 200px;
+  top: 100px;
+  right: -50px;
+}
+
+.nrd-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Welcome Header */
+.nrd-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.nrd-welcome-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.nrd-welcome-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2D3B8F;
+  margin: 0 0 4px 0;
+}
+
+.nrd-welcome-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.nrd-btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #EF4444;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nrd-btn-logout:hover {
+  background: #DC2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.nrd-btn-logout svg {
+  stroke: white;
+}
+
+/* Card Styles */
+.nrd-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.nrd-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.nrd-card-title-light {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+/* Top Cards Row */
+.nrd-top-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* VAT Status Card */
+.nrd-vat-status {
+  background: white;
+}
+
+.nrd-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.nrd-status-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nrd-status-active {
+  background: #10B981;
+}
+
+.nrd-status-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.nrd-status-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.nrd-status-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nrd-status-active-text {
+  color: #10B981;
+}
+
+.nrd-status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nrd-status-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.nrd-status-row span:first-child {
+  color: #6b7280;
+}
+
+.nrd-status-row span:last-child {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.nrd-link {
+  color: #2D3B8F !important;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Compliance Health Card */
+.nrd-compliance {
+  text-align: center;
+}
+
+.nrd-compliance-circle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.nrd-circle-amber {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 6px solid #F59E0B;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.nrd-circle-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F59E0B;
+}
+
+.nrd-circle-subtext {
+  font-size: 10px;
+  color: #F59E0B;
+  letter-spacing: 1px;
+}
+
+.nrd-compliance-warnings {
+  background: #FEF3C7;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+}
+
+.nrd-warning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F59E0B;
+  margin-bottom: 8px;
+}
+
+.nrd-warning-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12px;
+  color: #B45309;
+}
+
+.nrd-warning-list li {
+  margin-bottom: 4px;
+}
+
+/* Digital Merchant ID Card */
+.nrd-merchant-id {
+  background: #2D3B8F;
+  text-align: center;
+}
+
+.nrd-qr-code {
+  margin-bottom: 16px;
+}
+
+.nrd-merchant-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 4px 0;
+}
+
+.nrd-merchant-reg {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+.nrd-btn-download {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nrd-btn-download:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Middle Section */
+.nrd-middle-section {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Sales Card */
+.nrd-sales-card {
+  background: white;
+}
+
+.nrd-sales-metrics {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+
+.nrd-metric {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.nrd-metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nrd-metric-sales {
+  background: #1f2937;
+}
+
+.nrd-metric-vat {
+  background: #2D3B8F;
+}
+
+.nrd-metric-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.nrd-metric-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.nrd-metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.nrd-metric-growth {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #10B981;
+  margin-top: 4px;
+}
+
+.nrd-metric-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Sales Channels */
+.nrd-sales-channels {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.nrd-channels-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.nrd-channel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.nrd-channel-name {
+  width: 140px;
+  font-size: 13px;
+  color: #4b5563;
+  flex-shrink: 0;
+}
+
+.nrd-channel-bar-container {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.nrd-channel-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2D3B8F 0%, #F59E0B 100%);
+  border-radius: 4px;
+}
+
+.nrd-channel-percentage {
+  width: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: right;
+}
+
+/* Alerts Card */
+.nrd-alerts-card {
+  background: white;
+}
+
+.nrd-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nrd-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.nrd-alert-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.nrd-alert-deadline .nrd-alert-indicator {
+  background: #EF4444;
+}
+
+.nrd-alert-document .nrd-alert-indicator {
+  background: #2D3B8F;
+}
+
+.nrd-alert-system .nrd-alert-indicator {
+  background: #6b7280;
+}
+
+.nrd-alert-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.nrd-alert-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.nrd-alert-deadline .nrd-alert-title {
+  color: #EF4444;
+}
+
+.nrd-alert-description {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.nrd-alert-deadline .nrd-alert-description {
+  color: #F87171;
+}
+
+/* PSP Payments Card */
+.nrd-psp-card {
+  background: white;
+}
+
+.nrd-psp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.nrd-psp-item {
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.nrd-psp-label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.nrd-psp-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.nrd-psp-unclassified {
+  background: #FEF2F2;
+}
+
+.nrd-psp-label-warning {
+  color: #EF4444;
+}
+
+.nrd-psp-value-warning {
+  color: #EF4444;
+}
+
+/* Reconciliation Alert */
+.nrd-reconciliation-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #FEF3C7;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.nrd-reconciliation-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.nrd-reconciliation-content {
+  flex: 1;
+}
+
+.nrd-reconciliation-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #F59E0B;
+  margin-bottom: 4px;
+}
+
+.nrd-reconciliation-text {
+  font-size: 13px;
+  color: #B45309;
+  margin: 0 0 4px 0;
+}
+
+.nrd-btn-reconcile {
+  background: transparent;
+  border: 1px solid #F59E0B;
+  color: #F59E0B;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nrd-btn-reconcile:hover {
+  background: #F59E0B;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .nrd-top-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nrd-merchant-id {
+    grid-column: span 2;
+  }
+
+  .nrd-middle-section {
+    grid-template-columns: 1fr;
+  }
+
+  .nrd-psp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .nrd-main {
+    padding: 20px;
+  }
+
+  .nrd-top-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .nrd-merchant-id {
+    grid-column: span 1;
+  }
+
+  .nrd-sales-metrics {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .nrd-psp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nrd-reconciliation-alert {
+    flex-direction: column;
+  }
+
+  .nrd-btn-reconcile {
+    width: 100%;
+    text-align: center;
+  }
+}
