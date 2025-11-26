@@ -19,6 +19,7 @@ const generateRandomString = (length, prefix = '') => {
 // Register PSP
 const RegisterPSP = async (req, res) => {
   try {
+   
     const { entity_name, bog_license_number, technical_contact_name, official_email } = req.body;
 
     // Validation
@@ -36,25 +37,22 @@ const RegisterPSP = async (req, res) => {
       );
     }
 
-    // Check if PSP already exists with same license number
     const existingPSP = await pool.query(
       "SELECT id FROM psp_registrations WHERE bog_license_number = $1",
       [bog_license_number]
     );
-
+    
     if (existingPSP.rows.length > 0) {
       return res.status(400).json(
         success(false, 400, "A PSP with this BoG License Number already exists")
       );
     }
 
-    // Generate credentials
     const psp_id = generateRandomString(8, 'psp_');
     const client_id = generateRandomString(16, 'psp_client_');
     const client_secret = generateRandomString(32, 'sk_test_');
     const webhook_key = generateRandomString(10, 'whsec_');
 
-    // Insert PSP registration
     const result = await pool.query(
       `INSERT INTO psp_registrations (
         psp_id, entity_name, bog_license_number, technical_contact_name,
