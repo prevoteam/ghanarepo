@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './Agent.css';
 import { getUniqueId } from '../utils/sessionManager';
+import { API_BASE_URL } from '../utils/api';
 
 const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,7 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
         return;
       }
 
-      const response = await fetch('http://localhost:3000/v1/home/UpdateAgentDetails', {
+      const response = await fetch(`${API_BASE_URL}/UpdateAgentDetails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
