@@ -109,15 +109,18 @@ const sendEmailOTP = async (email, otp) => {
       user: process.env.EMAIL_CONFIG_EMAIL,   // your Gmail
       pass: process.env.EMAIL_CONFIG_PASSWORD,  // MUST be an app password
     },
+    tls: {
+      rejectUnauthorized: false  // Fixes self-signed certificate error
+    }
   });
  let htmlTemplate = fs.readFileSync("./templates/otp_email.html", "utf8");
   htmlTemplate = htmlTemplate.replace("{{OTP_CODE}}", otp);
 
   await transporter.sendMail({
-    from: `"E-Commerce Registration Portal" `,
+    from: `"E-Commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
     to: email,
     subject: "Your OTP Code",
-  html: htmlTemplate,
+    html: htmlTemplate,
   });
 
   console.log("OTP Email Sent:", email, otp);
@@ -144,6 +147,9 @@ const sendWelcomeEmail = async (email, userName) => {
         user: process.env.EMAIL_CONFIG_EMAIL,
         pass: process.env.EMAIL_CONFIG_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false  // Fixes self-signed certificate error
+      }
     });
 
     let htmlTemplate = fs.readFileSync("./templates/welcome_email.html", "utf8");
