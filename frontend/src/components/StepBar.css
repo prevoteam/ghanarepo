@@ -1,0 +1,134 @@
+/* Step Bar Component */
+.progress-container {
+  margin-bottom: 2.5rem;
+  overflow-x: auto;
+  padding: 2rem 1rem;
+  /* background: linear-gradient(135deg, #FEF7E8 0%, #FDF4E3 100%); */
+  border-radius: 12px;
+}
+
+.progress-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 900px;
+}
+
+.progress-step-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.progress-step-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-step-label {
+  font-size: 0.7rem;
+  color: #9CA3AF;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.progress-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid #D1D5DB;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #D1D5DB;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.progress-circle.active {
+  border-color: #2D3B8F;
+  background: white;
+  color: #2D3B8F;
+  border-width: 4px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(45, 59, 143, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(45, 59, 143, 0);
+  }
+}
+
+.progress-circle.completed {
+  border-color: #10B981;
+  background: #10B981;
+  color: white;
+  border-width: 3px;
+}
+
+.progress-step-name {
+  font-size: 0.8rem;
+  color: #6B7280;
+  font-weight: 500;
+  text-align: center;
+}
+
+.progress-line {
+  flex: 1;
+  height: 3px;
+  background: #D1D5DB;
+  margin: 0 0.5rem;
+  margin-top: 1.4rem;
+  position: absolute;
+  left: 50%;
+  right: -50%;
+  top: 1.4rem;
+  z-index: 1;
+  transition: background 0.3s;
+}
+
+.progress-line.completed {
+  background: #10B981;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .progress-container {
+    overflow-x: scroll;
+    padding: 1.5rem 0.75rem;
+  }
+
+  .progress-steps {
+    min-width: 700px;
+  }
+
+  .progress-step-info {
+    min-width: 80px;
+  }
+
+  .progress-circle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .progress-step-label {
+    font-size: 0.65rem;
+  }
+
+  .progress-step-name {
+    font-size: 0.7rem;
+  }
+}
