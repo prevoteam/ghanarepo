@@ -4,8 +4,10 @@ import { loginApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 import { Header, Footer } from './shared';
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
   const [credential, setCredential] = useState('');
+  const [password, setPassword] = useState('');
+  const [securityCode, setSecurityCode] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
@@ -13,6 +15,8 @@ const Login = ({ onLoginSuccess }) => {
   const [timerInterval, setTimerInterval] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const { loading, error, execute, clearError } = useApi();
+
+  const isNonResident = loginType === 'nonresident';
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -174,6 +178,26 @@ const Login = ({ onLoginSuccess }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleNonResidentLogin = async (e) => {
+    e.preventDefault();
+    clearError();
+    setSuccessMessage('');
+
+    if (!credential.trim() || !password.trim() || !securityCode.trim()) {
+      return;
+    }
+
+    // Dummy login - directly redirect to dashboard
+    setSuccessMessage('Login successful! Redirecting to dashboard...');
+
+    setTimeout(() => {
+      // Use TIN as userId for dummy login
+      const userId = credential;
+      const userRole = 'maker';
+      onLoginSuccess(userId, userRole);
+    }, 1000);
+  };
+
   return (
     <div className="login-container">
       <Header
@@ -208,31 +232,96 @@ const Login = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          <form onSubmit={handleSendOTP} className="login-form">
-            <div className="form-group">
-              <label htmlFor="credential">TIN / Ghana Card Number</label>
-              <input
-                id="credential"
-                type="text"
-                className="credential-input"
-                placeholder="Enter your TIN or Ghana Card no."
-                value={credential}
-                onChange={(e) => setCredential(e.target.value)}
-                required
-              />
-            </div>
+          {isNonResident ? (
+            /* Non-Resident Merchant Login Form */
+            <form onSubmit={handleNonResidentLogin} className="login-form">
+              <div className="form-group">
+                <label htmlFor="tin">TIN</label>
+                <input
+                  id="tin"
+                  type="text"
+                  className="credential-input"
+                  placeholder="Enter your TIN"
+                  value={credential}
+                  onChange={(e) => setCredential(e.target.value)}
+                  required
+                />
+              </div>
 
-            <button type="submit" className="btn-login-submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="spinner"></span>
-                  Sending OTP...
-                </>
-              ) : (
-                'Login via OTP'
-              )}
-            </button>
-          </form>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  className="credential-input"
+                  placeholder="Enter your Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="securityCode">Enter your Password OTP / Security Code</label>
+                <input
+                  id="securityCode"
+                  type="text"
+                  className="credential-input"
+                  placeholder="Enter your Password"
+                  value={securityCode}
+                  onChange={(e) => setSecurityCode(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn-login-submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Logging in...
+                  </>
+                ) : (
+                  'Login via OTP'
+                )}
+              </button>
+
+              <div className="login-links">
+                <button type="button" className="link-btn" onClick={() => console.log('Forgot password')}>
+                  Forgot Password?
+                </button>
+                <button type="button" className="link-btn register-link" onClick={onRegisterNow}>
+                  REGISTER NOW
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* Resident Login Form */
+            <form onSubmit={handleSendOTP} className="login-form">
+              <div className="form-group">
+                <label htmlFor="credential">TIN / Ghana Card Number</label>
+                <input
+                  id="credential"
+                  type="text"
+                  className="credential-input"
+                  placeholder="Enter your TIN or Ghana Card no."
+                  value={credential}
+                  onChange={(e) => setCredential(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn-login-submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Sending OTP...
+                  </>
+                ) : (
+                  'Login via OTP'
+                )}
+              </button>
+            </form>
+          )}
         </div>
       </div>
 

@@ -170,6 +170,14 @@ export const loginApi = {
       body: JSON.stringify({ credential, otp }),
     });
   },
+
+  // Non-Resident Merchant Login (TIN + Password + OTP)
+  nonResidentLogin: async (tin, password, otp) => {
+    return apiRequest('/non-resident-login', {
+      method: 'POST',
+      body: JSON.stringify({ tin, password, otp }),
+    });
+  },
 };
 
 // Dashboard APIs
