@@ -1,12 +1,12 @@
 /* Shared Header Styles */
 .shared-header {
-  background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   padding: 1rem 2rem;
   color: white;
 }
 
 .shared-header .header-content {
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -33,7 +33,7 @@
 .shared-header .logo-circle span {
   font-size: 2rem;
   font-weight: bold;
-  color: #1a365d;
+  color: var(--primary-color);
 }
 
 .shared-header .logo-text {
@@ -69,7 +69,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0.5rem;
-  transition: opacity 0.2s;
+  transition: var(--transition-fast);
 }
 
 .shared-header .header-link:hover {
@@ -94,12 +94,12 @@
 
 /* Navigation Styles */
 .shared-navigation {
-  background: #f8f9fa;
+  background: var(--bg-light);
   padding: 0 2rem;
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .shared-navigation .nav-item {
@@ -109,21 +109,21 @@
   padding: 1rem 1.25rem;
   background: none;
   border: none;
-  color: #4a5568;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 0.9rem;
-  transition: all 0.2s;
+  transition: var(--transition-normal);
   border-bottom: 3px solid transparent;
 }
 
 .shared-navigation .nav-item:hover {
-  color: #1a365d;
-  background: rgba(26, 54, 93, 0.05);
+  color: var(--primary-color);
+  background: var(--primary-bg);
 }
 
 .shared-navigation .nav-item.active {
-  color: #1a365d;
-  border-bottom-color: #c4a000;
+  color: var(--primary-color);
+  border-bottom-color: var(--accent-color);
   font-weight: 600;
 }
 
