@@ -4,12 +4,19 @@ import RegistrationForm from './RegistrationForm';
 import GRAAdminPortal from './GRAAdminPortal';
 import MonitoringLogin from './MonitoringLogin';
 import MonitoringDashboard from './MonitoringDashboard';
+import PSPOnboarding from './PSPOnboarding';
+import DeveloperSandbox from './DeveloperSandbox';
+import DeveloperPortal from './DeveloperPortal';
 
 const RegisterNow = ({ onLoginClick }) => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
   const [showMonitoringLogin, setShowMonitoringLogin] = useState(false);
   const [showMonitoringDashboard, setShowMonitoringDashboard] = useState(false);
+  const [showPSPOnboarding, setShowPSPOnboarding] = useState(false);
+  const [showDeveloperSandbox, setShowDeveloperSandbox] = useState(false);
+  const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
+  const [pspCredentials, setPspCredentials] = useState(null);
 
   const handlePortalSelect = (portalType) => {
     if (portalType === 'monitoring') {
@@ -17,6 +24,19 @@ const RegisterNow = ({ onLoginClick }) => {
       setShowMonitoringLogin(true);
     }
     // Add other portal types here as needed
+  };
+
+  const handleGoHome = () => {
+    setShowPSPOnboarding(false);
+    setShowDeveloperSandbox(false);
+    setShowDeveloperPortal(false);
+    setPspCredentials(null);
+  };
+
+  const handlePSPSuccess = (credentials) => {
+    setPspCredentials(credentials);
+    setShowPSPOnboarding(false);
+    setShowDeveloperSandbox(true);
   };
 
   if (showRegistrationForm) {
@@ -31,6 +51,37 @@ const RegisterNow = ({ onLoginClick }) => {
   const handleLogoClick = () => {
     // Scroll to top or refresh to home
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (showDeveloperPortal) {
+    return (
+      <DeveloperPortal
+        credentials={pspCredentials}
+        onGoHome={handleGoHome}
+      />
+    );
+  }
+
+  if (showDeveloperSandbox) {
+    return (
+      <DeveloperSandbox
+        credentials={pspCredentials}
+        onGoHome={handleGoHome}
+        onGoToDeveloperPortal={() => {
+          setShowDeveloperSandbox(false);
+          setShowDeveloperPortal(true);
+        }}
+      />
+    );
+  }
+
+  if (showPSPOnboarding) {
+    return (
+      <PSPOnboarding
+        onBack={() => setShowPSPOnboarding(false)}
+        onSuccess={handlePSPSuccess}
+      />
+    );
   };
 
   if (showMonitoringDashboard) {
@@ -157,6 +208,14 @@ const RegisterNow = ({ onLoginClick }) => {
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           FAQ
+        </button>
+        <button className="nav-item" onClick={() => setShowPSPOnboarding(true)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          PSP On-boarding
         </button>
       </nav>
 

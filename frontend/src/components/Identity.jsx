@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import './Identity.css';
 import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
+import { API_BASE_URL } from '../utils/api';
 
 const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [passportFile, setPassportFile] = useState(null);
@@ -106,7 +107,7 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
       passportFormData.append('uniqueId', uniqueId);
       passportFormData.append('passport_document', 'true');
 
-      const passportResponse = await fetch('http://localhost:3000/v1/home/UpdateRegistration', {
+      const passportResponse = await fetch(`${API_BASE_URL}/UpdateRegistration`, {
         method: 'POST',
         body: passportFormData
       });
@@ -125,7 +126,7 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
       selfieFormData.append('uniqueId', uniqueId);
       selfieFormData.append('selfie_document', 'true');
 
-      const selfieResponse = await fetch('http://localhost:3000/v1/home/UpdateRegistration', {
+      const selfieResponse = await fetch(`${API_BASE_URL}/UpdateRegistration`, {
         method: 'POST',
         body: selfieFormData
       });

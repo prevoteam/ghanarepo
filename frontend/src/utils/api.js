@@ -1,5 +1,5 @@
 // API Configuration and Utility Functions
-const API_BASE_URL = 'http://localhost:3000/v1/home';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1/home';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -190,10 +190,37 @@ export const dashboardApi = {
   },
 };
 
+// PSP On-boarding APIs
+export const pspApi = {
+  // Register PSP
+  registerPSP: async (data) => {
+    return apiRequest('/psp/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get PSP credentials
+  getPSPCredentials: async (psp_id) => {
+    return apiRequest(`/psp/credentials?psp_id=${psp_id}`, {
+      method: 'GET',
+    });
+  },
+
+  // Test API endpoint
+  testEndpoint: async (endpoint, method, apiKey, body) => {
+    return apiRequest('/psp/test-endpoint', {
+      method: 'POST',
+      body: JSON.stringify({ endpoint, method, apiKey, body }),
+    });
+  },
+};
+
 // Export all
-export { ApiError };
+export { ApiError, API_BASE_URL };
 export default {
   registrationApi,
   loginApi,
   dashboardApi,
+  pspApi,
 };

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './EntityType.css';
 import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
+import { API_BASE_URL } from '../utils/api';
 
 const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [selectedType, setSelectedType] = useState('');
@@ -27,7 +28,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
         return;
       }
 
-      const response = await fetch('http://localhost:3000/v1/home/SetEntity', {
+      const response = await fetch(`${API_BASE_URL}/SetEntity`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
