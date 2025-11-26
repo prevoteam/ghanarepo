@@ -1,13 +1,13 @@
 /* Shared Footer Styles */
 .shared-footer {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%);
   padding: 1.5rem 2rem;
   color: white;
   margin-top: auto;
 }
 
 .shared-footer .footer-content {
-  max-width: var(--max-width);
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -29,21 +29,18 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--accent-color);
-  border: none;
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
   padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-full);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 600;
-  transition: var(--transition-normal);
-  box-shadow: var(--shadow-accent);
+  transition: all 0.2s;
 }
 
 .shared-footer .assistant-button:hover {
-  background: var(--accent-dark);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Responsive */
