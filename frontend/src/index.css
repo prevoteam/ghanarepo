@@ -1,35 +1,27 @@
+/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-:root {
-  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Import Common Styles */
+@import './styles/common.css';
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #ffffff;
-  color: #213547;
-}
-
+/* Additional Global Styles */
 a {
   font-weight: 500;
-  color: #1E3A8A;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
 a:hover {
-  color: #1e40af;
+  color: var(--primary-dark);
+}
+
+/* Override Bootstrap if needed */
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
 }
