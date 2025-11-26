@@ -593,6 +593,38 @@
   cursor: not-allowed;
 }
 
+/* Login Links for Non-Resident */
+.login-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2D3B8F;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.link-btn:hover {
+  color: #1E2A6F;
+}
+
+.register-link {
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .footer-content {

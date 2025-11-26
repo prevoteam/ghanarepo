@@ -69,6 +69,11 @@ module.exports = ({ config }) => {
     return homeService.LoginVerifyOtp(req, res, next);
   });
 
+  // Non-Resident Merchant Login (TIN + Password + OTP)
+  router.post('/non-resident-login', (req, res, next) => {
+    return homeService.NonResidentMerchantLogin(req, res, next);
+  });
+
   // Market Declaration (Step 5)
   router.post('/UpdateMarketDeclaration', (req, res, next) => {
     return homeService.UpdateMarketDeclaration(req, res, next);

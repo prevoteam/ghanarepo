@@ -13,7 +13,7 @@ import Guidelines from './Guidelines';
 import FAQ from './FAQ';
 import { Header, Footer } from './shared';
 
-const RegisterNow = ({ onLoginClick }) => {
+const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
   const [showMonitoringLogin, setShowMonitoringLogin] = useState(false);
@@ -52,9 +52,11 @@ const RegisterNow = ({ onLoginClick }) => {
     setShowDeveloperSandbox(true);
   };
 
-  // Handle Non-Resident Merchant card click (same as Register Now)
+  // Handle Non-Resident Merchant card click - goes to login page
   const handleNonResidentClick = () => {
-    setShowRegistrationForm(true);
+    if (onNonResidentLoginClick) {
+      onNonResidentLoginClick();
+    }
   };
 
   if (showRegistrationForm) {

@@ -788,6 +788,95 @@ const SendOtp = async (req, res) => {
 
 
 // ----------------------------------------------------------------------
+// Non-Resident Merchant Login (TIN + Password + OTP)
+// ----------------------------------------------------------------------
+const NonResidentMerchantLogin = async (req, res) => {
+  try {
+    const { tin, password, otp } = req.body;
+
+    if (!tin || !password || !otp) {
+      return res.status(400).json({
+        status: false,
+        message: "TIN, password, and OTP/security code are required"
+      });
+    }
+
+    // 1️⃣ Check if user exists with the given TIN
+    const result = await pool.query(
+      `
+        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role, password_hash
+        FROM users
+        WHERE tin = $1
+      `,
+      [tin]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found with this TIN"
+      });
+    }
+
+    const user = result.rows[0];
+
+    // 2️⃣ Verify password (for now, simple comparison - in production use bcrypt)
+    // If password_hash is not set, allow any password (for development)
+    if (user.password_hash && user.password_hash !== password) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid password"
+      });
+    }
+
+    // 3️⃣ Verify OTP
+    if (user.otp_code !== otp) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid OTP/security code"
+      });
+    }
+
+    // 4️⃣ Check OTP expiration (if set)
+    if (user.otp_expires_at && new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({
+        status: false,
+        message: "OTP has expired"
+      });
+    }
+
+    // 5️⃣ Send welcome email after successful login
+    if (user.contact_value) {
+      await sendWelcomeEmail(user.contact_value, user.contact_value);
+    }
+
+    // 6️⃣ Clear OTP after successful login
+    await pool.query(
+      `UPDATE users
+       SET otp_code = NULL,
+           otp_expires_at = NULL,
+           updated_at = NOW()
+       WHERE tin = $1`,
+      [tin]
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Login successful!",
+      unique_id: user.unique_id,
+      user_role: user.user_role || 'maker'
+    });
+
+  } catch (err) {
+    console.error("NonResidentMerchantLogin error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
 // VERIFY OTP  (also same pattern as Register verify logic)
 // ----------------------------------------------------------------------
 const LoginVerifyOtp = async (req, res) => {
@@ -1308,6 +1397,7 @@ module.exports = {
     UpdateCredential,
     SendOtp,
     LoginVerifyOtp,
+    NonResidentMerchantLogin,
     UpdateMarketDeclaration,
     UpdatePaymentGateway,
     DisconnectPaymentGateway,
