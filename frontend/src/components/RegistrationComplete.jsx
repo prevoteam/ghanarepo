@@ -1,27 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import './RegistrationComplete.css';
+import StepBar from './StepBar';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { Header, Footer } from './shared';
 
-const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirect }) => {
+const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirect, currentStep, steps }) => {
   const [credentialData, setCredentialData] = useState(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const { loading, error, execute } = useApi();
   const qrCanvasRef = useRef(null);
-
-  const steps = [
-    { number: 1, label: 'Verification', completed: true },
-    { number: 2, label: 'Entity Type', completed: true },
-    { number: 3, label: 'Identity', completed: true },
-    { number: 4, label: 'Agent', completed: true },
-    { number: 5, label: 'Market', completed: true },
-    { number: 6, label: 'Payment', completed: true },
-    { number: 7, label: 'Eligibility', completed: true },
-    { number: 8, label: 'Completed', active: true },
-  ];
 
   useEffect(() => {
     completeRegistration();
@@ -196,45 +186,31 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
     <div className="register-container">
       <Header
         onLogoClick={onRegisterNow}
-        activeNav="register"
-        onRegisterClick={onRegisterNow}
-        onLoginClick={onLoginRedirect}
+        activeNav=""
+        onAboutUsClick={() => {}}
+        onContactUsClick={() => {}}
+        onGuidelinesClick={() => {}}
+        onFAQClick={() => {}}
+        onPSPClick={() => {}}
         showPSPNav={false}
       />
 
       {/* Main Content */}
       <main className="complete-main">
-        <div className="content-wrapper">
-          <h1 className="page-title">Registration Complete</h1>
-          <p className="page-description">
-            Your e-VAT registration has been successfully completed. Download your TIN credentials below.
-          </p>
+        <div className="complete-circles">
+          <div className="complete-circle complete-circle-1"></div>
+          <div className="complete-circle complete-circle-2"></div>
+        </div>
 
-          {/* Progress Steps */}
-          <div className="progress-container">
-            <div className="progress-steps">
-              {steps.map((step, index) => (
-                <div key={step.number} className="progress-step-wrapper">
-                  <div className="progress-step-info">
-                    <div className="progress-step-label">Step {step.number} of 8</div>
-                    <div className={`progress-circle ${step.completed ? 'completed' : ''} ${step.active ? 'active' : ''}`}>
-                      {step.completed ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      ) : (
-                        <span></span>
-                      )}
-                    </div>
-                    <div className="progress-step-name">{step.label}</div>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`progress-line ${step.completed ? 'completed' : ''}`}></div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="complete-container">
+          <div className="complete-content-box">
+            <h1 className="complete-title">Registration Complete</h1>
+            <p className="complete-subtitle">
+              Your e-VAT registration has been successfully completed. Download your TIN credentials below.
+            </p>
+
+            {/* Progress Steps */}
+            <StepBar currentStep={currentStep} />
 
           {error && (
             <div className="error-banner">
@@ -322,6 +298,7 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
               </div>
             </>
           ) : null}
+          </div>
         </div>
       </main>
 

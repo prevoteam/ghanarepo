@@ -152,9 +152,12 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
     <div className="register-container">
       <Header
         onLogoClick={onRegisterNow}
-        activeNav="register"
-        onRegisterClick={onRegisterNow}
-        onLoginClick={onLoginRedirect}
+        activeNav=""
+        onAboutUsClick={() => {}}
+        onContactUsClick={() => {}}
+        onGuidelinesClick={() => {}}
+        onFAQClick={() => {}}
+        onPSPClick={() => {}}
         showPSPNav={false}
       />
 

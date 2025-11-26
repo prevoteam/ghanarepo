@@ -1,25 +1,17 @@
 import { useState } from 'react';
 import './MarketDeclaration.css';
+import StepBar from './StepBar';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 import { Header, Footer } from './shared';
 
-const MarketDeclaration = ({ onNext, onBack, uniqueId, onRegisterNow, onLoginRedirect }) => {
+const MarketDeclaration = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, onLoginRedirect }) => {
+  const [sellsDigitalServices, setSellsDigitalServices] = useState(false);
   const [salesVolume, setSalesVolume] = useState('');
-  const { loading, error, execute, clearError } = useApi();
-
-  const steps = [
-    { number: 1, label: 'Verification', completed: true },
-    { number: 2, label: 'Entity Type', completed: true },
-    { number: 3, label: 'Identity', completed: true },
-    { number: 4, label: 'Agent', completed: true },
-    { number: 5, label: 'Market', active: true },
-    { number: 6, label: 'Payment', completed: false },
-    { number: 7, label: 'Eligibility', completed: false },
-    { number: 8, label: 'Completed', completed: false },
-  ];
+  const { loading, error, execute } = useApi();
 
   const salesVolumeOptions = [
+    { value: '', label: 'Select expected annual sales volume' },
     { value: '0-50000', label: 'Below GH₵ 50,000' },
     { value: '50000-200000', label: 'GH₵ 50,000 - GH₵ 200,000' },
     { value: '200000-500000', label: 'GH₵ 200,000 - GH₵ 500,000' },
@@ -29,6 +21,11 @@ const MarketDeclaration = ({ onNext, onBack, uniqueId, onRegisterNow, onLoginRed
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!sellsDigitalServices) {
+      alert('Please confirm that you sell digital services to Ghana');
+      return;
+    }
+
     if (!salesVolume) {
       alert('Please select your expected annual sales volume');
       return;
@@ -37,7 +34,7 @@ const MarketDeclaration = ({ onNext, onBack, uniqueId, onRegisterNow, onLoginRed
     const result = await execute(
       registrationApi.updateMarketDeclaration,
       uniqueId,
-      true, // Default to true for sells_digital_services
+      sellsDigitalServices,
       salesVolume
     );
 
@@ -50,83 +47,86 @@ const MarketDeclaration = ({ onNext, onBack, uniqueId, onRegisterNow, onLoginRed
     <div className="register-container">
       <Header
         onLogoClick={onRegisterNow}
-        activeNav="register"
-        onRegisterClick={onRegisterNow}
-        onLoginClick={onLoginRedirect}
+        activeNav=""
+        onAboutUsClick={() => {}}
+        onContactUsClick={() => {}}
+        onGuidelinesClick={() => {}}
+        onFAQClick={() => {}}
+        onPSPClick={() => {}}
         showPSPNav={false}
       />
 
       {/* Main Content */}
       <main className="market-main">
-        <div className="content-wrapper">
-          <h1 className="page-title">Market Declaration</h1>
-          <p className="page-description">
-            The Ghana Revenue Authority requires information about your activities in Ghana to determine your tax liabilities.
-          </p>
+        <div className="market-circles">
+          <div className="market-circle market-circle-1"></div>
+          <div className="market-circle market-circle-2"></div>
+        </div>
 
-          {/* Progress Steps */}
-          <div className="progress-container">
-            <div className="progress-steps">
-              {steps.map((step, index) => (
-                <div key={step.number} className="progress-step-wrapper">
-                  <div className="progress-step-info">
-                    <div className="progress-step-label">Step {step.number} of 8</div>
-                    <div className={`progress-circle ${step.completed ? 'completed' : ''} ${step.active ? 'active' : ''}`}>
-                      {step.completed ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      ) : (
-                        <span></span>
-                      )}
-                    </div>
-                    <div className="progress-step-name">{step.label}</div>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`progress-line ${step.completed ? 'completed' : ''}`}></div>
-                  )}
-                </div>
-              ))}
-            </div>
+        <div className="market-container">
+          <div className="market-content-box">
+            <h1 className="market-title">Ghana Market Declaration</h1>
+            <p className="market-subtitle">
+              The Ghana Revenue Authority requires information about your activities in Ghana to determine your tax liabilities.
+            </p>
+
+            {/* Progress Steps */}
+            <StepBar currentStep={currentStep} />
+
+            {error && (
+              <div className="error-banner">
+                {error}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="market-form">
+              {/* Checkbox */}
+              <div className="market-checkbox-group">
+                <label className="market-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={sellsDigitalServices}
+                    onChange={(e) => setSellsDigitalServices(e.target.checked)}
+                    className="market-checkbox"
+                  />
+                  <span className="market-checkbox-custom"></span>
+                  <span className="market-checkbox-text">
+                    I sell digital services to consumers in Ghana (B2C)
+                  </span>
+                </label>
+              </div>
+
+              {/* Sales Volume Dropdown */}
+              <div className="market-form-field">
+                <label className="market-form-label">
+                  Expected Annual Sales Volume in Ghana <span className="required">*</span>
+                </label>
+                <select
+                  className="market-form-select"
+                  value={salesVolume}
+                  onChange={(e) => setSalesVolume(e.target.value)}
+                  required
+                >
+                  {salesVolumeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="market-actions">
+                <button type="button" className="market-btn-previous" onClick={onBack} disabled={loading}>
+                  Previous
+                </button>
+                <button type="submit" className="market-btn-next" disabled={loading}>
+                  {loading ? 'Saving...' : 'Next'}
+                </button>
+              </div>
+            </form>
           </div>
-
-          {error && (
-            <div className="error-banner">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="market-form">
-            <div className="form-group">
-              <label className="form-label">
-                Full Expected Annual Sales Volume in Ghana <span className="required">*</span>
-              </label>
-              <select
-                className="form-select"
-                value={salesVolume}
-                onChange={(e) => setSalesVolume(e.target.value)}
-                required
-              >
-                <option value="">Select</option>
-                {salesVolumeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Buttons */}
-            <div className="form-buttons">
-              <button type="button" className="btn-previous" onClick={onBack} disabled={loading}>
-                Previous
-              </button>
-              <button type="submit" className="btn-next" disabled={loading}>
-                {loading ? 'Saving...' : 'Next'}
-              </button>
-            </div>
-          </form>
         </div>
       </main>
 

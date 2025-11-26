@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './Dashboard.css';
 
-const Dashboard = ({ uniqueId, onLogout }) => {
+const Dashboard = ({ uniqueId, onLogout, userRole = 'maker' }) => {
   // Static data - always show without API call
   const [dashboardData] = useState({
     tin: 'P008041768',
@@ -49,6 +49,17 @@ const Dashboard = ({ uniqueId, onLogout }) => {
           <div className="sidebar-logo-text">
             <div className="sidebar-gra-title">GRA</div>
             <div className="sidebar-gra-subtitle">GHANA REVENUE AUTHORITY</div>
+          </div>
+        </div>
+
+        {/* User Role Badge */}
+        <div className="sidebar-user-role">
+          <div className={`role-badge ${userRole}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>{userRole === 'maker' ? 'Maker' : 'Checker'}</span>
           </div>
         </div>
 

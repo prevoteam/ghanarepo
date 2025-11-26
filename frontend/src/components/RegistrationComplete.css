@@ -170,6 +170,65 @@
 }
 
 /* Background Decorative Circles */
+.complete-circles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.complete-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.complete-circle-1 {
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -100px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.complete-circle-2 {
+  width: 300px;
+  height: 300px;
+  top: 100px;
+  right: -80px;
+  background: linear-gradient(135deg, rgba(118, 75, 162, 0.08) 0%, rgba(102, 126, 234, 0.05) 100%);
+}
+
+/* Container */
+.complete-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.complete-content-box {
+  background: white;
+  border-radius: 20px;
+  padding: 50px 60px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.complete-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 10px 0;
+}
+
+.complete-subtitle {
+  font-size: 14px;
+  color: #4a5568;
+  margin: 0 0 40px 0;
+  line-height: 1.6;
+}
+
+/* Legacy support */
 .complete-main::before,
 .complete-main::after {
   content: '';
@@ -654,12 +713,14 @@
     padding: 20px 15px;
   }
 
-  .content-wrapper {
+  .content-wrapper,
+  .complete-content-box {
     padding: 30px 20px;
     border-radius: 16px;
   }
 
-  .page-title {
+  .page-title,
+  .complete-title {
     font-size: 22px;
   }
 

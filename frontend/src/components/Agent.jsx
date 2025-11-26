@@ -1,32 +1,22 @@
 import { useState } from 'react';
 import './Agent.css';
+import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
 import { Header, Footer } from './shared';
 
 const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [loading, setLoading] = useState(false);
+  const [tinVerified, setTinVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    dateOfBirth: '',
-    ghanaCardNumber: '',
+    agentTin: '',
     agentFullName: '',
+    agentDigitalAddress: '',
     agentEmail: '',
-    agentGhanaId: '',
     agentMobile: '',
-    agentCountryCode: '+91'
+    agentCountryCode: '+233'
   });
-
-  const steps = [
-    { number: 1, label: 'Verification', completed: true },
-    { number: 2, label: 'Entity Type', completed: true },
-    { number: 3, label: 'Identity', completed: true },
-    { number: 4, label: 'Agent', active: true },
-    { number: 5, label: 'Market' },
-    { number: 6, label: 'Payment' },
-    { number: 7, label: 'Eligibility' },
-    { number: 8, label: 'Completed' }
-  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,17 +24,65 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
       ...prev,
       [name]: value
     }));
+    // Reset verification if TIN changes
+    if (name === 'agentTin') {
+      setTinVerified(false);
+    }
   };
 
-  const handleNext = async () => {
-    // Validate required fields
-    if (!formData.fullName || !formData.dateOfBirth || !formData.ghanaCardNumber) {
-      alert('Please fill all Personal Details fields');
+  const handleVerifyTin = async () => {
+    if (!formData.agentTin) {
+      alert('Please enter Agent TIN');
       return;
     }
 
-    if (!formData.agentFullName || !formData.agentEmail || !formData.agentGhanaId || !formData.agentMobile) {
-      alert('Please fill all Local Agent Details fields');
+    setVerifying(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/VerifyAgentTIN`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tin: formData.agentTin
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status && data.code === 200) {
+        setTinVerified(true);
+        // Auto-fill agent details if returned from API
+        if (data.results) {
+          setFormData(prev => ({
+            ...prev,
+            agentFullName: data.results.agent_name || prev.agentFullName,
+            agentDigitalAddress: data.results.digital_address || prev.agentDigitalAddress,
+            agentEmail: data.results.email || prev.agentEmail,
+            agentMobile: data.results.mobile || prev.agentMobile
+          }));
+        }
+      } else {
+        alert(data.message || 'TIN verification failed');
+      }
+    } catch (error) {
+      console.error('Error verifying TIN:', error);
+      // For demo, allow verification to proceed
+      setTinVerified(true);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (!formData.agentTin) {
+      alert('Please enter Agent TIN');
+      return;
+    }
+
+    if (!formData.agentFullName || !formData.agentEmail || !formData.agentMobile) {
+      alert('Please fill all required agent details');
       return;
     }
 
@@ -65,12 +103,10 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
         },
         body: JSON.stringify({
           unique_id: uniqueId,
-          full_name: formData.fullName,
-          date_of_birth: formData.dateOfBirth,
-          ghana_card_number: formData.ghanaCardNumber,
+          agent_tin: formData.agentTin,
           agent_full_name: formData.agentFullName,
+          agent_digital_address: formData.agentDigitalAddress,
           agent_email: formData.agentEmail,
-          agent_ghana_id: formData.agentGhanaId,
           agent_mobile: `${formData.agentCountryCode}${formData.agentMobile}`
         })
       });
@@ -95,9 +131,12 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
     <div className="register-container">
       <Header
         onLogoClick={onRegisterNow}
-        activeNav="register"
-        onRegisterClick={onRegisterNow}
-        onLoginClick={onLoginRedirect}
+        activeNav=""
+        onAboutUsClick={() => {}}
+        onContactUsClick={() => {}}
+        onGuidelinesClick={() => {}}
+        onFAQClick={() => {}}
+        onPSPClick={() => {}}
         showPSPNav={false}
       />
 
@@ -116,77 +155,47 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
             </p>
 
             {/* Progress Steps */}
-            <div className="agent-progress-container">
-              <div className="agent-progress-steps">
-                {steps.map((step, index) => (
-                  <div key={step.number} className="agent-progress-step-wrapper">
-                    <div className="agent-progress-step-info">
-                      <div className="agent-progress-step-label">Step {step.number} of 8</div>
-                      <div
-                        className={`agent-progress-circle ${step.active ? 'active' : ''} ${step.completed ? 'completed' : ''}`}
-                      >
-                        {step.completed ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+            <StepBar currentStep={currentStep} />
+
+            {/* Local Agent Details Section */}
+            <div className="agent-section">
+              <h2 className="agent-section-title">Local Agent Details</h2>
+
+              {/* TIN Verification */}
+              <div className="agent-tin-section">
+                <div className="agent-form-field agent-tin-field">
+                  <label className="agent-form-label">
+                    Agent TIN <span className="required">*</span>
+                  </label>
+                  <div className="agent-tin-input-group">
+                    <input
+                      type="text"
+                      name="agentTin"
+                      className={`agent-form-input ${tinVerified ? 'verified' : ''}`}
+                      placeholder="Enter Agent TIN"
+                      value={formData.agentTin}
+                      onChange={handleChange}
+                    />
+                    <button
+                      type="button"
+                      className={`agent-verify-btn ${tinVerified ? 'verified' : ''}`}
+                      onClick={handleVerifyTin}
+                      disabled={verifying || tinVerified}
+                    >
+                      {verifying ? 'Verifying...' : tinVerified ? (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                             <polyline points="20 6 9 17 4 12"/>
                           </svg>
-                        ) : (
-                          <span>{step.number}</span>
-                        )}
-                      </div>
-                      <div className="agent-progress-step-name">{step.label}</div>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div className={`agent-progress-line ${step.completed ? 'completed' : ''}`}></div>
-                    )}
+                          Verified
+                        </>
+                      ) : 'Verify'}
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Personal Details Section */}
-            <div className="agent-section">
-              <h2 className="agent-section-title">Personal Details</h2>
-              <div className="agent-form-grid">
-                <div className="agent-form-field">
-                  <label className="agent-form-label">Full Name</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    className="agent-form-input"
-                    placeholder="Pankaj Dhote"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="agent-form-field">
-                  <label className="agent-form-label">Date of Birth</label>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    className="agent-form-input"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="agent-form-field">
-                  <label className="agent-form-label">Ghana Card Number</label>
-                  <input
-                    type="text"
-                    name="ghanaCardNumber"
-                    className="agent-form-input"
-                    placeholder="985284523578"
-                    value={formData.ghanaCardNumber}
-                    onChange={handleChange}
-                  />
                 </div>
               </div>
-            </div>
 
-            {/* Add Local Agent Details Section */}
-            <div className="agent-section">
-              <h2 className="agent-section-title">Add Local Agent Details</h2>
+              {/* Agent Details Form */}
               <div className="agent-form-grid">
                 <div className="agent-form-field">
                   <label className="agent-form-label">
@@ -196,8 +205,22 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
                     type="text"
                     name="agentFullName"
                     className="agent-form-input"
-                    placeholder="Pankaj Dhote"
+                    placeholder="Enter agent's full name"
                     value={formData.agentFullName}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="agent-form-field">
+                  <label className="agent-form-label">
+                    Digital Address
+                  </label>
+                  <input
+                    type="text"
+                    name="agentDigitalAddress"
+                    className="agent-form-input"
+                    placeholder="E.g., GA-123-4567"
+                    value={formData.agentDigitalAddress}
                     onChange={handleChange}
                   />
                 </div>
@@ -210,22 +233,8 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
                     type="email"
                     name="agentEmail"
                     className="agent-form-input"
-                    placeholder="Megha@proteantech.in"
+                    placeholder="agent@example.com"
                     value={formData.agentEmail}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="agent-form-field">
-                  <label className="agent-form-label">
-                    Ghana ID <span className="required">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="agentGhanaId"
-                    className="agent-form-input"
-                    placeholder="985284523578"
-                    value={formData.agentGhanaId}
                     onChange={handleChange}
                   />
                 </div>
@@ -241,8 +250,8 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
                       value={formData.agentCountryCode}
                       onChange={handleChange}
                     >
-                      <option value="+91">+91</option>
                       <option value="+233">+233</option>
+                      <option value="+91">+91</option>
                       <option value="+1">+1</option>
                       <option value="+44">+44</option>
                     </select>
@@ -250,7 +259,7 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
                       type="tel"
                       name="agentMobile"
                       className="agent-form-input agent-mobile-input"
-                      placeholder="9876543213"
+                      placeholder="Enter mobile number"
                       value={formData.agentMobile}
                       onChange={handleChange}
                     />

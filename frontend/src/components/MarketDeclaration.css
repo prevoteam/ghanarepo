@@ -332,12 +332,213 @@
   font-size: 14px;
 }
 
+/* Market Container */
+.market-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.market-content-box {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.market-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2D3B8F;
+  margin-bottom: 0.5rem;
+}
+
+.market-subtitle {
+  font-size: 0.95rem;
+  color: #6B7280;
+  margin-bottom: 2.5rem;
+}
+
+/* Background Circles */
+.market-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.market-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+}
+
+.market-circle-1 {
+  width: 350px;
+  height: 350px;
+  background: #8B9DFF;
+  top: 10%;
+  right: 5%;
+}
+
+.market-circle-2 {
+  width: 250px;
+  height: 250px;
+  background: #8B9DFF;
+  bottom: 10%;
+  left: 5%;
+}
+
 /* Form */
 .market-form {
   max-width: 600px;
-  margin-top: 40px;
+  margin-top: 2rem;
 }
 
+/* Checkbox Group */
+.market-checkbox-group {
+  margin-bottom: 2rem;
+}
+
+.market-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.market-checkbox {
+  display: none;
+}
+
+.market-checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #D1D5DB;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.market-checkbox:checked + .market-checkbox-custom {
+  background: #2D3B8F;
+  border-color: #2D3B8F;
+}
+
+.market-checkbox:checked + .market-checkbox-custom::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.market-checkbox-text {
+  font-weight: 500;
+}
+
+/* Form Fields */
+.market-form-field {
+  margin-bottom: 1.5rem;
+}
+
+.market-form-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: #EF4444;
+}
+
+.market-form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #374151;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+.market-form-select:focus {
+  outline: none;
+  border-color: #2D3B8F;
+  box-shadow: 0 0 0 3px rgba(45, 59, 143, 0.1);
+}
+
+/* Action Buttons */
+.market-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.market-btn-previous,
+.market-btn-next {
+  padding: 1rem 3rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  border: none;
+}
+
+.market-btn-previous {
+  background: white;
+  color: #2D3B8F;
+  border: 2px solid #2D3B8F;
+}
+
+.market-btn-previous:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.market-btn-next {
+  background: #2D3B8F;
+  color: white;
+  box-shadow: 0 4px 12px rgba(45, 59, 143, 0.3);
+}
+
+.market-btn-next:hover:not(:disabled) {
+  background: #1E2A6F;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(45, 59, 143, 0.4);
+}
+
+.market-btn-previous:disabled,
+.market-btn-next:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Legacy Form Styles */
 .form-group {
   margin-bottom: 24px;
 }
@@ -348,11 +549,6 @@
   font-weight: 500;
   color: #2d3748;
   margin-bottom: 8px;
-}
-
-.required {
-  color: #e53e3e;
-  margin-left: 2px;
 }
 
 .form-select {

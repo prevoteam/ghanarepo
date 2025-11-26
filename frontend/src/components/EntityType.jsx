@@ -6,16 +6,51 @@ import { API_BASE_URL } from '../utils/api';
 import { Header, Footer } from './shared';
 
 const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
-  const [selectedType, setSelectedType] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    tradingName: '',
+    country: '',
+    serviceType: '',
+    website: ''
+  });
 
-  const handleSelectType = (type) => {
-    setSelectedType(type);
+  const countries = [
+    { value: '', label: 'Select Country' },
+    { value: 'US', label: 'United States' },
+    { value: 'UK', label: 'United Kingdom' },
+    { value: 'IN', label: 'India' },
+    { value: 'DE', label: 'Germany' },
+    { value: 'FR', label: 'France' },
+    { value: 'CN', label: 'China' },
+    { value: 'JP', label: 'Japan' },
+    { value: 'CA', label: 'Canada' },
+    { value: 'AU', label: 'Australia' },
+    { value: 'OTHER', label: 'Other' }
+  ];
+
+  const serviceTypes = [
+    { value: '', label: 'Select Service Type' },
+    { value: 'digital_services', label: 'Digital Services' },
+    { value: 'e_commerce', label: 'E-Commerce' },
+    { value: 'software', label: 'Software/SaaS' },
+    { value: 'streaming', label: 'Streaming Services' },
+    { value: 'online_advertising', label: 'Online Advertising' },
+    { value: 'cloud_services', label: 'Cloud Services' },
+    { value: 'gaming', label: 'Online Gaming' },
+    { value: 'other', label: 'Other Digital Services' }
+  ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleNext = async () => {
-    if (!selectedType) {
-      alert('Please select an entity type');
+    if (!formData.tradingName || !formData.country || !formData.serviceType) {
+      alert('Please fill all required fields');
       return;
     }
 
@@ -29,28 +64,31 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/SetEntity`, {
+      const response = await fetch(`${API_BASE_URL}/UpdateBusinessDetails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           unique_id: uniqueId,
-          entity_type: selectedType
+          trading_name: formData.tradingName,
+          country: formData.country,
+          service_type: formData.serviceType,
+          website: formData.website
         })
       });
 
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        console.log('Entity type updated:', data);
-        onNext(selectedType);
+        console.log('Business details updated:', data);
+        onNext();
       } else {
-        alert(data.message || 'Failed to update entity type');
+        alert(data.message || 'Failed to update business details');
       }
     } catch (error) {
-      console.error('Error updating entity type:', error);
-      alert('Failed to update entity type. Please try again.');
+      console.error('Error updating business details:', error);
+      alert('Failed to update business details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -60,9 +98,12 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
     <div className="register-container">
       <Header
         onLogoClick={onRegisterNow}
-        activeNav="register"
-        onRegisterClick={onRegisterNow}
-        onLoginClick={onLoginRedirect}
+        activeNav=""
+        onAboutUsClick={() => {}}
+        onContactUsClick={() => {}}
+        onGuidelinesClick={() => {}}
+        onFAQClick={() => {}}
+        onPSPClick={() => {}}
         showPSPNav={false}
       />
 
@@ -75,47 +116,80 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
 
         <div className="entity-container">
           <div className="entity-content-box">
-            <h1 className="entity-title">Select Your Entity type</h1>
+            <h1 className="entity-title">Business/Activity Details</h1>
             <p className="entity-subtitle">
-              This will help us tailor the registration form to your needs
+              Please provide information about your business activities
             </p>
 
             {/* Progress Steps */}
             <StepBar currentStep={currentStep} />
 
-            {/* Entity Type Cards */}
-            <div className="entity-cards">
-              <div
-                className={`entity-card ${selectedType === 'Resident' ? 'selected' : ''}`}
-                onClick={() => handleSelectType('Resident')}
-              >
-                <div className="entity-card-icon">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
+            {/* Business Details Form */}
+            <div className="entity-form">
+              <div className="entity-form-grid">
+                <div className="entity-form-field">
+                  <label className="entity-form-label">
+                    Trading Name <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="tradingName"
+                    className="entity-form-input"
+                    placeholder="Enter your business trading name"
+                    value={formData.tradingName}
+                    onChange={handleChange}
+                  />
                 </div>
-                <h3 className="entity-card-title">Resident Taxpayer</h3>
-                <p className="entity-card-description">
-                  For individuals and businesses physically located in Ghana.
-                </p>
-              </div>
 
-              <div
-                className={`entity-card ${selectedType === 'NonResident' ? 'selected' : ''}`}
-                onClick={() => handleSelectType('NonResident')}
-              >
-                <div className="entity-card-icon">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
+                <div className="entity-form-field">
+                  <label className="entity-form-label">
+                    Country <span className="required">*</span>
+                  </label>
+                  <select
+                    name="country"
+                    className="entity-form-select"
+                    value={formData.country}
+                    onChange={handleChange}
+                  >
+                    {countries.map(country => (
+                      <option key={country.value} value={country.value}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <h3 className="entity-card-title">Non-Resident Taxpayer</h3>
-                <p className="entity-card-description">
-                  For entities supplying digital services or goods from abroad.
-                </p>
+
+                <div className="entity-form-field">
+                  <label className="entity-form-label">
+                    Type of Service/Product <span className="required">*</span>
+                  </label>
+                  <select
+                    name="serviceType"
+                    className="entity-form-select"
+                    value={formData.serviceType}
+                    onChange={handleChange}
+                  >
+                    {serviceTypes.map(service => (
+                      <option key={service.value} value={service.value}>
+                        {service.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="entity-form-field">
+                  <label className="entity-form-label">
+                    Website URL
+                  </label>
+                  <input
+                    type="url"
+                    name="website"
+                    className="entity-form-input"
+                    placeholder="https://www.example.com"
+                    value={formData.website}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
@@ -129,7 +203,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
                 onClick={handleNext}
                 disabled={loading}
               >
-                {loading ? 'Loading...' : 'Next'}
+                {loading ? 'Saving...' : 'Next'}
               </button>
             </div>
           </div>

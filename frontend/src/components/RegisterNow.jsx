@@ -7,6 +7,10 @@ import MonitoringDashboard from './MonitoringDashboard';
 import PSPOnboarding from './PSPOnboarding';
 import DeveloperSandbox from './DeveloperSandbox';
 import DeveloperPortal from './DeveloperPortal';
+import AboutUs from './AboutUs';
+import ContactUs from './ContactUs';
+import Guidelines from './Guidelines';
+import FAQ from './FAQ';
 import { Header, Footer } from './shared';
 
 const RegisterNow = ({ onLoginClick }) => {
@@ -17,6 +21,10 @@ const RegisterNow = ({ onLoginClick }) => {
   const [showPSPOnboarding, setShowPSPOnboarding] = useState(false);
   const [showDeveloperSandbox, setShowDeveloperSandbox] = useState(false);
   const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
+  const [showAboutUs, setShowAboutUs] = useState(false);
+  const [showContactUs, setShowContactUs] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
   const [pspCredentials, setPspCredentials] = useState(null);
 
   const handlePortalSelect = (portalType) => {
@@ -31,6 +39,10 @@ const RegisterNow = ({ onLoginClick }) => {
     setShowPSPOnboarding(false);
     setShowDeveloperSandbox(false);
     setShowDeveloperPortal(false);
+    setShowAboutUs(false);
+    setShowContactUs(false);
+    setShowGuidelines(false);
+    setShowFAQ(false);
     setPspCredentials(null);
   };
 
@@ -38,6 +50,11 @@ const RegisterNow = ({ onLoginClick }) => {
     setPspCredentials(credentials);
     setShowPSPOnboarding(false);
     setShowDeveloperSandbox(true);
+  };
+
+  // Handle Non-Resident Merchant card click (same as Register Now)
+  const handleNonResidentClick = () => {
+    setShowRegistrationForm(true);
   };
 
   if (showRegistrationForm) {
@@ -50,8 +67,50 @@ const RegisterNow = ({ onLoginClick }) => {
   }
 
   const handleLogoClick = () => {
-    // Scroll to top or refresh to home
+    // Reset all views to show landing page
+    setShowAboutUs(false);
+    setShowContactUs(false);
+    setShowGuidelines(false);
+    setShowFAQ(false);
+    setShowGRAAdminPortal(false);
+    setShowPSPOnboarding(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (showAboutUs) {
+    return (
+      <AboutUs
+        onBack={handleGoHome}
+        onLogoClick={handleLogoClick}
+      />
+    );
+  }
+
+  if (showContactUs) {
+    return (
+      <ContactUs
+        onBack={handleGoHome}
+        onLogoClick={handleLogoClick}
+      />
+    );
+  }
+
+  if (showGuidelines) {
+    return (
+      <Guidelines
+        onBack={handleGoHome}
+        onLogoClick={handleLogoClick}
+      />
+    );
+  }
+
+  if (showFAQ) {
+    return (
+      <FAQ
+        onBack={handleGoHome}
+        onLogoClick={handleLogoClick}
+      />
+    );
   }
 
   if (showDeveloperPortal) {
@@ -126,10 +185,11 @@ const RegisterNow = ({ onLoginClick }) => {
     <div className="register-container">
       <Header
         onLogoClick={handleLogoClick}
-        activeNav="register"
-        onRegisterClick={() => setShowRegistrationForm(true)}
-        onLoginClick={onLoginClick}
-        onGRALoginClick={() => setShowGRAAdminPortal(true)}
+        activeNav=""
+        onAboutUsClick={() => setShowAboutUs(true)}
+        onContactUsClick={() => setShowContactUs(true)}
+        onGuidelinesClick={() => setShowGuidelines(true)}
+        onFAQClick={() => setShowFAQ(true)}
         onPSPClick={() => setShowPSPOnboarding(true)}
       />
 
@@ -153,7 +213,7 @@ const RegisterNow = ({ onLoginClick }) => {
 
       {/* Cards Section */}
       <section className="cards-section">
-        <div className="card">
+        <div className="card card-clickable" onClick={() => setShowGRAAdminPortal(true)}>
           <div className="card-icon card-icon-blue">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -166,7 +226,7 @@ const RegisterNow = ({ onLoginClick }) => {
           </p>
         </div>
 
-        <div className="card">
+        <div className="card card-clickable" onClick={onLoginClick}>
           <div className="card-icon card-icon-blue">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
@@ -179,7 +239,7 @@ const RegisterNow = ({ onLoginClick }) => {
           </p>
         </div>
 
-        <div className="card">
+        <div className="card card-clickable" onClick={handleNonResidentClick}>
           <div className="card-icon card-icon-blue">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>

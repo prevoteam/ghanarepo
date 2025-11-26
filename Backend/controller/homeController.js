@@ -35,8 +35,18 @@ module.exports = ({ config }) => {
     return homeService.UpdateEntityType(req, res, next);
   });
 
+  // Business Details (Step 3)
+  router.post('/UpdateBusinessDetails', (req, res, next) => {
+    return homeService.UpdateBusinessDetails(req, res, next);
+  });
+
   router.post('/UpdateAgentDetails', (req, res, next) => {
     return homeService.UpdateAgentDetails(req, res, next);
+  });
+
+  // Verify Agent TIN (Step 4)
+  router.post('/VerifyAgentTIN', (req, res, next) => {
+    return homeService.VerifyAgentTIN(req, res, next);
   });
 
   // ✅ Correct UpdateRegistration route

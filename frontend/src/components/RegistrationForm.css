@@ -433,13 +433,21 @@
   color: #6B7280;
 }
 
-.login-link a {
+.login-link a,
+.login-link-btn {
   color: #3B82F6;
   text-decoration: none;
   font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
 }
 
-.login-link a:hover {
+.login-link a:hover,
+.login-link-btn:hover {
   text-decoration: underline;
 }
 

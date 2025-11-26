@@ -2,13 +2,13 @@ import './StepBar.css';
 
 const StepBar = ({ currentStep }) => {
   const steps = [
-    { number: 1, label: 'Verification' },
-    { number: 2, label: 'Entity Type' },
-    { number: 3, label: 'Identity' },
+    { number: 1, label: 'Account' },
+    { number: 2, label: 'Identity' },
+    { number: 3, label: 'Business' },
     { number: 4, label: 'Agent' },
     { number: 5, label: 'Market' },
-    { number: 6, label: 'Payment' },
-    { number: 7, label: 'Eligibility' },
+    { number: 6, label: 'Eligibility' },
+    { number: 7, label: 'Review' },
     { number: 8, label: 'Completed' }
   ];
 

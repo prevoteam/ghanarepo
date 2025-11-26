@@ -129,7 +129,9 @@ const Login = ({ onLoginSuccess }) => {
       // Close modal and redirect after a short delay
       setTimeout(() => {
         setShowOtpModal(false);
-        onLoginSuccess(result.data.unique_id || result.data.uniqueId);
+        const userId = result.data.unique_id || result.data.uniqueId;
+        const userRole = result.data.user_role || 'maker';
+        onLoginSuccess(userId, userRole);
       }, 1000);
     } else {
       // On error, clear OTP inputs for retry

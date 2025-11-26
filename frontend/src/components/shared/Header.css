@@ -97,9 +97,13 @@
   background: var(--bg-light);
   padding: 0 2rem;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   border-bottom: 1px solid var(--border-light);
+}
+
+.shared-navigation .psp-nav-item {
+  margin-left: auto;
 }
 
 .shared-navigation .nav-item {
@@ -114,6 +118,11 @@
   font-size: 0.9rem;
   transition: var(--transition-normal);
   border-bottom: 3px solid transparent;
+  font-family: inherit;
+}
+
+.shared-navigation .nav-item svg {
+  pointer-events: none;
 }
 
 .shared-navigation .nav-item:hover {

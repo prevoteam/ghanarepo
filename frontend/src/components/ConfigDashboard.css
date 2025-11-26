@@ -53,6 +53,39 @@
   opacity: 0.8;
 }
 
+/* User Role Badge in Sidebar */
+.sidebar-user-role {
+  padding: 16px 20px;
+  background: rgba(45, 59, 143, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-badge.maker {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+}
+
+.role-badge.checker {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: white;
+}
+
+.role-badge svg {
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
 .sidebar-nav {
   padding: 1rem 0;
   flex: 1;

@@ -353,7 +353,9 @@ const UpdateAgentDetails = async (req, res) => {
       agent_full_name,
       agent_email,
       agent_ghana_id,
-      agent_mobile
+      agent_mobile,
+      agent_tin,
+      agent_digital_address
     } = req.body;
 
     console.log("Received agent details update for unique_id:", unique_id);
@@ -385,8 +387,10 @@ const UpdateAgentDetails = async (req, res) => {
             agent_email = $5,
             agent_ghana_id = $6,
             agent_mobile = $7,
+            agent_tin = $8,
+            agent_digital_address = $9,
             updated_at = NOW()
-        WHERE unique_id = $8
+        WHERE unique_id = $10
       `,
       [
         full_name,
@@ -396,13 +400,15 @@ const UpdateAgentDetails = async (req, res) => {
         agent_email,
         agent_ghana_id,
         agent_mobile,
+        agent_tin,
+        agent_digital_address,
         unique_id
       ]
     );
 
     // Fetch updated user data
     const result = await pool.query(
-      "SELECT id, unique_id, full_name, agent_full_name, agent_email FROM users WHERE unique_id = $1",
+      "SELECT id, unique_id, full_name, agent_full_name, agent_email, agent_tin FROM users WHERE unique_id = $1",
       [unique_id]
     );
 
@@ -414,11 +420,127 @@ const UpdateAgentDetails = async (req, res) => {
         unique_id: user.unique_id,
         full_name: user.full_name,
         agent_full_name: user.agent_full_name,
-        agent_email: user.agent_email
+        agent_email: user.agent_email,
+        agent_tin: user.agent_tin
       })
     );
   } catch (err) {
     console.error(err);
+    return res.status(500).json(success(false, 500, err.message));
+  }
+};
+
+// -------------------------
+// Update Business Details (Step 3)
+// -------------------------
+const UpdateBusinessDetails = async (req, res) => {
+  try {
+    const { unique_id, trading_name, country, service_type, website } = req.body;
+
+    console.log("Received business details update for unique_id:", unique_id);
+
+    if (!unique_id) {
+      return res.status(400).json(success(false, 400, "unique_id is required"));
+    }
+
+    if (!trading_name || !country || !service_type) {
+      return res.status(400).json(
+        success(false, 400, "trading_name, country, and service_type are required")
+      );
+    }
+
+    // Check if user exists
+    const checkUser = await pool.query(
+      "SELECT id, unique_id FROM users WHERE unique_id = $1",
+      [unique_id]
+    );
+
+    if (checkUser.rows.length === 0) {
+      return res
+        .status(404)
+        .json(success(false, 404, "User not found for given unique_id"));
+    }
+
+    // Update business details
+    await pool.query(
+      `
+        UPDATE users
+        SET trading_name = $1,
+            country = $2,
+            service_type = $3,
+            website = $4,
+            entity_type = 'NonResident',
+            updated_at = NOW()
+        WHERE unique_id = $5
+      `,
+      [trading_name, country, service_type, website, unique_id]
+    );
+
+    // Fetch updated user data
+    const result = await pool.query(
+      "SELECT id, unique_id, trading_name, country, service_type, website FROM users WHERE unique_id = $1",
+      [unique_id]
+    );
+
+    const user = result.rows[0];
+
+    return res.status(200).json(
+      success(true, 200, "Business details updated successfully", {
+        id: user.id,
+        unique_id: user.unique_id,
+        trading_name: user.trading_name,
+        country: user.country,
+        service_type: user.service_type,
+        website: user.website
+      })
+    );
+  } catch (err) {
+    console.error("UpdateBusinessDetails error:", err);
+    return res.status(500).json(success(false, 500, err.message));
+  }
+};
+
+// -------------------------
+// Verify Agent TIN (Step 4)
+// -------------------------
+const VerifyAgentTIN = async (req, res) => {
+  try {
+    const { tin } = req.body;
+
+    console.log("Verifying TIN:", tin);
+
+    if (!tin) {
+      return res.status(400).json(success(false, 400, "TIN is required"));
+    }
+
+    // Validate TIN format (Ghana TIN format: starts with P or C followed by numbers)
+    const tinPattern = /^[PC]\d{10}$/;
+    if (!tinPattern.test(tin)) {
+      return res.status(400).json(
+        success(false, 400, "Invalid TIN format. Expected format: P0000000000 or C0000000000")
+      );
+    }
+
+    // In production, this would call GRA's TIN verification API
+    // For now, simulate verification with a success response
+    const isValid = true;
+    const agentName = "Verified Agent"; // This would come from GRA API
+
+    if (isValid) {
+      return res.status(200).json(
+        success(true, 200, "TIN verified successfully", {
+          tin,
+          verified: true,
+          agent_name: agentName
+        })
+      );
+    } else {
+      return res.status(400).json(
+        success(false, 400, "TIN verification failed. Please check the TIN and try again.")
+      );
+    }
+  } catch (err) {
+    console.error("VerifyAgentTIN error:", err);
     return res.status(500).json(success(false, 500, err.message));
   }
 };
@@ -679,10 +801,10 @@ const LoginVerifyOtp = async (req, res) => {
       });
     }
 
-    // 1️⃣ Fetch user by credential (including email for welcome email)
+    // 1️⃣ Fetch user by credential (including email for welcome email and user_role)
     const result = await pool.query(
       `
-        SELECT unique_id, otp_code, otp_expires_at, contact_value
+        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role
         FROM users
         WHERE tin = $1
       `,
@@ -722,7 +844,8 @@ const LoginVerifyOtp = async (req, res) => {
     return res.status(200).json({
       status: true,
       message: "OTP verified successfully. Welcome email sent!",
-      unique_id: user.unique_id
+      unique_id: user.unique_id,
+      user_role: user.user_role || 'maker'
     });
 
   } catch (err) {
@@ -1070,6 +1193,7 @@ const GetDashboard = async (req, res) => {
         payment_provider,
         merchant_id,
         registration_completed,
+        user_role,
         created_at
        FROM users
        WHERE unique_id = $1`,
@@ -1118,7 +1242,8 @@ const GetDashboard = async (req, res) => {
           vat_id: user.vat_id,
           compliance_status: user.compliance_status || "ONTRACK",
           entity_type: user.entity_type,
-          sells_digital_services: user.sells_digital_services
+          sells_digital_services: user.sells_digital_services,
+          user_role: user.user_role || 'maker'
         },
         sales: {
           total_sales: parseFloat(user.total_sales || 0).toFixed(2),
@@ -1190,5 +1315,7 @@ module.exports = {
     CompleteRegistration,
     GetDashboard,
     UpdateSalesData,
-    UpdateAgentDetails
+    UpdateAgentDetails,
+    UpdateBusinessDetails,
+    VerifyAgentTIN
 };
