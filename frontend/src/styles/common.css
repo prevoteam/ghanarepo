@@ -1,0 +1,643 @@
+/* ============================================
+   GRA COMMON CSS - Shared Styles & Variables
+   ============================================ */
+
+/* ============================================
+   CSS VARIABLES
+   ============================================ */
+:root {
+  /* Primary Colors */
+  --gra-primary: #2D3B8F;
+  --gra-primary-dark: #242f73;
+  --gra-primary-light: #4052B5;
+  --gra-primary-bg: rgba(45, 59, 143, 0.05);
+  --gra-primary-bg-hover: rgba(45, 59, 143, 0.08);
+
+  /* Accent Colors */
+  --gra-accent: #F59E0B;
+  --gra-accent-dark: #D97706;
+  --gra-accent-light: #FCD34D;
+
+  /* Text Colors */
+  --gra-text-primary: #1f2937;
+  --gra-text-secondary: #374151;
+  --gra-text-muted: #6b7280;
+  --gra-text-light: #9ca3af;
+
+  /* Background Colors */
+  --gra-bg-white: #ffffff;
+  --gra-bg-light: #f9fafb;
+  --gra-bg-gray: #f3f4f6;
+
+  /* Border Colors */
+  --gra-border-light: #e5e7eb;
+  --gra-border-medium: #d1d5db;
+
+  /* Success/Error Colors */
+  --gra-success: #10B981;
+  --gra-success-light: #D1FAE5;
+  --gra-error: #EF4444;
+  --gra-error-light: #FEE2E2;
+  --gra-warning: #F59E0B;
+  --gra-warning-light: #FEF3C7;
+
+  /* Shadows */
+  --gra-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --gra-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --gra-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --gra-shadow-accent: 0 4px 12px rgba(245, 158, 11, 0.3);
+
+  /* Border Radius */
+  --gra-radius-sm: 4px;
+  --gra-radius-md: 8px;
+  --gra-radius-lg: 12px;
+  --gra-radius-xl: 16px;
+  --gra-radius-full: 50px;
+
+  /* Transitions */
+  --gra-transition: 0.3s ease;
+  --gra-transition-fast: 0.2s ease;
+
+  /* Max Width */
+  --gra-max-width: 1400px;
+
+  /* Font Family */
+  --gra-font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   COMMON CONTAINER STYLES
+   ============================================ */
+.gra-container {
+  min-height: 100vh;
+  background: var(--gra-bg-white);
+  font-family: var(--gra-font);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   COMMON HEADER STYLES
+   ============================================ */
+.gra-top-header {
+  background: var(--gra-primary);
+  color: white;
+  padding: 1rem 0;
+}
+
+.gra-header-content {
+  max-width: var(--gra-max-width);
+  margin: 0 auto;
+  padding: 0 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gra-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gra-logo-circle {
+  flex-shrink: 0;
+}
+
+.gra-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.gra-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.gra-subtext {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+.gra-header-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.gra-header-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: opacity var(--gra-transition);
+  font-family: inherit;
+}
+
+.gra-header-link:hover {
+  opacity: 0.8;
+}
+
+.gra-help-info {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.gra-help-label {
+  font-weight: 400;
+}
+
+.gra-help-phone {
+  font-weight: 500;
+}
+
+/* ============================================
+   COMMON NAVIGATION STYLES
+   ============================================ */
+.gra-navigation {
+  background: white;
+  display: flex;
+  max-width: var(--gra-max-width);
+  margin: 0 auto;
+  box-shadow: var(--gra-shadow-sm);
+  width: 100%;
+}
+
+.gra-nav-item {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--gra-border-light);
+  color: #3F4D67;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all var(--gra-transition);
+  position: relative;
+  font-family: inherit;
+}
+
+.gra-nav-item:last-child {
+  border-right: none;
+}
+
+.gra-nav-item:hover {
+  background: var(--gra-bg-light);
+}
+
+.gra-nav-item.active {
+  color: var(--gra-primary);
+  background: var(--gra-primary-bg-hover);
+}
+
+.gra-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gra-primary);
+}
+
+/* ============================================
+   COMMON FOOTER STYLES
+   ============================================ */
+.gra-footer {
+  background: var(--gra-primary);
+  color: white;
+  padding: 1.5rem 0;
+  margin-top: auto;
+}
+
+.gra-footer-content {
+  max-width: var(--gra-max-width);
+  margin: 0 auto;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gra-footer-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.gra-footer-copyright {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.gra-assistant-btn {
+  background: var(--gra-accent);
+  color: var(--gra-text-primary);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--gra-radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all var(--gra-transition);
+  font-family: inherit;
+  box-shadow: var(--gra-shadow-accent);
+}
+
+.gra-assistant-btn:hover {
+  background: var(--gra-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* ============================================
+   COMMON DECORATIVE CIRCLES
+   ============================================ */
+.gra-decorative-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gra-deco-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.gra-deco-circle-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+  background: rgba(45, 59, 143, 0.06);
+}
+
+.gra-deco-circle-2 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  right: -80px;
+  transform: translateY(-50%);
+  border: 40px solid rgba(45, 59, 143, 0.08);
+  background: transparent;
+}
+
+.gra-deco-circle-3 {
+  width: 250px;
+  height: 250px;
+  bottom: -50px;
+  left: -80px;
+  border: 35px solid rgba(45, 59, 143, 0.08);
+  background: transparent;
+}
+
+.gra-deco-circle-4 {
+  width: 180px;
+  height: 180px;
+  top: 30%;
+  left: -60px;
+  background: rgba(45, 59, 143, 0.05);
+}
+
+.gra-deco-circle-5 {
+  width: 120px;
+  height: 120px;
+  bottom: 20%;
+  left: 5%;
+  border: 25px solid rgba(45, 59, 143, 0.06);
+  background: transparent;
+}
+
+/* ============================================
+   COMMON FORM STYLES
+   ============================================ */
+.gra-form-group {
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.gra-form-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gra-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.gra-form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--gra-border-light);
+  border-radius: var(--gra-radius-md);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color var(--gra-transition), box-shadow var(--gra-transition);
+  box-sizing: border-box;
+}
+
+.gra-form-input:focus {
+  outline: none;
+  border-color: var(--gra-primary);
+  box-shadow: 0 0 0 3px rgba(45, 59, 143, 0.1);
+}
+
+.gra-form-input::placeholder {
+  color: var(--gra-text-light);
+}
+
+.gra-form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--gra-border-light);
+  border-radius: var(--gra-radius-md);
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  transition: border-color var(--gra-transition), box-shadow var(--gra-transition);
+}
+
+.gra-form-select:focus {
+  outline: none;
+  border-color: var(--gra-primary);
+  box-shadow: 0 0 0 3px rgba(45, 59, 143, 0.1);
+}
+
+/* ============================================
+   COMMON BUTTON STYLES
+   ============================================ */
+.gra-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--gra-radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--gra-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.gra-btn-primary {
+  background: var(--gra-primary);
+  color: white;
+  border: none;
+}
+
+.gra-btn-primary:hover {
+  background: var(--gra-primary-dark);
+}
+
+.gra-btn-primary:disabled {
+  background: var(--gra-text-light);
+  cursor: not-allowed;
+}
+
+.gra-btn-secondary {
+  background: white;
+  color: var(--gra-primary);
+  border: 1px solid var(--gra-primary);
+}
+
+.gra-btn-secondary:hover {
+  background: var(--gra-primary-bg);
+}
+
+.gra-btn-outline {
+  background: transparent;
+  color: var(--gra-text-secondary);
+  border: 1px solid var(--gra-border-light);
+}
+
+.gra-btn-outline:hover {
+  border-color: var(--gra-primary);
+  color: var(--gra-primary);
+}
+
+.gra-btn-full {
+  width: 100%;
+}
+
+/* ============================================
+   COMMON CARD STYLES
+   ============================================ */
+.gra-card {
+  background: white;
+  border-radius: var(--gra-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--gra-shadow-md);
+}
+
+.gra-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--gra-shadow-lg);
+}
+
+/* ============================================
+   COMMON ALERT/MESSAGE STYLES
+   ============================================ */
+.gra-alert {
+  padding: 1rem 1.5rem;
+  border-radius: var(--gra-radius-md);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gra-alert-success {
+  background: var(--gra-success-light);
+  color: #065F46;
+  border: 1px solid var(--gra-success);
+}
+
+.gra-alert-error {
+  background: var(--gra-error-light);
+  color: #991B1B;
+  border: 1px solid var(--gra-error);
+}
+
+.gra-alert-warning {
+  background: var(--gra-warning-light);
+  color: #92400E;
+  border: 1px solid var(--gra-warning);
+}
+
+/* ============================================
+   COMMON TABLE STYLES
+   ============================================ */
+.gra-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gra-table th {
+  text-align: left;
+  padding: 0.875rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gra-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--gra-border-light);
+}
+
+.gra-table td {
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: var(--gra-text-primary);
+  border-bottom: 1px solid var(--gra-bg-gray);
+}
+
+.gra-table tr:hover td {
+  background: var(--gra-bg-light);
+}
+
+/* ============================================
+   COMMON BADGE STYLES
+   ============================================ */
+.gra-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--gra-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.gra-badge-success {
+  background: var(--gra-success-light);
+  color: #065F46;
+}
+
+.gra-badge-error {
+  background: var(--gra-error-light);
+  color: #991B1B;
+}
+
+.gra-badge-warning {
+  background: var(--gra-warning-light);
+  color: #92400E;
+}
+
+.gra-badge-primary {
+  background: var(--gra-primary-bg);
+  color: var(--gra-primary);
+}
+
+/* ============================================
+   COMMON UTILITY CLASSES
+   ============================================ */
+.gra-text-center {
+  text-align: center;
+}
+
+.gra-text-primary {
+  color: var(--gra-primary);
+}
+
+.gra-text-muted {
+  color: var(--gra-text-muted);
+}
+
+.gra-mb-1 {
+  margin-bottom: 0.5rem;
+}
+
+.gra-mb-2 {
+  margin-bottom: 1rem;
+}
+
+.gra-mb-3 {
+  margin-bottom: 1.5rem;
+}
+
+.gra-mb-4 {
+  margin-bottom: 2rem;
+}
+
+/* ============================================
+   COMMON RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .gra-header-content,
+  .gra-footer-content {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1.5rem;
+    text-align: center;
+  }
+
+  .gra-header-right {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .gra-navigation {
+    flex-wrap: wrap;
+  }
+
+  .gra-nav-item {
+    flex: 1 1 50%;
+    border-right: none;
+    border-bottom: 1px solid var(--gra-border-light);
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .gra-deco-circle-1 {
+    width: 200px;
+    height: 200px;
+    top: -50px;
+    right: -50px;
+  }
+
+  .gra-deco-circle-2 {
+    width: 150px;
+    height: 150px;
+    border-width: 20px;
+  }
+
+  .gra-deco-circle-3 {
+    width: 120px;
+    height: 120px;
+    border-width: 20px;
+  }
+
+  .gra-deco-circle-4,
+  .gra-deco-circle-5 {
+    display: none;
+  }
+}

@@ -63,7 +63,7 @@ app.set('port', port);
 server.listen(port);
 
 // LOG WHICH PORT THE SERVER IS RUNNING ON
-console.log('Server listening on port ' + port);
+console.log('Server listening on port ' + port + ' - Updated');
 
 // ERROR HANDLER
 app.use((err, req, res, next) => {  

@@ -17,7 +17,7 @@
 .config-sidebar {
   width: 280px;
   min-width: 280px;
-  background: #f8fafc;
+  background: #EEF1F8;
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
@@ -53,31 +53,74 @@
   opacity: 0.8;
 }
 
+/* User Role Badge in Sidebar */
+.sidebar-user-role {
+  padding: 16px 20px;
+  background: rgba(45, 59, 143, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-badge.maker {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+}
+
+.role-badge.checker {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: white;
+}
+
+.role-badge svg {
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
 .sidebar-nav {
   padding: 1rem 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
 }
 
 .sidebar-nav-item {
   width: 100%;
   padding: 1rem 1.5rem;
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 0.75rem;
   background: transparent;
   border: none;
   border-left: 4px solid transparent;
-  color: #4b5563;
+  color: #1f2937;
   font-size: 0.9rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.sidebar-nav-item span {
+  display: inline-block;
+  color: inherit;
 }
 
 .sidebar-nav-item:hover {
-  background: rgba(45, 59, 143, 0.05);
+  background: rgba(45, 59, 143, 0.1);
   color: #2D3B8F;
 }
 
@@ -87,8 +130,13 @@
   border-left-color: #F59E0B;
 }
 
+.sidebar-nav-item.active span {
+  color: white;
+}
+
 .sidebar-nav-item svg {
   flex-shrink: 0;
+  display: inline-block;
 }
 
 /* Sidebar Decoration */
@@ -111,7 +159,7 @@
   height: 150px;
   bottom: -40px;
   left: -40px;
-  border: 30px solid rgba(45, 59, 143, 0.08);
+  border: 30px solid rgba(45, 59, 143, 0.15);
   background: transparent;
 }
 
@@ -120,7 +168,7 @@
   height: 100px;
   bottom: 40px;
   left: 20px;
-  background: rgba(45, 59, 143, 0.05);
+  background: rgba(45, 59, 143, 0.1);
 }
 
 /* Main Content */
@@ -178,6 +226,26 @@
 
 .initiate-btn:hover {
   background: #242f73;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #DC2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background: #B91C1C;
 }
 
 /* Content Area */
@@ -360,6 +428,213 @@
   border-radius: 4px;
   font-size: 0.85rem;
   color: #374151;
+}
+
+/* Rate Display with Pending */
+.rate-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pending-rate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #FEF3C7;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #D97706;
+  font-weight: 600;
+}
+
+.pending-rate svg {
+  stroke: #D97706;
+}
+
+/* Edit Rate Input */
+.edit-rate-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rate-edit-input {
+  width: 60px;
+  padding: 0.375rem 0.5rem;
+  border: 2px solid #2D3B8F;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  text-align: center;
+}
+
+.rate-edit-input:focus {
+  outline: none;
+  border-color: #708DE0;
+}
+
+.rate-percent {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Pending Row */
+.row-pending {
+  background: #FEF9E7 !important;
+  border-left: 3px solid #F59E0B;
+}
+
+.row-pending:hover {
+  background: #FEF3C7 !important;
+}
+
+/* Edit Actions */
+.edit-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.save-edit-btn {
+  color: #10B981 !important;
+}
+
+.save-edit-btn:hover {
+  background: #D1FAE5 !important;
+  color: #059669 !important;
+}
+
+.cancel-edit-btn {
+  color: #EF4444 !important;
+}
+
+.cancel-edit-btn:hover {
+  background: #FEE2E2 !important;
+  color: #DC2626 !important;
+}
+
+/* Checker Actions */
+.checker-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.approve-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #10B981 !important;
+  color: white !important;
+  padding: 0.375rem 0.75rem !important;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.approve-btn:hover {
+  background: #059669 !important;
+}
+
+.approve-btn svg {
+  stroke: white;
+}
+
+.reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #EF4444 !important;
+  color: white !important;
+  padding: 0.375rem 0.75rem !important;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.reject-btn:hover {
+  background: #DC2626 !important;
+}
+
+.reject-btn svg {
+  stroke: white;
+}
+
+.approve-btn:disabled,
+.reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Icon-only Action Buttons (for Checker) */
+.action-icon-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.approve-icon-btn:hover:not(:disabled) svg circle {
+  fill: #059669;
+}
+
+.reject-icon-btn:hover:not(:disabled) svg circle {
+  fill: #DC2626;
+}
+
+/* Error Banner */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #DC2626;
+  font-size: 0.875rem;
+}
+
+.error-banner svg {
+  stroke: #DC2626;
+  flex-shrink: 0;
+}
+
+.error-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #DC2626;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.error-close:hover {
+  color: #991B1B;
+}
+
+/* Wider Actions Column for Checker */
+.cell-actions {
+  width: 180px;
+  flex-shrink: 0;
+  gap: 0.5rem;
 }
 
 /* Action Buttons */
@@ -912,9 +1187,11 @@
     justify-content: center;
   }
 
-  .sidebar-nav-item.active {
+   .sidebar-nav-item.active {
+    background: #708DE0;
+    color: white;
     border-left: none;
-  }
+  } 
 
   .sidebar-decoration {
     display: none;

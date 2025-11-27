@@ -1,176 +1,231 @@
 import { useState } from 'react';
 import './RegisterNow.css';
-import RegistrationForm from './RegistrationForm';
-import GRAAdminPortal from './GRAAdminPortal';
+import GRAAdminLogin from './GRAAdminLogin';
+import MonitoringDashboard from './MonitoringDashboard';
+import ConfigDashboard from './ConfigDashboard';
 
-const RegisterNow = () => {
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
-  const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
+const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
+  const [showGRAAdminLogin, setShowGRAAdminLogin] = useState(false);
+  const [showMonitoringDashboard, setShowMonitoringDashboard] = useState(false);
+  const [showConfigDashboard, setShowConfigDashboard] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
-  if (showRegistrationForm) {
-    return <RegistrationForm onBack={() => setShowRegistrationForm(false)} />;
+  const handleNonResidentClick = () => {
+    if (onNonResidentLoginClick) {
+      onNonResidentLoginClick();
+    }
+  };
+
+  const handleGRALoginSuccess = (data) => {
+    console.log('GRA Admin Login successful:', data);
+
+    const role = data.userRole || sessionStorage.getItem('gra_user_role');
+    const userTable = data.userTable || sessionStorage.getItem('gra_user_table');
+
+    setShowGRAAdminLogin(false);
+    setUserRole(role);
+
+    // Route based on user role
+    if (role === 'monitoring' || userTable === 'monitoring_login') {
+      // Monitoring user - go to Monitoring Dashboard
+      setShowMonitoringDashboard(true);
+    } else if (role === 'maker' || role === 'checker') {
+      // Maker/Checker from users table - go to Config Dashboard
+      setShowConfigDashboard(true);
+    } else {
+      // Default to Monitoring Dashboard
+      setShowMonitoringDashboard(true);
+    }
+  };
+
+  const handleLogout = () => {
+    // Clear all session data
+    sessionStorage.removeItem('gra_session_id');
+    sessionStorage.removeItem('gra_user_role');
+    sessionStorage.removeItem('gra_user_table');
+    sessionStorage.removeItem('gra_token');
+
+    setShowMonitoringDashboard(false);
+    setShowConfigDashboard(false);
+    setShowGRAAdminLogin(false);
+    setUserRole(null);
+  };
+
+  // GRA Admin Portal flow
+  if (showMonitoringDashboard) {
+    return (
+      <MonitoringDashboard
+        onLogout={handleLogout}
+      />
+    );
   }
 
-  if (showGRAAdminPortal) {
-    return <GRAAdminPortal onBack={() => setShowGRAAdminPortal(false)} />;
+  if (showConfigDashboard) {
+    return (
+      <ConfigDashboard
+        onLogout={handleLogout}
+        userRole={userRole}
+      />
+    );
+  }
+
+  if (showGRAAdminLogin) {
+    return (
+      <GRAAdminLogin
+        onBack={() => setShowGRAAdminLogin(false)}
+        onLoginSuccess={handleGRALoginSuccess}
+      />
+    );
   }
 
   return (
-    <div className="register-container">
-      {/* Top Header */}
-      <header className="top-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <div className="logo-circle">
-              <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="#F59E0B" />
-                <text x="25" y="32" fontSize="20" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-              </svg>
-            </div>
-            <div className="logo-text">
-              <div className="gra-text">GRA</div>
-              <div className="gra-subtext">GHANA REVENUE AUTHORITY</div>
-            </div>
-          </div>
-
-          <div className="header-right">
-            <button className="header-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
-              Call Us
-            </button>
-            <button className="header-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
-              About Us
-            </button>
-            <div className="help-info">
-              <div className="help-label">Need Help?</div>
-              <div className="help-phone">+233 (0) 302 123 456</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation */}
-      <nav className="navigation">
-        <button className="nav-item active" onClick={() => setShowRegistrationForm(true)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          Register Now
-        </button>
-        <button className="nav-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>
-          Taxpayer Login
-        </button>
-        <button className="nav-item" onClick={() => setShowGRAAdminPortal(true)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          GRA Login
-        </button>
-        <button className="nav-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-          Guidelines
-        </button>
-        <button className="nav-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          FAQ
-        </button>
-      </nav>
-
+    <div className='register-container'>
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-circles">
-          <div className="hero-circle hero-circle-1"></div>
-          <div className="hero-circle hero-circle-2"></div>
-          <div className="hero-circle hero-circle-3"></div>
-          <div className="hero-circle hero-circle-4"></div>
-        </div>
-        <div className="hero-content">
-          <h1 className="hero-title">Building a Better Ghana</h1>
-          <p className="hero-text">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-            laboris nisi ut aliquip ex ea commodo consequat.
+     
+        <div className="container">
+          <h1 className="hero-title">Your Single Gateway for Compliant Online Business in Ghana</h1>
+          <p className="hero-subtitle mb-0">
+            Register • Verify • Update • Stay Tax Compliant
           </p>
         </div>
       </section>
 
       {/* Cards Section */}
-      <section className="cards-section">
-        <div className="card">
-          <div className="card-icon card-icon-blue">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="M9 12l2 2 4-4"/>
-            </svg>
+     <div className="container my-5">
+      <div className="row g-4">
+
+        {/* GRA Officer */}
+        <div className="col-md-4" onClick={() => setShowGRAAdminLogin(true)}>
+          <div
+            className="py-4 h-100"
+            style={{
+              background: "#CBD3E8",
+              borderRadius: "18px",
+              position: "relative"
+            }}
+          >
+            {/* Icon box exactly like image */}
+            <div
+              style={{
+                background: "#1F3A83",
+                width: "58px",
+                height: "40px",
+                borderRadius: "0px 8px 8px 0px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "16px"
+              }}
+              
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+
+           <div className='px-4'>
+             <h5 className="fw-semibold mb-2">GRA Officer</h5>
+            <p className="text-muted mb-0">
+              Authorized personnel access for system monitoring, configuration,
+              and compliance management.
+            </p>
+           </div>
           </div>
-          <h3 className="card-title">GRA Officer</h3>
-          <p className="card-description">
-            Authorized personnel access for system monitoring, configuration, and compliance management.
-          </p>
         </div>
 
-        <div className="card">
-          <div className="card-icon card-icon-blue">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
+        {/* Resident Merchant */}
+        <div className="col-md-4" onClick={onLoginClick}>
+         <div
+            className="py-4 h-100"
+            style={{
+              background: "#ffffff",
+              border: "1px solid #E5E7EB",
+              borderRadius: "18px"
+            }}
+          >
+            <div
+              style={{
+                background: "#1F3A83",
+              width: "58px",
+                height: "40px",
+                borderRadius: "0px 8px 8px 0px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "16px"
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+   <div className='px-4'>
+            <h5 className="fw-semibold mb-2">Resident Merchant</h5>
+            <p className="text-muted mb-0">
+              Login to verify and comply VAT obligations for business in Ghana.
+            </p>
+            </div>
           </div>
-          <h3 className="card-title">Resident Merchant</h3>
-          <p className="card-description">
-            Login to verify and comply VAT obligations for business in Ghana.
-          </p>
         </div>
 
-        <div className="card">
-          <div className="card-icon card-icon-blue">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
+        {/* Non-Resident Merchant */}
+        <div className="col-md-4" onClick={handleNonResidentClick}>
+         <div
+            className="py-4 h-100"
+            style={{
+              background: "#ffffff",
+              border: "1px solid #E5E7EB",
+              borderRadius: "18px"
+            }}
+          >
+            <div
+              style={{
+                background: "#1F3A83",
+               width: "58px",
+                height: "40px",
+                borderRadius: "0px 8px 8px 0px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "16px"
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+   <div className='px-4'>
+            <h5 className="fw-semibold mb-2">Non-Resident Merchant</h5>
+            <p className="text-muted mb-0">
+              Registration portal for international entities supplying digital
+              services or goods to customers in Ghana.
+            </p>
+            </div>
           </div>
-          <h3 className="card-title">Non-Resident Merchant</h3>
-          <p className="card-description">
-            Registration portal for international entities supplying digital services or goods to customers in Ghana.
-          </p>
         </div>
-      </section>
+
+      </div>
+    </div>
+
 
       {/* Latest News Section */}
-      <section className="news-section">
+ 
+      <section className='container mb-5' >
+          <div className="news-section">
         <h2 className="news-title">Latest News</h2>
 
-        <div className="news-item">
+        <div className="news-item d-flex align-items-center">
           <div className="news-image">
             <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&h=200&fit=crop" alt="Tax filing" />
-            <div className="news-badge">TAX</div>
+            {/* <div className="news-badge">TAX</div> */}
           </div>
           <div className="news-content">
-            <div className="news-tag">PRESS RELEASE</div>
+            <span className="news-tag">PRESS RELEASE</span>
             <h3 className="news-heading">GRA launches new digital portal for seamless tax filing</h3>
             <p className="news-description">
               The Commissioner-General today unveiled the new integrated tax application system designed to simplify compliance...
@@ -178,8 +233,9 @@ const RegisterNow = () => {
             <button className="news-link">Read More</button>
           </div>
         </div>
+        <div className='border-bottom-1px'></div>
 
-        <div className="news-item">
+        <div className="news-item d-flex align-items-center mt-3">
           <div className="news-image">
             <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" alt="Digital portal" />
             <div className="news-badge">TAX</div>
@@ -193,21 +249,10 @@ const RegisterNow = () => {
             <button className="news-link">Read More</button>
           </div>
         </div>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-text">Integrity. Fairness. Service</div>
-          <div className="footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
-          <button className="assistant-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            Ask GRA Assistant
-          </button>
-        </div>
-      </footer>
+
     </div>
   );
 };

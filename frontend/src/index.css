@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* Import Common Styles */
+@import './styles/common.css';
+
 :root {
   font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -9,10 +12,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 body {
@@ -26,10 +25,10 @@ body {
 
 a {
   font-weight: 500;
-  color: #1E3A8A;
+  color: var(--gra-primary);
   text-decoration: none;
 }
 
 a:hover {
-  color: #1e40af;
+  color: var(--gra-primary-dark);
 }

@@ -88,6 +88,7 @@
 }
 
 /* Navigation */
+.navigation,
 .reg-navigation {
   background: white;
   display: flex;
@@ -96,6 +97,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.nav-item,
 .reg-nav-item {
   flex: 1;
   padding: 1.25rem 1.5rem;
@@ -115,17 +117,31 @@
   font-family: inherit;
 }
 
+.nav-item:last-child,
 .reg-nav-item:last-child {
   border-right: none;
 }
 
+.nav-item:hover,
 .reg-nav-item:hover {
   background: #f9fafb;
 }
 
+.nav-item.active,
 .reg-nav-item.active {
   color: #2D3B8F;
-  background: rgba(45, 59, 143, 0.05);
+  background: white;
+}
+
+.nav-item.active::after,
+.reg-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2D3B8F;
 }
 
 /* Main Content */
@@ -204,22 +220,25 @@
 
 /* Progress Steps */
 .progress-container {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
   overflow-x: auto;
-  padding: 1rem 0;
+  padding: 2rem 1rem;
+  /* background: linear-gradient(135deg, #FEF7E8 0%, #FDF4E3 100%); */
+  border-radius: 12px;
 }
 
 .progress-steps {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  min-width: 800px;
+  min-width: 900px;
 }
 
 .progress-step-wrapper {
   display: flex;
   align-items: center;
   flex: 1;
+  position: relative;
 }
 
 .progress-step-info {
@@ -228,45 +247,61 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 100px;
+  position: relative;
+  z-index: 2;
 }
 
 .progress-step-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #9CA3AF;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .progress-circle {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 3px solid #E5E7EB;
+  border: 3px solid #D1D5DB;
   background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #9CA3AF;
+  color: #D1D5DB;
   transition: all 0.3s;
+  position: relative;
 }
 
 .progress-circle.active {
   border-color: #2D3B8F;
-  background: #2D3B8F;
-  color: white;
-  box-shadow: 0 0 0 4px rgba(45, 59, 143, 0.1);
+  background: white;
+  color: #2D3B8F;
+  border-width: 4px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(45, 59, 143, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(45, 59, 143, 0);
+  }
 }
 
 .progress-circle.completed {
-  border-color: #2D3B8F;
-  background: #2D3B8F;
+  border-color: #10B981;
+  background: #10B981;
   color: white;
+  border-width: 3px;
 }
 
 .progress-step-name {
-  font-size: 0.85rem;
-  color: #4B5563;
+  font-size: 0.8rem;
+  color: #6B7280;
   font-weight: 500;
   text-align: center;
 }
@@ -274,9 +309,19 @@
 .progress-line {
   flex: 1;
   height: 3px;
-  background: #E5E7EB;
+  background: #D1D5DB;
   margin: 0 0.5rem;
-  margin-top: 2.2rem;
+  margin-top: 1.4rem;
+  position: absolute;
+  left: 50%;
+  right: -50%;
+  top: 1.4rem;
+  z-index: 1;
+  transition: background 0.3s;
+}
+
+.progress-line.completed {
+  background: #10B981;
 }
 
 /* Form Fields */
@@ -388,13 +433,21 @@
   color: #6B7280;
 }
 
-.login-link a {
+.login-link a,
+.login-link-btn {
   color: #3B82F6;
   text-decoration: none;
   font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
 }
 
-.login-link a:hover {
+.login-link a:hover,
+.login-link-btn:hover {
   text-decoration: underline;
 }
 
@@ -493,4 +546,55 @@
     text-align: center;
     padding: 0 1.5rem;
   }
+}
+
+/* Navigation */
+.navigation {
+  background: white;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #e5e7eb;
+  color: #3F4D67;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  font-family: inherit;
+}
+
+.nav-item:last-child {
+  border-right: none;
+}
+
+.nav-item:hover {
+  background: #f9fafb;
+}
+
+.nav-item.active {
+  color: #2D3B8F;
+  background: rgba(45, 59, 143, 0.05);
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2D3B8F;
 }

@@ -88,6 +88,7 @@
 }
 
 /* Navigation */
+.navigation,
 .entity-navigation {
   background: white;
   display: flex;
@@ -96,6 +97,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.nav-item,
 .entity-nav-item {
   flex: 1;
   padding: 1.25rem 1.5rem;
@@ -115,17 +117,31 @@
   font-family: inherit;
 }
 
+.nav-item:last-child,
 .entity-nav-item:last-child {
   border-right: none;
 }
 
+.nav-item:hover,
 .entity-nav-item:hover {
   background: #f9fafb;
 }
 
+.nav-item.active,
 .entity-nav-item.active {
   color: #2D3B8F;
-  background: rgba(45, 59, 143, 0.05);
+  background: white;
+}
+
+.nav-item.active::after,
+.entity-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2D3B8F;
 }
 
 /* Main Content */
@@ -274,6 +290,66 @@
 
 .entity-progress-line.completed {
   background: #10B981;
+}
+
+/* Business Form Styles */
+.entity-form {
+  margin-bottom: 2rem;
+}
+
+.entity-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.entity-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entity-form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.entity-form-label .required {
+  color: #EF4444;
+}
+
+.entity-form-input,
+.entity-form-select {
+  padding: 0.875rem 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #374151;
+  transition: all 0.3s;
+  background: white;
+}
+
+.entity-form-input:focus,
+.entity-form-select:focus {
+  outline: none;
+  border-color: #2D3B8F;
+  box-shadow: 0 0 0 3px rgba(45, 59, 143, 0.1);
+}
+
+.entity-form-input::placeholder {
+  color: #9CA3AF;
+}
+
+.entity-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
 }
 
 /* Entity Cards */

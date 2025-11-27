@@ -1,0 +1,138 @@
+.guidelines-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.guidelines-page {
+  position: relative;
+  min-height: calc(100vh - 200px);
+  padding: 3rem;
+  overflow: hidden;
+  flex: 1;
+}
+
+.guidelines-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.guidelines-content .back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #2D3B8F;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+
+.guidelines-content .back-button:hover {
+  color: #1e2a6e;
+}
+
+.guidelines-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2D3B8F;
+  margin-bottom: 2rem;
+}
+
+.guideline-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.section-list li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.4rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.section-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #4b5563;
+  font-weight: bold;
+}
+
+/* Decorative circles */
+.guidelines-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.guidelines-circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.guidelines-circle-1 {
+  width: 300px;
+  height: 300px;
+  bottom: -100px;
+  left: -100px;
+  background: linear-gradient(135deg, rgba(45, 59, 143, 0.1) 0%, rgba(45, 59, 143, 0.05) 100%);
+}
+
+.guidelines-circle-2 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -150px;
+  border: 40px solid rgba(45, 59, 143, 0.08);
+}
+
+.guidelines-circle-3 {
+  width: 200px;
+  height: 200px;
+  bottom: 100px;
+  right: -50px;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+@media (max-width: 768px) {
+  .guidelines-page {
+    padding: 2rem 1.5rem;
+  }
+
+  .guidelines-title {
+    font-size: 1.75rem;
+  }
+
+  .section-title {
+    font-size: 0.95rem;
+  }
+
+  .section-list li {
+    font-size: 0.9rem;
+  }
+}

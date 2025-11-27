@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './OTPVerification.css';
+import { API_BASE_URL } from '../utils/api';
 
 const OTPVerification = ({ email, mobileNumber, onVerified, onClose }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -69,7 +70,7 @@ const OTPVerification = ({ email, mobileNumber, onVerified, onClose }) => {
 
     try {
       const contact = email || mobileNumber;
-      const response = await fetch('http://localhost:3000/v1/home/ResendOTP', {
+      const response = await fetch(`${API_BASE_URL}/ResendOTP`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ const OTPVerification = ({ email, mobileNumber, onVerified, onClose }) => {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/v1/home/VerifyOTP', {
+      const response = await fetch(`${API_BASE_URL}/VerifyOTP`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

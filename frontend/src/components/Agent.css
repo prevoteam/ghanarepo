@@ -89,6 +89,7 @@
 }
 
 /* Navigation */
+.navigation,
 .agent-navigation {
   background: white;
   display: flex;
@@ -97,6 +98,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.nav-item,
 .agent-nav-item {
   flex: 1;
   padding: 1.25rem 1.5rem;
@@ -116,17 +118,31 @@
   font-family: inherit;
 }
 
+.nav-item:last-child,
 .agent-nav-item:last-child {
   border-right: none;
 }
 
+.nav-item:hover,
 .agent-nav-item:hover {
   background: #f9fafb;
 }
 
+.nav-item.active,
 .agent-nav-item.active {
   color: #2D3B8F;
-  background: rgba(45, 59, 143, 0.05);
+  background: white;
+}
+
+.nav-item.active::after,
+.agent-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2D3B8F;
 }
 
 /* Main Content */
@@ -291,8 +307,65 @@
 
 .agent-form-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
+}
+
+/* TIN Verification Section */
+.agent-tin-section {
+  margin-bottom: 2rem;
+}
+
+.agent-tin-field {
+  max-width: 500px;
+}
+
+.agent-tin-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.agent-tin-input-group .agent-form-input {
+  flex: 1;
+}
+
+.agent-tin-input-group .agent-form-input.verified {
+  border-color: #10B981;
+  background: #F0FDF4;
+}
+
+.agent-verify-btn {
+  padding: 0.75rem 1.5rem;
+  background: #2D3B8F;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.agent-verify-btn:hover:not(:disabled) {
+  background: #1E2A6F;
+}
+
+.agent-verify-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.agent-verify-btn.verified {
+  background: #10B981;
+}
+
+.agent-verify-btn.verified:hover {
+  background: #10B981;
 }
 
 .agent-form-field {

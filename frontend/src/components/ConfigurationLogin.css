@@ -6,6 +6,14 @@
   flex-direction: column;
 }
 
+.config-login-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 /* Top Header */
 .config-login-container .top-header {
   background: #2D3B8F;

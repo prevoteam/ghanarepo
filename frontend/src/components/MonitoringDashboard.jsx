@@ -51,6 +51,9 @@ const MonitoringDashboard = ({ onLogout }) => {
     setDiscoveryError(null);
   };
 
+const MonitoringDashboard = ({ onLogout }) => {
+  const [activeMenu, setActiveMenu] = useState('psp-ingestion');
+
   const menuItems = [
     { id: 'psp-ingestion', label: 'PSP Ingestion Status', icon: 'database' },
     { id: 'merchant-discovery', label: 'Merchant Discovery', icon: 'search' },
@@ -202,6 +205,7 @@ const MonitoringDashboard = ({ onLogout }) => {
                 <span>System Operation</span>
               </div>
               <button className="initiate-btn" onClick={handleEcommerceDiscovery}>E-Commerce Discovery</button>
+              <button className="initiate-btn">Initiate E-Commerce</button>
               <button className="logout-btn" onClick={onLogout} title="Logout">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -232,6 +236,7 @@ const MonitoringDashboard = ({ onLogout }) => {
           </div>
         </div>
       )}
+ 
     </div>
   );
 };

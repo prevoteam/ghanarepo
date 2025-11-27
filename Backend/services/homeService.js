@@ -24,8 +24,8 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 const Register = async (req, res) => {
   try {
-    const { contact, method } = req.body;
-    console.log("Received:", contact, method);
+    const { contact, method, password } = req.body;
+    console.log("Received:", contact, method, password ? "[password provided]" : "[no password]");
 
     if (!contact || !method) {
       return res
@@ -54,28 +54,28 @@ const Register = async (req, res) => {
       // user exists
       uniqueId = checkUser.rows[0].unique_id;
 
-      // 2️⃣ Update existing user OTP
+      // 2️⃣ Update existing user OTP and password if provided
       await pool.query(
         `
           UPDATE users
           SET otp_code = $1,
               otp_expires_at = $2,
+              password = $3,
               updated_at = NOW()
-          WHERE contact_value = $3
+          WHERE contact_value = $4
         `,
-        [otp, expiresAt, contact]
+        [otp, expiresAt, password || null, contact]
       );
     } else {
       // 3️⃣ Insert new user with new UUID
       const insertUser = await pool.query(
         `
-          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at)
-          VALUES ($1, $2, $3, $4)
+          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password)
+          VALUES ($1, $2, $3, $4, $5)
           RETURNING unique_id
         `,
-        [method, contact, otp, expiresAt]
+        [method, contact, otp, expiresAt, password || null]
       );
-
       uniqueId = insertUser.rows[0].unique_id;
     }
 
@@ -109,15 +109,18 @@ const sendEmailOTP = async (email, otp) => {
       user: process.env.EMAIL_CONFIG_EMAIL,   // your Gmail
       pass: process.env.EMAIL_CONFIG_PASSWORD,  // MUST be an app password
     },
+    tls: {
+      rejectUnauthorized: false  // Fixes self-signed certificate error
+    }
   });
  let htmlTemplate = fs.readFileSync("./templates/otp_email.html", "utf8");
   htmlTemplate = htmlTemplate.replace("{{OTP_CODE}}", otp);
 
   await transporter.sendMail({
-    from: `"E-Commerce Registration Portal" `,
+    from: `"E-Commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
     to: email,
     subject: "Your OTP Code",
-  html: htmlTemplate,
+    html: htmlTemplate,
   });
 
   console.log("OTP Email Sent:", email, otp);
@@ -144,6 +147,9 @@ const sendWelcomeEmail = async (email, userName) => {
         user: process.env.EMAIL_CONFIG_EMAIL,
         pass: process.env.EMAIL_CONFIG_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false  // Fixes self-signed certificate error
+      }
     });
 
     let htmlTemplate = fs.readFileSync("./templates/welcome_email.html", "utf8");
@@ -347,7 +353,9 @@ const UpdateAgentDetails = async (req, res) => {
       agent_full_name,
       agent_email,
       agent_ghana_id,
-      agent_mobile
+      agent_mobile,
+      agent_tin,
+      agent_digital_address
     } = req.body;
 
     console.log("Received agent details update for unique_id:", unique_id);
@@ -379,8 +387,10 @@ const UpdateAgentDetails = async (req, res) => {
             agent_email = $5,
             agent_ghana_id = $6,
             agent_mobile = $7,
+            agent_tin = $8,
+            agent_digital_address = $9,
             updated_at = NOW()
-        WHERE unique_id = $8
+        WHERE unique_id = $10
       `,
       [
         full_name,
@@ -390,13 +400,15 @@ const UpdateAgentDetails = async (req, res) => {
         agent_email,
         agent_ghana_id,
         agent_mobile,
+        agent_tin,
+        agent_digital_address,
         unique_id
       ]
     );
 
     // Fetch updated user data
     const result = await pool.query(
-      "SELECT id, unique_id, full_name, agent_full_name, agent_email FROM users WHERE unique_id = $1",
+      "SELECT id, unique_id, full_name, agent_full_name, agent_email, agent_tin FROM users WHERE unique_id = $1",
       [unique_id]
     );
 
@@ -408,11 +420,127 @@ const UpdateAgentDetails = async (req, res) => {
         unique_id: user.unique_id,
         full_name: user.full_name,
         agent_full_name: user.agent_full_name,
-        agent_email: user.agent_email
+        agent_email: user.agent_email,
+        agent_tin: user.agent_tin
       })
     );
   } catch (err) {
     console.error(err);
+    return res.status(500).json(success(false, 500, err.message));
+  }
+};
+
+// -------------------------
+// Update Business Details (Step 3)
+// -------------------------
+const UpdateBusinessDetails = async (req, res) => {
+  try {
+    const { unique_id, trading_name, country, service_type, website } = req.body;
+
+    console.log("Received business details update for unique_id:", unique_id);
+
+    if (!unique_id) {
+      return res.status(400).json(success(false, 400, "unique_id is required"));
+    }
+
+    if (!trading_name || !country || !service_type) {
+      return res.status(400).json(
+        success(false, 400, "trading_name, country, and service_type are required")
+      );
+    }
+
+    // Check if user exists
+    const checkUser = await pool.query(
+      "SELECT id, unique_id FROM users WHERE unique_id = $1",
+      [unique_id]
+    );
+
+    if (checkUser.rows.length === 0) {
+      return res
+        .status(404)
+        .json(success(false, 404, "User not found for given unique_id"));
+    }
+
+    // Update business details
+    await pool.query(
+      `
+        UPDATE users
+        SET trading_name = $1,
+            country = $2,
+            service_type = $3,
+            website = $4,
+            entity_type = 'NonResident',
+            updated_at = NOW()
+        WHERE unique_id = $5
+      `,
+      [trading_name, country, service_type, website, unique_id]
+    );
+
+    // Fetch updated user data
+    const result = await pool.query(
+      "SELECT id, unique_id, trading_name, country, service_type, website FROM users WHERE unique_id = $1",
+      [unique_id]
+    );
+
+    const user = result.rows[0];
+
+    return res.status(200).json(
+      success(true, 200, "Business details updated successfully", {
+        id: user.id,
+        unique_id: user.unique_id,
+        trading_name: user.trading_name,
+        country: user.country,
+        service_type: user.service_type,
+        website: user.website
+      })
+    );
+  } catch (err) {
+    console.error("UpdateBusinessDetails error:", err);
+    return res.status(500).json(success(false, 500, err.message));
+  }
+};
+
+// -------------------------
+// Verify Agent TIN (Step 4)
+// -------------------------
+const VerifyAgentTIN = async (req, res) => {
+  try {
+    const { tin } = req.body;
+
+    console.log("Verifying TIN:", tin);
+
+    if (!tin) {
+      return res.status(400).json(success(false, 400, "TIN is required"));
+    }
+
+    // Validate TIN format (Ghana TIN format: starts with P or C followed by numbers)
+    const tinPattern = /^[PC]\d{10}$/;
+    if (!tinPattern.test(tin)) {
+      return res.status(400).json(
+        success(false, 400, "Invalid TIN format. Expected format: P0000000000 or C0000000000")
+      );
+    }
+
+    // In production, this would call GRA's TIN verification API
+    // For now, simulate verification with a success response
+    const isValid = true;
+    const agentName = "Verified Agent"; // This would come from GRA API
+
+    if (isValid) {
+      return res.status(200).json(
+        success(true, 200, "TIN verified successfully", {
+          tin,
+          verified: true,
+          agent_name: agentName
+        })
+      );
+    } else {
+      return res.status(400).json(
+        success(false, 400, "TIN verification failed. Please check the TIN and try again.")
+      );
+    }
+  } catch (err) {
+    console.error("VerifyAgentTIN error:", err);
     return res.status(500).json(success(false, 500, err.message));
   }
 };
@@ -657,7 +785,146 @@ const SendOtp = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Send OTP for Non-Resident Login
+// ----------------------------------------------------------------------
+const SendNonResidentLoginOTP = async (req, res) => {
+  try {
+    const { tin } = req.body;
 
+    if (!tin) {
+      return res.status(400).json({
+        status: false,
+        message: "TIN is required"
+      });
+    }
+
+    // 1️⃣ Check if user exists with the given TIN
+    const result = await pool.query(
+      `SELECT unique_id, contact_value FROM users WHERE agent_tin = $1`,
+      [tin]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found with this TIN"
+      });
+    }
+
+    const user = result.rows[0];
+
+    // 2️⃣ Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 3️⃣ Update user with OTP
+    await pool.query(
+      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE agent_tin = $3`,
+      [otp, expiresAt, tin]
+    );
+
+    // 4️⃣ Send OTP via email
+    if (user.contact_value) {
+      await sendEmailOTP(user.contact_value, otp);
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "OTP sent successfully to your registered email",
+      unique_id: user.unique_id
+    });
+
+  } catch (err) {
+    console.error("SendNonResidentLoginOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Non-Resident Merchant Login (TIN + Password + OTP)
+// ----------------------------------------------------------------------
+const NonResidentMerchantLogin = async (req, res) => {
+  try {
+    const { tin, password, otp } = req.body;
+
+    if (!tin || !password || !otp) {
+      return res.status(400).json({
+        status: false,
+        message: "TIN, password, and OTP/security code are required"
+      });
+    }
+
+    // 1️⃣ Check if user exists with the given TIN
+    const result = await pool.query(
+      `
+        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role, password
+        FROM users
+        WHERE agent_tin = $1
+      `,
+      [tin]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found with this TIN"
+      });
+    }
+
+    const user = result.rows[0];
+
+    // 2️⃣ Verify password (plain text comparison)
+    if (user.password !== password) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid password"
+      });
+    }
+
+    // 3️⃣ Verify OTP
+    if (user.otp_code !== otp) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid OTP/security code"
+      });
+    }
+
+    // 4️⃣ Check OTP expiration (if set)
+    if (user.otp_expires_at && new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({
+        status: false,
+        message: "OTP has expired"
+      });
+    }
+
+    // 5️⃣ Update last login timestamp
+    await pool.query(
+      `UPDATE users
+       SET otp_code = NULL,
+           otp_expires_at = NULL
+       WHERE agent_tin = $1`,
+      [tin]
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Login successful!",
+      unique_id: user.unique_id,
+      user_role: user.user_role || 'maker'
+    });
+
+  } catch (err) {
+    console.error("NonResidentMerchantLogin error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message
+    });
+  }
+};
 
 // ----------------------------------------------------------------------
 // VERIFY OTP  (also same pattern as Register verify logic)
@@ -673,10 +940,10 @@ const LoginVerifyOtp = async (req, res) => {
       });
     }
 
-    // 1️⃣ Fetch user by credential (including email for welcome email)
+    // 1️⃣ Fetch user by credential (including email for welcome email and user_role)
     const result = await pool.query(
       `
-        SELECT unique_id, otp_code, otp_expires_at, contact_value
+        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role
         FROM users
         WHERE tin = $1
       `,
@@ -716,7 +983,8 @@ const LoginVerifyOtp = async (req, res) => {
     return res.status(200).json({
       status: true,
       message: "OTP verified successfully. Welcome email sent!",
-      unique_id: user.unique_id
+      unique_id: user.unique_id,
+      user_role: user.user_role || 'maker'
     });
 
   } catch (err) {
@@ -1064,6 +1332,7 @@ const GetDashboard = async (req, res) => {
         payment_provider,
         merchant_id,
         registration_completed,
+        user_role,
         created_at
        FROM users
        WHERE unique_id = $1`,
@@ -1112,7 +1381,8 @@ const GetDashboard = async (req, res) => {
           vat_id: user.vat_id,
           compliance_status: user.compliance_status || "ONTRACK",
           entity_type: user.entity_type,
-          sells_digital_services: user.sells_digital_services
+          sells_digital_services: user.sells_digital_services,
+          user_role: user.user_role || 'maker'
         },
         sales: {
           total_sales: parseFloat(user.total_sales || 0).toFixed(2),
@@ -1177,6 +1447,8 @@ module.exports = {
     UpdateCredential,
     SendOtp,
     LoginVerifyOtp,
+    NonResidentMerchantLogin,
+    SendNonResidentLoginOTP,
     UpdateMarketDeclaration,
     UpdatePaymentGateway,
     DisconnectPaymentGateway,
@@ -1184,5 +1456,7 @@ module.exports = {
     CompleteRegistration,
     GetDashboard,
     UpdateSalesData,
-    UpdateAgentDetails
+    UpdateAgentDetails,
+    UpdateBusinessDetails,
+    VerifyAgentTIN
 };

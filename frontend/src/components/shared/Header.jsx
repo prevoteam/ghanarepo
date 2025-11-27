@@ -18,6 +18,13 @@ const Header = ({
         <div className='container'>
           <div className='row align-items-center justify-content-between'>
             <div className='col-xl-9 col-lg-9 col-md-6 col-sm-6 col-6'>
+              {/* <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onLogoClick}>
+                <img
+                  src="/assets/logo.png"
+                  alt="GRA Logo"
+              className='w-100'
+                />
+              </div> */}
                <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onLogoClick}>
             <div className="logo-circle">
               <img
@@ -44,6 +51,9 @@ const Header = ({
             </div>
             </div>
           </div>
+
+
+       
         </div>
       </header>
 
@@ -122,10 +132,12 @@ const Header = ({
         <a
           type="button"
           className="nav-item"
+          className={`nav-item ${activeNav === 'faq' ? 'active' : ''}`}
           href="https://risewithprotean.io/"
           target="_blank"
           rel="noopener noreferrer"
         >
+       
           Rise With Protean
         </a>
         </div>
