@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import './Login.css';
 import { loginApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
-import { Header, Footer } from './shared';
 
 const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
   const [credential, setCredential] = useState('');
@@ -200,11 +199,6 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
 
   return (
     <div className="login-container">
-      <Header
-        activeNav="login"
-        showPSPNav={false}
-      />
-
       {/* Login Form */}
       <div className="login-content">
         <div className="login-card">
@@ -418,8 +412,6 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 };

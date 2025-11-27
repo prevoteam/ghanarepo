@@ -11,7 +11,6 @@ import RegistrationComplete from './RegistrationComplete';
 import { setUniqueId, setContact, setVerified, getUniqueId } from '../utils/sessionManager';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
-import { Header, Footer } from './shared';
 
 const RegistrationForm = ({ onBack, onLoginRedirect }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -186,17 +185,7 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
 
   // Step 1: Account - Start Registration
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onBack}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="reg-main">
         <div className="reg-circles">
@@ -320,8 +309,6 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       {/* OTP Modal */}
       {showOTPModal && (

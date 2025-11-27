@@ -5,13 +5,25 @@ import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import NonResidentDashboard from './components/NonResidentDashboard'
 import RegistrationForm from './components/RegistrationForm'
+import AboutUs from './components/AboutUs'
+import ContactUs from './components/ContactUs'
+import Guidelines from './components/Guidelines'
+import FAQ from './components/FAQ'
+import PSPOnboarding from './components/PSPOnboarding'
+import DeveloperSandbox from './components/DeveloperSandbox'
+import DeveloperPortal from './components/DeveloperPortal'
+import { Header, Footer } from './components/shared'
 import './App.css'
 
 function App() {
-  const [currentView, setCurrentView] = useState('home') // 'home', 'taxpayerPortal', 'login', 'dashboard'
+  const [currentView, setCurrentView] = useState('home')
   const [loggedInUserId, setLoggedInUserId] = useState(null)
   const [userRole, setUserRole] = useState('maker')
-  const [loginType, setLoginType] = useState('resident') // 'resident' or 'nonresident'
+  const [loginType, setLoginType] = useState('resident')
+  const [pspCredentials, setPspCredentials] = useState(null)
+
+  // Views that should NOT have centralized Header/Footer (they have their own)
+  const dashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard']
 
   // Restore session on page load
   useEffect(() => {
@@ -32,7 +44,6 @@ function App() {
     setLoggedInUserId(uniqueId)
     setUserRole(role)
 
-    // Redirect to appropriate dashboard based on login type
     if (loginType === 'nonresident') {
       setCurrentView('nonResidentDashboard')
       localStorage.setItem('currentView', 'nonResidentDashboard')
@@ -43,7 +54,6 @@ function App() {
       localStorage.setItem('loginType', 'resident')
     }
 
-    // Persist session
     localStorage.setItem('loggedInUserId', uniqueId)
     localStorage.setItem('userRole', role)
   }
@@ -54,7 +64,6 @@ function App() {
     setLoginType('resident')
     setCurrentView('home')
 
-    // Clear session storage
     sessionStorage.clear()
     localStorage.removeItem('loggedInUserId')
     localStorage.removeItem('currentView')
@@ -62,23 +71,22 @@ function App() {
     localStorage.removeItem('loginType')
   }
 
-  const handleGoToTaxpayerPortal = () => {
-    console.log('Navigating to Taxpayer Portal...');
-    setCurrentView('taxpayerPortal')
-  }
-
-  const handleGoToRegister = () => {
-    console.log('Navigating to Register page...');
+  // Navigation handlers
+  const handleGoHome = () => {
     setCurrentView('home')
+    setPspCredentials(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleGoToRegistrationForm = () => {
-    console.log('Navigating to Registration Form...');
-    setCurrentView('registration')
-  }
+  const handleGoToTaxpayerPortal = () => setCurrentView('taxpayerPortal')
+  const handleGoToRegistrationForm = () => setCurrentView('registration')
+  const handleGoToAboutUs = () => setCurrentView('aboutUs')
+  const handleGoToContactUs = () => setCurrentView('contactUs')
+  const handleGoToGuidelines = () => setCurrentView('guidelines')
+  const handleGoToFAQ = () => setCurrentView('faq')
+  const handleGoToPSP = () => setCurrentView('pspOnboarding')
 
   const handleSelectLoginType = (type) => {
-    // type will be 'resident' or 'nonresident'
     setLoginType(type)
     setCurrentView('login')
   }
@@ -88,43 +96,128 @@ function App() {
     setCurrentView('login')
   }
 
-  if (currentView === 'taxpayerPortal') {
-    return <TaxpayerPortalLogin onSelectLoginType={handleSelectLoginType} onRegisterNow={handleGoToRegister} />
+  const handlePSPSuccess = (credentials) => {
+    setPspCredentials(credentials)
+    setCurrentView('developerSandbox')
   }
 
-  if (currentView === 'login') {
-    return (
-      <Login
-        onLoginSuccess={handleLoginSuccess}
-        loginType={loginType}
-        onRegisterNow={handleGoToRegistrationForm}
-      />
-    )
+  const handleGoToDeveloperPortal = () => {
+    setCurrentView('developerPortal')
   }
 
-  if (currentView === 'registration') {
-    return (
-      <RegistrationForm
-        onBack={handleGoToRegister}
-        onLoginRedirect={handleNonResidentLoginClick}
-      />
-    )
+  // Get active nav based on current view
+  const getActiveNav = () => {
+    switch (currentView) {
+      case 'aboutUs': return 'about'
+      case 'contactUs': return 'contact'
+      case 'guidelines': return 'guidelines'
+      case 'faq': return 'faq'
+      case 'pspOnboarding': return 'psp'
+      default: return ''
+    }
   }
 
-  if (currentView === 'nonResidentDashboard' && loggedInUserId) {
-    return <NonResidentDashboard uniqueId={loggedInUserId} onLogout={handleLogout} />
+  // Check if current view should show Header/Footer
+  const shouldShowHeaderFooter = !dashboardViews.includes(currentView)
+
+  // Render content based on current view
+  const renderContent = () => {
+    // Dashboard views (no centralized header/footer)
+    if (currentView === 'nonResidentDashboard' && loggedInUserId) {
+      return <NonResidentDashboard uniqueId={loggedInUserId} onLogout={handleLogout} />
+    }
+
+    if (currentView === 'dashboard' && loggedInUserId) {
+      return <Dashboard uniqueId={loggedInUserId} onLogout={handleLogout} userRole={userRole} />
+    }
+
+    // Pages with centralized header/footer
+    switch (currentView) {
+      case 'taxpayerPortal':
+        return <TaxpayerPortalLogin onSelectLoginType={handleSelectLoginType} onRegisterNow={handleGoHome} />
+
+      case 'login':
+        return (
+          <Login
+            onLoginSuccess={handleLoginSuccess}
+            loginType={loginType}
+            onRegisterNow={handleGoToRegistrationForm}
+          />
+        )
+
+      case 'registration':
+        return (
+          <RegistrationForm
+            onBack={handleGoHome}
+            onLoginRedirect={handleNonResidentLoginClick}
+          />
+        )
+
+      case 'aboutUs':
+        return <AboutUs onBack={handleGoHome} />
+
+      case 'contactUs':
+        return <ContactUs onBack={handleGoHome} />
+
+      case 'guidelines':
+        return <Guidelines onBack={handleGoHome} />
+
+      case 'faq':
+        return <FAQ onBack={handleGoHome} />
+
+      case 'pspOnboarding':
+        return <PSPOnboarding onBack={handleGoHome} onSuccess={handlePSPSuccess} />
+
+      case 'developerSandbox':
+        return (
+          <DeveloperSandbox
+            credentials={pspCredentials}
+            onGoHome={handleGoHome}
+            onGoToDeveloperPortal={handleGoToDeveloperPortal}
+          />
+        )
+
+      case 'developerPortal':
+        return <DeveloperPortal credentials={pspCredentials} onGoHome={handleGoHome} />
+
+      default:
+        return (
+          <RegisterNow
+            onLoginClick={handleGoToTaxpayerPortal}
+            onNonResidentLoginClick={handleNonResidentLoginClick}
+            onGoToAboutUs={handleGoToAboutUs}
+            onGoToContactUs={handleGoToContactUs}
+            onGoToGuidelines={handleGoToGuidelines}
+            onGoToFAQ={handleGoToFAQ}
+            onGoToPSP={handleGoToPSP}
+          />
+        )
+    }
   }
 
-  if (currentView === 'dashboard' && loggedInUserId) {
-    return <Dashboard uniqueId={loggedInUserId} onLogout={handleLogout} userRole={userRole} />
+  // Dashboard views render without wrapper
+  if (!shouldShowHeaderFooter) {
+    return renderContent()
   }
 
-  // Default: show landing page (also handles any unknown view state)
+  // All other views get centralized Header/Footer
   return (
-    <RegisterNow
-      onLoginClick={handleGoToTaxpayerPortal}
-      onNonResidentLoginClick={handleNonResidentLoginClick}
-    />
+    <div className="app-container">
+      <Header
+        onLogoClick={handleGoHome}
+        activeNav={getActiveNav()}
+        onAboutUsClick={handleGoToAboutUs}
+        onContactUsClick={handleGoToContactUs}
+        onGuidelinesClick={handleGoToGuidelines}
+        onFAQClick={handleGoToFAQ}
+        onPSPClick={handleGoToPSP}
+        showPSPNav={currentView !== 'login'}
+      />
+      <main className="app-main">
+        {renderContent()}
+      </main>
+      <Footer />
+    </div>
   )
 }
 

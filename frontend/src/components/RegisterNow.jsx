@@ -1,151 +1,28 @@
 import { useState } from 'react';
 import './RegisterNow.css';
-import RegistrationForm from './RegistrationForm';
 import GRAAdminPortal from './GRAAdminPortal';
 import MonitoringLogin from './MonitoringLogin';
 import MonitoringDashboard from './MonitoringDashboard';
-import PSPOnboarding from './PSPOnboarding';
-import DeveloperSandbox from './DeveloperSandbox';
-import DeveloperPortal from './DeveloperPortal';
-import AboutUs from './AboutUs';
-import ContactUs from './ContactUs';
-import Guidelines from './Guidelines';
-import FAQ from './FAQ';
-import { Header, Footer } from './shared';
 
 const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
   const [showMonitoringLogin, setShowMonitoringLogin] = useState(false);
   const [showMonitoringDashboard, setShowMonitoringDashboard] = useState(false);
-  const [showPSPOnboarding, setShowPSPOnboarding] = useState(false);
-  const [showDeveloperSandbox, setShowDeveloperSandbox] = useState(false);
-  const [showDeveloperPortal, setShowDeveloperPortal] = useState(false);
-  const [showAboutUs, setShowAboutUs] = useState(false);
-  const [showContactUs, setShowContactUs] = useState(false);
-  const [showGuidelines, setShowGuidelines] = useState(false);
-  const [showFAQ, setShowFAQ] = useState(false);
-  const [pspCredentials, setPspCredentials] = useState(null);
 
   const handlePortalSelect = (portalType) => {
     if (portalType === 'monitoring') {
       setShowGRAAdminPortal(false);
       setShowMonitoringLogin(true);
     }
-    // Add other portal types here as needed
   };
 
-  const handleGoHome = () => {
-    setShowPSPOnboarding(false);
-    setShowDeveloperSandbox(false);
-    setShowDeveloperPortal(false);
-    setShowAboutUs(false);
-    setShowContactUs(false);
-    setShowGuidelines(false);
-    setShowFAQ(false);
-    setPspCredentials(null);
-  };
-
-  const handlePSPSuccess = (credentials) => {
-    setPspCredentials(credentials);
-    setShowPSPOnboarding(false);
-    setShowDeveloperSandbox(true);
-  };
-
-  // Handle Non-Resident Merchant card click - goes to login page
   const handleNonResidentClick = () => {
     if (onNonResidentLoginClick) {
       onNonResidentLoginClick();
     }
   };
 
-  if (showRegistrationForm) {
-    return (
-      <RegistrationForm
-        onBack={() => setShowRegistrationForm(false)}
-        onLoginRedirect={onLoginClick}
-      />
-    );
-  }
-
-  const handleLogoClick = () => {
-    // Reset all views to show landing page
-    setShowAboutUs(false);
-    setShowContactUs(false);
-    setShowGuidelines(false);
-    setShowFAQ(false);
-    setShowGRAAdminPortal(false);
-    setShowPSPOnboarding(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  if (showAboutUs) {
-    return (
-      <AboutUs
-        onBack={handleGoHome}
-        onLogoClick={handleLogoClick}
-      />
-    );
-  }
-
-  if (showContactUs) {
-    return (
-      <ContactUs
-        onBack={handleGoHome}
-        onLogoClick={handleLogoClick}
-      />
-    );
-  }
-
-  if (showGuidelines) {
-    return (
-      <Guidelines
-        onBack={handleGoHome}
-        onLogoClick={handleLogoClick}
-      />
-    );
-  }
-
-  if (showFAQ) {
-    return (
-      <FAQ
-        onBack={handleGoHome}
-        onLogoClick={handleLogoClick}
-      />
-    );
-  }
-
-  if (showDeveloperPortal) {
-    return (
-      <DeveloperPortal
-        credentials={pspCredentials}
-        onGoHome={handleGoHome}
-      />
-    );
-  }
-
-  if (showDeveloperSandbox) {
-    return (
-      <DeveloperSandbox
-        credentials={pspCredentials}
-        onGoHome={handleGoHome}
-        onGoToDeveloperPortal={() => {
-          setShowDeveloperSandbox(false);
-          setShowDeveloperPortal(true);
-        }}
-      />
-    );
-  }
-
-  if (showPSPOnboarding) {
-    return (
-      <PSPOnboarding
-        onBack={() => setShowPSPOnboarding(false)}
-        onSuccess={handlePSPSuccess}
-      />
-    );
-  };
-
+  // GRA Admin Portal flow (kept internal as it's a complex flow)
   if (showMonitoringDashboard) {
     return (
       <MonitoringDashboard
@@ -184,17 +61,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
   }
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={handleLogoClick}
-        activeNav=""
-        onAboutUsClick={() => setShowAboutUs(true)}
-        onContactUsClick={() => setShowContactUs(true)}
-        onGuidelinesClick={() => setShowGuidelines(true)}
-        onFAQClick={() => setShowFAQ(true)}
-        onPSPClick={() => setShowPSPOnboarding(true)}
-      />
-
+    <div className="register-now-content">
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-circles">
@@ -290,8 +157,6 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './PSPOnboarding.css';
 import { pspApi } from '../utils/api';
-import { Header, Footer } from './shared';
 
 const PSPOnboarding = ({ onBack, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,10 +11,6 @@ const PSPOnboarding = ({ onBack, onSuccess }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const handleLogoClick = () => {
-    if (onBack) onBack();
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,16 +61,7 @@ const PSPOnboarding = ({ onBack, onSuccess }) => {
   };
 
   return (
-    <div className="psp-container">
-      <Header
-        onLogoClick={handleLogoClick}
-        activeNav="psp"
-        onRegisterClick={onBack}
-        onLoginClick={onBack}
-        onGRALoginClick={onBack}
-        onPSPClick={() => {}}
-      />
-
+    <div className="psp-content">
       {/* Main Content */}
       <main className="psp-main">
         <div className="psp-circles">
@@ -85,6 +71,13 @@ const PSPOnboarding = ({ onBack, onSuccess }) => {
         </div>
 
         <div className="psp-form-container">
+          <button className="back-button" onClick={onBack}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+          </button>
+
           <h1 className="psp-title">PSP On-boarding</h1>
           <p className="psp-subtitle">Register your Payment Service Provider to facilitate e-VAT collections.</p>
 
@@ -149,8 +142,6 @@ const PSPOnboarding = ({ onBack, onSuccess }) => {
           </form>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
