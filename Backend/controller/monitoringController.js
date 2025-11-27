@@ -58,5 +58,35 @@ module.exports = ({ config }) => {
         return monitoringService.ConfigurationResendOTP(req, res, next);
     });
 
+    // POST /v1/admin/monitoring/gra-admin-login - Unified GRA Admin Login
+    router.post('/gra-admin-login', (req, res, next) => {
+        return monitoringService.GRAAdminLogin(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/gra-admin-verify-otp - GRA Admin Verify OTP
+    router.post('/gra-admin-verify-otp', (req, res, next) => {
+        return monitoringService.GRAAdminVerifyOTP(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/gra-admin-resend-otp - GRA Admin Resend OTP
+    router.post('/gra-admin-resend-otp', (req, res, next) => {
+        return monitoringService.GRAAdminResendOTP(req, res, next);
+    });
+
+    // GET /v1/admin/monitoring/vat-rates - Get all VAT rates
+    router.get('/vat-rates', (req, res, next) => {
+        return monitoringService.GetVATRates(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/vat-rate-change - Submit VAT rate change (Maker)
+    router.post('/vat-rate-change', (req, res, next) => {
+        return monitoringService.SubmitVATRateChange(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/vat-rate-approve - Approve/Reject VAT rate change (Checker)
+    router.post('/vat-rate-approve', (req, res, next) => {
+        return monitoringService.ApproveRejectVATRate(req, res, next);
+    });
+
     return router;
 };
