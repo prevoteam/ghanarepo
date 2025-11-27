@@ -2,6 +2,7 @@
 .shared-header {
   background-color: #1E3A8A;
   color: white;
+  padding: 15px 0px;
 }
 
 .shared-header .header-content {
@@ -32,9 +33,9 @@
 }
 
 .shared-header .gra-text {
-  font-size: 1.75rem;
-  font-weight: bold;
-  letter-spacing: 2px;
+ font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 .shared-header .gra-subtext {
@@ -168,4 +169,21 @@
 .header-box{
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
       border-bottom: 1px solid #e5e7eb;
+}
+
+.logo-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  /* background: #F59E0B; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2D3B8F;
+}
+
+.logo-text {
+  color: white;
 }
