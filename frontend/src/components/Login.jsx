@@ -13,6 +13,7 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
   const [timer, setTimer] = useState(300); // 5 minutes
   const [timerInterval, setTimerInterval] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
   const { loading, error, execute, clearError } = useApi();
 
   const isNonResident = loginType === 'nonresident';
@@ -177,6 +178,23 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleSendNonResidentOTP = async () => {
+    clearError();
+    setSuccessMessage('');
+
+    if (!credential.trim()) {
+      return;
+    }
+
+    const result = await execute(loginApi.sendNonResidentOTP, credential);
+
+    if (result && result.success) {
+      setOtpSent(true);
+      setSuccessMessage('OTP sent successfully to your registered email!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+  };
+
   const handleNonResidentLogin = async (e) => {
     e.preventDefault();
     clearError();
@@ -186,15 +204,18 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
       return;
     }
 
-    // Dummy login - directly redirect to dashboard
-    setSuccessMessage('Login successful! Redirecting to dashboard...');
+    // Call the non-resident login API
+    const result = await execute(loginApi.nonResidentLogin, credential, password, securityCode);
 
-    setTimeout(() => {
-      // Use TIN as userId for dummy login
-      const userId = credential;
-      const userRole = 'maker';
-      onLoginSuccess(userId, userRole);
-    }, 1000);
+    if (result && result.success) {
+      setSuccessMessage('Login successful! Redirecting to dashboard...');
+
+      setTimeout(() => {
+        const userId = result.data.unique_id || result.data.uniqueId || credential;
+        const userRole = result.data.user_role || 'maker';
+        onLoginSuccess(userId, userRole);
+      }, 1000);
+    }
   };
 
   return (
@@ -256,19 +277,45 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="securityCode">Enter your Password OTP / Security Code</label>
-                <input
-                  id="securityCode"
-                  type="text"
-                  className="credential-input"
-                  placeholder="Enter your Password"
-                  value={securityCode}
-                  onChange={(e) => setSecurityCode(e.target.value)}
-                  required
-                />
+                <label htmlFor="securityCode">Enter your OTP / Security Code</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    id="securityCode"
+                    type="text"
+                    className="credential-input"
+                    placeholder="Enter OTP"
+                    value={securityCode}
+                    onChange={(e) => setSecurityCode(e.target.value)}
+                    required
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-send-otp"
+                    onClick={handleSendNonResidentOTP}
+                    disabled={loading || !credential.trim()}
+                    style={{
+                      padding: '12px 20px',
+                      backgroundColor: '#d4a017',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {loading ? 'Sending...' : 'Send OTP'}
+                  </button>
+                </div>
+                {otpSent && (
+                  <small style={{ color: '#28a745', marginTop: '5px', display: 'block' }}>
+                    OTP sent to your registered email
+                  </small>
+                )}
               </div>
 
-              <button type="submit" className="btn-login-submit" disabled={loading}>
+              <button type="submit" className="btn-login-submit" disabled={loading || !otpSent}>
                 {loading ? (
                   <>
                     <span className="spinner"></span>

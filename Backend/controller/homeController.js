@@ -74,6 +74,11 @@ module.exports = ({ config }) => {
     return homeService.NonResidentMerchantLogin(req, res, next);
   });
 
+  // Send OTP for Non-Resident Login
+  router.post('/non-resident-send-otp', (req, res, next) => {
+    return homeService.SendNonResidentLoginOTP(req, res, next);
+  });
+
   // Market Declaration (Step 5)
   router.post('/UpdateMarketDeclaration', (req, res, next) => {
     return homeService.UpdateMarketDeclaration(req, res, next);

@@ -24,8 +24,8 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 const Register = async (req, res) => {
   try {
-    const { contact, method } = req.body;
-    console.log("Received:", contact, method);
+    const { contact, method, password } = req.body;
+    console.log("Received:", contact, method, password ? "[password provided]" : "[no password]");
 
     if (!contact || !method) {
       return res
@@ -54,28 +54,28 @@ const Register = async (req, res) => {
       // user exists
       uniqueId = checkUser.rows[0].unique_id;
 
-      // 2️⃣ Update existing user OTP
+      // 2️⃣ Update existing user OTP and password if provided
       await pool.query(
         `
           UPDATE users
           SET otp_code = $1,
               otp_expires_at = $2,
+              password = $3,
               updated_at = NOW()
-          WHERE contact_value = $3
+          WHERE contact_value = $4
         `,
-        [otp, expiresAt, contact]
+        [otp, expiresAt, password || null, contact]
       );
     } else {
       // 3️⃣ Insert new user with new UUID
       const insertUser = await pool.query(
         `
-          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at)
-          VALUES ($1, $2, $3, $4)
+          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password)
+          VALUES ($1, $2, $3, $4, $5)
           RETURNING unique_id
         `,
-        [method, contact, otp, expiresAt]
+        [method, contact, otp, expiresAt, password || null]
       );
-
       uniqueId = insertUser.rows[0].unique_id;
     }
 
@@ -785,7 +785,64 @@ const SendOtp = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Send OTP for Non-Resident Login
+// ----------------------------------------------------------------------
+const SendNonResidentLoginOTP = async (req, res) => {
+  try {
+    const { tin } = req.body;
 
+    if (!tin) {
+      return res.status(400).json({
+        status: false,
+        message: "TIN is required"
+      });
+    }
+
+    // 1️⃣ Check if user exists with the given TIN
+    const result = await pool.query(
+      `SELECT unique_id, contact_value FROM users WHERE agent_tin = $1`,
+      [tin]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found with this TIN"
+      });
+    }
+
+    const user = result.rows[0];
+
+    // 2️⃣ Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 3️⃣ Update user with OTP
+    await pool.query(
+      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE agent_tin = $3`,
+      [otp, expiresAt, tin]
+    );
+
+    // 4️⃣ Send OTP via email
+    if (user.contact_value) {
+      await sendEmailOTP(user.contact_value, otp);
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "OTP sent successfully to your registered email",
+      unique_id: user.unique_id
+    });
+
+  } catch (err) {
+    console.error("SendNonResidentLoginOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message
+    });
+  }
+};
 
 // ----------------------------------------------------------------------
 // Non-Resident Merchant Login (TIN + Password + OTP)
@@ -804,9 +861,9 @@ const NonResidentMerchantLogin = async (req, res) => {
     // 1️⃣ Check if user exists with the given TIN
     const result = await pool.query(
       `
-        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role, password_hash
+        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role, password
         FROM users
-        WHERE tin = $1
+        WHERE agent_tin = $1
       `,
       [tin]
     );
@@ -820,9 +877,8 @@ const NonResidentMerchantLogin = async (req, res) => {
 
     const user = result.rows[0];
 
-    // 2️⃣ Verify password (for now, simple comparison - in production use bcrypt)
-    // If password_hash is not set, allow any password (for development)
-    if (user.password_hash && user.password_hash !== password) {
+    // 2️⃣ Verify password (plain text comparison)
+    if (user.password !== password) {
       return res.status(401).json({
         status: false,
         message: "Invalid password"
@@ -845,18 +901,12 @@ const NonResidentMerchantLogin = async (req, res) => {
       });
     }
 
-    // 5️⃣ Send welcome email after successful login
-    if (user.contact_value) {
-      await sendWelcomeEmail(user.contact_value, user.contact_value);
-    }
-
-    // 6️⃣ Clear OTP after successful login
+    // 5️⃣ Update last login timestamp
     await pool.query(
       `UPDATE users
        SET otp_code = NULL,
-           otp_expires_at = NULL,
-           updated_at = NOW()
-       WHERE tin = $1`,
+           otp_expires_at = NULL
+       WHERE agent_tin = $1`,
       [tin]
     );
 
@@ -1398,6 +1448,7 @@ module.exports = {
     SendOtp,
     LoginVerifyOtp,
     NonResidentMerchantLogin,
+    SendNonResidentLoginOTP,
     UpdateMarketDeclaration,
     UpdatePaymentGateway,
     DisconnectPaymentGateway,
