@@ -1,0 +1,294 @@
+.taxpayer-corner-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 220px);
+  background: #f5f7fa;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top Bar */
+.taxpayer-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #374151;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.menu-toggle:hover {
+  background: #f3f4f6;
+}
+
+.topbar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.print-btn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.print-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.word-btn {
+  background: #fff;
+  border: 2px solid #2D3B8F;
+  color: #2D3B8F;
+}
+
+.word-btn:hover {
+  background: #f0f4ff;
+}
+
+.pdf-btn {
+  background: #2D3B8F;
+  border: 2px solid #2D3B8F;
+  color: #fff;
+}
+
+.pdf-btn:hover {
+  background: #242f73;
+}
+
+/* Content Area */
+.taxpayer-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.taxpayer-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+.taxpayer-sidebar.closed {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toc-nav {
+  padding: 8px 0;
+}
+
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: #374151;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.toc-item:hover {
+  background: #f9fafb;
+  color: #2D3B8F;
+}
+
+.toc-item.active {
+  background: #f0f4ff;
+  border-left-color: #2D3B8F;
+  color: #2D3B8F;
+  font-weight: 500;
+}
+
+.toc-icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.toc-label-text {
+  flex: 1;
+}
+
+.toc-expand {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* PDF Viewer */
+.pdf-viewer-container {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  background: #f5f7fa;
+}
+
+.pdf-viewer {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 900px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* Hide any dark backgrounds from PDF embed */
+.pdf-viewer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: -1;
+}
+
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .taxpayer-sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  .pdf-viewer-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .taxpayer-topbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .action-btn span {
+    display: none;
+  }
+
+  .taxpayer-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 50;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .taxpayer-sidebar.closed {
+    transform: translateX(-100%);
+  }
+
+  .pdf-viewer-container {
+    padding: 12px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .taxpayer-topbar,
+  .taxpayer-sidebar {
+    display: none;
+  }
+
+  .taxpayer-corner-container {
+    height: auto;
+  }
+
+  .pdf-viewer-container {
+    padding: 0;
+  }
+
+  .pdf-viewer {
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
