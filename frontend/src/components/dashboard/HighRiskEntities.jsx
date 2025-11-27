@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { jsPDF } from 'jspdf';
 import './DashboardPages.css';
 
 const HighRiskEntities = () => {
@@ -278,7 +279,91 @@ const HighRiskEntities = () => {
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Attachment :</span>
-                        <span className="detail-value attachment">
+                        <span
+                          className="detail-value attachment"
+                          onClick={() => {
+                            // Create PDF using jsPDF
+                            const doc = new jsPDF();
+                            const liability = calculateLiability(selectedMerchant.transactionValueNum);
+
+                            // Add GRA Header
+                            doc.setFontSize(18);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('GHANA REVENUE AUTHORITY', 105, 20, { align: 'center' });
+
+                            doc.setFontSize(14);
+                            doc.text('NOTICE OF VAT LIABILITY', 105, 30, { align: 'center' });
+
+                            doc.setLineWidth(0.5);
+                            doc.line(20, 35, 190, 35);
+
+                            // Document details
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 45);
+                            doc.text(`Reference: LN/${selectedMerchant.tin}/${Date.now()}`, 20, 52);
+
+                            // Merchant details
+                            doc.setFontSize(12);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('TAXPAYER DETAILS', 20, 65);
+
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(`Name: ${selectedMerchant.merchantName}`, 20, 75);
+                            doc.text(`TIN: ${selectedMerchant.tin}`, 20, 82);
+                            doc.text(`Email: ${selectedMerchant.email}`, 20, 89);
+
+                            // Liability details
+                            doc.setFontSize(12);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('LIABILITY ASSESSMENT', 20, 105);
+
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(`Gross Transaction Value:`, 20, 115);
+                            doc.text(`${formatCurrency(liability.gross)}`, 150, 115);
+
+                            doc.text(`Levies (NHIL, GETFund, COVID):`, 20, 122);
+                            doc.text(`${formatCurrency(liability.levies)}`, 150, 122);
+
+                            doc.text(`VAT (15% on Value + Levies):`, 20, 129);
+                            doc.text(`${formatCurrency(liability.vat)}`, 150, 129);
+
+                            doc.line(20, 133, 190, 133);
+
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(`Total Liability Assessment:`, 20, 140);
+                            doc.setTextColor(220, 38, 38);
+                            doc.text(`${formatCurrency(liability.total)}`, 150, 140);
+
+                            // Reset color
+                            doc.setTextColor(0, 0, 0);
+
+                            // Notice text
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                            const noticeText = 'This is to notify you of your pending VAT liability as assessed by the Ghana Revenue Authority. Please ensure payment is made within 30 days of receiving this notice to avoid penalties and interest charges.';
+                            const splitNotice = doc.splitTextToSize(noticeText, 170);
+                            doc.text(splitNotice, 20, 160);
+
+                            // Payment link
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Payment Link:', 20, 185);
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(45, 59, 143);
+                            doc.text(`https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}`, 20, 192);
+
+                            // Footer
+                            doc.setTextColor(128, 128, 128);
+                            doc.setFontSize(8);
+                            doc.text('Ghana Revenue Authority | Integrity. Fairness. Service', 105, 280, { align: 'center' });
+
+                            // Save the PDF
+                            doc.save(`Notice_of_Liability_${selectedMerchant.tin}.pdf`);
+                          }}
+                        >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
@@ -289,25 +374,12 @@ const HighRiskEntities = () => {
                     </div>
                     <div className="action-details-right">
                       <div className="qr-code">
-                        <svg width="80" height="80" viewBox="0 0 100 100">
-                          <rect width="100" height="100" fill="white"/>
-                          <rect x="10" y="10" width="25" height="25" fill="#000"/>
-                          <rect x="65" y="10" width="25" height="25" fill="#000"/>
-                          <rect x="10" y="65" width="25" height="25" fill="#000"/>
-                          <rect x="15" y="15" width="15" height="15" fill="white"/>
-                          <rect x="70" y="15" width="15" height="15" fill="white"/>
-                          <rect x="15" y="70" width="15" height="15" fill="white"/>
-                          <rect x="18" y="18" width="9" height="9" fill="#000"/>
-                          <rect x="73" y="18" width="9" height="9" fill="#000"/>
-                          <rect x="18" y="73" width="9" height="9" fill="#000"/>
-                          <rect x="40" y="10" width="5" height="5" fill="#000"/>
-                          <rect x="50" y="10" width="5" height="5" fill="#000"/>
-                          <rect x="40" y="20" width="5" height="5" fill="#000"/>
-                          <rect x="45" y="25" width="5" height="5" fill="#000"/>
-                          <rect x="40" y="40" width="20" height="20" fill="#000"/>
-                          <rect x="45" y="45" width="10" height="10" fill="white"/>
-                          <rect x="48" y="48" width="4" height="4" fill="#000"/>
-                        </svg>
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}`}
+                          alt="Payment QR Code"
+                          width="80"
+                          height="80"
+                        />
                       </div>
                     </div>
                   </div>
