@@ -21,6 +21,7 @@ function App() {
   const [userRole, setUserRole] = useState('maker')
   const [loginType, setLoginType] = useState('resident')
   const [pspCredentials, setPspCredentials] = useState(null)
+  const [resetHomeCounter, setResetHomeCounter] = useState(0)
 
   // Views that should NOT have centralized Header/Footer (they have their own)
   const dashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard']
@@ -75,6 +76,7 @@ function App() {
   const handleGoHome = () => {
     setCurrentView('home')
     setPspCredentials(null)
+    setResetHomeCounter(prev => prev + 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -183,6 +185,7 @@ function App() {
       default:
         return (
           <RegisterNow
+            key={resetHomeCounter}
             onLoginClick={handleGoToTaxpayerPortal}
             onNonResidentLoginClick={handleNonResidentLoginClick}
             onGoToAboutUs={handleGoToAboutUs}

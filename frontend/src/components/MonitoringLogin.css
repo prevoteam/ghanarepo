@@ -8,6 +8,14 @@
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+.mon-login-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #F3F4F6;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 /* Header */
 .mon-header {
   background: #2D3B8F;
