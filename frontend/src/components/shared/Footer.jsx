@@ -2,8 +2,8 @@ import './Footer.css';
 
 const Footer = () => {
   return (
-    <footer className="shared-footer">
-      <div className="footer-content">
+    <footer className="shared-footer container-fluid">
+      <div className="footer-content container py-2">
         <div className="footer-text">Integrity. Fairness. Service</div>
         <div className="footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
         <button className="assistant-button">

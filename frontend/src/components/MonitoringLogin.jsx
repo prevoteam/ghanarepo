@@ -73,17 +73,11 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
   return (
     <div className="mon-login-content">
       {/* Main Content */}
-      <main className="mon-main">
-        {/* Background Circles */}
-        <div className="mon-bg-circles">
-          <div className="mon-bg-circle mon-bg-circle-1"></div>
-          <div className="mon-bg-circle mon-bg-circle-2"></div>
-          <div className="mon-bg-circle mon-bg-circle-3"></div>
-          <div className="mon-bg-circle mon-bg-circle-4"></div>
-        </div>
+      <main className="mon-main bg">
+      
 
         {/* Login Card */}
-        <div className="mon-login-card">
+        <div className="mon-login-card my-3">
           <h1 className="mon-card-title">Monitoring Login</h1>
           <p className="mon-card-subtitle">Your detail will be verified by a secure OTP</p>
 
