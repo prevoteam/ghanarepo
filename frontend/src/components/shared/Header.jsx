@@ -16,14 +16,32 @@ const Header = ({
       <header className="shared-header">
         <div className='container'>
           <div className='row align-items-center justify-content-between'>
-            <div className='col-xl-3 col-lg-4 col-md-6 col-sm-6 col-6'>
-              <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onLogoClick}>
+            <div className='col-xl-9 col-lg-9 col-md-6 col-sm-6 col-6'>
+              {/* <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onLogoClick}>
                 <img
                   src="/assets/logo.png"
                   alt="GRA Logo"
               className='w-100'
                 />
-              </div>
+              </div> */}
+               <div className="logo-section" style={{ cursor: 'pointer' }} onClick={onLogoClick}>
+            <div className="logo-circle">
+              <img
+                src="/assets/logo-small.png"
+                alt="GRA Logo"
+                style={{
+                  width: '52px',
+                  height: '50px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </div>
+            <div className="logo-text">
+              <div className="gra-text">Ghana Unified E-Commerce Registration Portal</div>
+              <div className="gra-subtext">GHANA REVENUE AUTHORITY</div>
+            </div>
+          </div>
             </div>
             <div className='col-xl-3 col-lg-4 col-md-6 col-sm-6 col-6'>
             <div className="help-info">
