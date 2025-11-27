@@ -7,49 +7,6 @@ import VATEligibility from './dashboard/VATEligibility';
 import HighRiskEntities from './dashboard/HighRiskEntities';
 import ECommercePortals from './dashboard/ECommercePortals';
 import BIReports from './dashboard/BIReports';
-import EcommerceDiscoveryResults from './dashboard/EcommerceDiscoveryResults';
-
-const MonitoringDashboard = ({ onLogout }) => {
-  const [activeMenu, setActiveMenu] = useState('psp-ingestion');
-  const [discoveryData, setDiscoveryData] = useState(null);
-  const [discoveryLoading, setDiscoveryLoading] = useState(false);
-  const [discoveryError, setDiscoveryError] = useState(null);
-  const [showDiscoveryResults, setShowDiscoveryResults] = useState(false);
-
-  const handleEcommerceDiscovery = async () => {
-    setShowDiscoveryResults(true);
-    setDiscoveryLoading(true);
-    setDiscoveryError(null);
-
-    try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-      const data = await response.json();
-
-      const formattedData = data.map(user => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        website: `https://${user.website}`,
-        company: user.company,
-        status: ['Active', 'Pending', 'Verified', 'Inactive'][Math.floor(Math.random() * 4)]
-      }));
-
-      setDiscoveryData(formattedData);
-    } catch (error) {
-      setDiscoveryError(error.message);
-    } finally {
-      setDiscoveryLoading(false);
-    }
-  };
-
-  const handleCloseDiscovery = () => {
-    setShowDiscoveryResults(false);
-    setDiscoveryData(null);
-    setDiscoveryError(null);
-  };
 
 const MonitoringDashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('psp-ingestion');
@@ -204,12 +161,7 @@ const MonitoringDashboard = ({ onLogout }) => {
                 <span className="status-dot"></span>
                 <span>System Operation</span>
               </div>
-<<<<<<< HEAD
-              {/* <button className="initiate-btn">E-Commerce Discovery</button> */}
-=======
-              <button className="initiate-btn" onClick={handleEcommerceDiscovery}>E-Commerce Discovery</button>
-              <button className="initiate-btn">Initiate E-Commerce</button>
->>>>>>> 1d14b22e792e770156fd2d0800bfd3c823643a46
+              <button className="initiate-btn">E-Commerce Discovery</button>
               <button className="logout-btn" onClick={onLogout} title="Logout">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -227,19 +179,6 @@ const MonitoringDashboard = ({ onLogout }) => {
         </main>
       </div>
 
-      {/* E-Commerce Discovery Popup Modal */}
-      {showDiscoveryResults && (
-        <div className="discovery-modal-overlay" onClick={handleCloseDiscovery}>
-          <div className="discovery-modal" onClick={(e) => e.stopPropagation()}>
-            <EcommerceDiscoveryResults
-              data={discoveryData}
-              loading={discoveryLoading}
-              error={discoveryError}
-              onClose={handleCloseDiscovery}
-            />
-          </div>
-        </div>
-      )}
  
     </div>
   );

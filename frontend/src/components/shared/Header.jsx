@@ -131,7 +131,7 @@ const Header = ({
         )}
         <a
           type="button"
-          className="nav-item"
+          
           className={`nav-item ${activeNav === 'faq' ? 'active' : ''}`}
           href="https://risewithprotean.io/"
           target="_blank"
