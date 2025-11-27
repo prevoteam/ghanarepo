@@ -85,10 +85,8 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
      
         <div className="container">
           <h1 className="hero-title">Your Single Gateway for Compliant Online Business in Ghana</h1>
-          <p className="hero-text mb-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-            laboris nisi ut aliquip ex ea commodo consequat.
+          <p className="hero-subtitle mb-0">
+            Register • Verify • Update • Stay Tax Compliant
           </p>
         </div>
       </section>

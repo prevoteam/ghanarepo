@@ -223,6 +223,13 @@ body {
   max-width: 700px;
 }
 
+.hero-subtitle {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+}
+
 /* Cards Section */
 .cards-section {
   max-width: 1400px;
