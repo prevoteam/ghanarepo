@@ -18,7 +18,8 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
   const [formData, setFormData] = useState({
     mobileNumber: '',
     countryCode: '+91',
-    email: ''
+    email: '',
+    password: ''
   });
   const { loading, error, execute, clearError } = useApi();
 
@@ -50,15 +51,25 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
   const handleSendOTP = async (e) => {
     e.preventDefault();
 
-    if (!formData.email && !formData.mobileNumber) {
-      alert('Please enter either mobile number or email');
+    if (!formData.email) {
+      alert('Please enter your email address');
       return;
     }
 
-    const contact = formData.email || (formData.mobileNumber ? `${formData.countryCode}${formData.mobileNumber}` : null);
-    const method = formData.email ? 'email' : 'mobile';
+    if (!formData.password) {
+      alert('Please create a password');
+      return;
+    }
 
-    const result = await execute(registrationApi.register, contact, method);
+    if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+
+    const contact = formData.email;
+    const method = 'email';
+
+    const result = await execute(registrationApi.register, contact, method, formData.password);
 
     if (result.success) {
       const uniqueIdValue = result.data.results?.unique_id || result.data.unique_id;
@@ -183,7 +194,7 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
     );
   }
 
-  // Step 1: Account - Start Registration
+  // Step 1: Account - Create Your Account
   return (
     <div className="registration-form-content">
       {/* Main Content */}
@@ -196,9 +207,9 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
 
         <div className="reg-container">
           <div className="reg-form-box">
-            <h1 className="reg-title">Start Your Registration</h1>
+            <h1 className="reg-title">Create Your Account</h1>
             <p className="reg-subtitle">
-              We'll send a one-time password (OTP) to verify your contact information.
+              Please enter your email to verify your identity and start the registration process.
             </p>
 
             {/* Progress Steps */}
@@ -257,49 +268,36 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
 
             {/* Form */}
             <form onSubmit={handleSendOTP} className="reg-form">
-              <div className="form-fields">
-                <div className="field-group">
-                  <label className="field-label">Mobile Number</label>
-                  <div className="phone-input">
-                    <select
-                      className="country-code"
-                      name="countryCode"
-                      value={formData.countryCode}
-                      onChange={handleChange}
-                    >
-                      <option value="+91">+91</option>
-                      <option value="+233">+233</option>
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                    </select>
-                    <input
-                      type="tel"
-                      name="mobileNumber"
-                      className="field-input"
-                      placeholder="Enter Mobile Number"
-                      value={formData.mobileNumber}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="or-divider">Or</div>
-
-                <div className="field-group">
-                  <label className="field-label">Email ID</label>
+              <div className="form-fields" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <div className="field-group" style={{ flex: '1 1 45%', minWidth: '250px' }}>
+                  <label className="field-label">Email Address</label>
                   <input
                     type="email"
                     name="email"
                     className="field-input"
-                    placeholder="Enter Email ID"
+                    placeholder="Enter Email Address"
                     value={formData.email}
                     onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="field-group" style={{ flex: '1 1 45%', minWidth: '250px' }}>
+                  <label className="field-label">Create Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className="field-input"
+                    placeholder="Enter Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
 
               <button type="submit" className="send-otp-btn" disabled={loading}>
-                {loading ? 'Sending OTP...' : 'Send OTP'}
+                {loading ? 'Sending...' : 'Send Verification Code'}
               </button>
 
               <div className="login-link">
@@ -314,7 +312,7 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
       {showOTPModal && (
         <OTPVerification
           email={formData.email}
-          mobileNumber={formData.mobileNumber ? `${formData.countryCode}${formData.mobileNumber}` : null}
+          mobileNumber={null}
           onVerified={handleOTPVerified}
           onClose={() => setShowOTPModal(false)}
         />

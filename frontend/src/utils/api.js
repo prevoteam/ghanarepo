@@ -1,5 +1,7 @@
 // API Configuration and Utility Functions
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1/home';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1';
+const API_BASE_URL = `${BASE_URL}/home`;
+const ADMIN_API_BASE_URL = `${BASE_URL}/admin/monitoring`;
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -66,10 +68,14 @@ async function apiRequest(endpoint, options = {}) {
 // Registration APIs
 export const registrationApi = {
   // Step 1: Register and send OTP
-  register: async (contact, method) => {
+  register: async (contact, method, password = null) => {
+    const payload = { contact, method };
+    if (password) {
+      payload.password = password;
+    }
     return apiRequest('/Register', {
       method: 'POST',
-      body: JSON.stringify({ contact, method }),
+      body: JSON.stringify(payload),
     });
   },
 
@@ -171,6 +177,14 @@ export const loginApi = {
     });
   },
 
+  // Send OTP for Non-Resident Login
+  sendNonResidentOTP: async (tin) => {
+    return apiRequest('/non-resident-send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ tin }),
+    });
+  },
+
   // Non-Resident Merchant Login (TIN + Password + OTP)
   nonResidentLogin: async (tin, password, otp) => {
     return apiRequest('/non-resident-login', {
@@ -225,7 +239,7 @@ export const pspApi = {
 };
 
 // Export all
-export { ApiError, API_BASE_URL };
+export { ApiError, API_BASE_URL, ADMIN_API_BASE_URL };
 export default {
   registrationApi,
   loginApi,

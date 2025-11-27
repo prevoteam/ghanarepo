@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import './RegisterNow.css';
-import GRAAdminPortal from './GRAAdminPortal';
-import MonitoringLogin from './MonitoringLogin';
+import GRAAdminLogin from './GRAAdminLogin';
 import MonitoringDashboard from './MonitoringDashboard';
+import ConfigDashboard from './ConfigDashboard';
 
 const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
-  const [showGRAAdminPortal, setShowGRAAdminPortal] = useState(false);
-  const [showMonitoringLogin, setShowMonitoringLogin] = useState(false);
+  const [showGRAAdminLogin, setShowGRAAdminLogin] = useState(false);
   const [showMonitoringDashboard, setShowMonitoringDashboard] = useState(false);
-
-  const handlePortalSelect = (portalType) => {
-    if (portalType === 'monitoring') {
-      setShowGRAAdminPortal(false);
-      setShowMonitoringLogin(true);
-    }
-  };
+  const [showConfigDashboard, setShowConfigDashboard] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   const handleNonResidentClick = () => {
     if (onNonResidentLoginClick) {
@@ -22,40 +16,64 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
     }
   };
 
-  // GRA Admin Portal flow (kept internal as it's a complex flow)
+  const handleGRALoginSuccess = (data) => {
+    console.log('GRA Admin Login successful:', data);
+
+    const role = data.userRole || sessionStorage.getItem('gra_user_role');
+    const userTable = data.userTable || sessionStorage.getItem('gra_user_table');
+
+    setShowGRAAdminLogin(false);
+    setUserRole(role);
+
+    // Route based on user role
+    if (role === 'monitoring' || userTable === 'monitoring_login') {
+      // Monitoring user - go to Monitoring Dashboard
+      setShowMonitoringDashboard(true);
+    } else if (role === 'maker' || role === 'checker') {
+      // Maker/Checker from users table - go to Config Dashboard
+      setShowConfigDashboard(true);
+    } else {
+      // Default to Monitoring Dashboard
+      setShowMonitoringDashboard(true);
+    }
+  };
+
+  const handleLogout = () => {
+    // Clear all session data
+    sessionStorage.removeItem('gra_session_id');
+    sessionStorage.removeItem('gra_user_role');
+    sessionStorage.removeItem('gra_user_table');
+    sessionStorage.removeItem('gra_token');
+
+    setShowMonitoringDashboard(false);
+    setShowConfigDashboard(false);
+    setShowGRAAdminLogin(false);
+    setUserRole(null);
+  };
+
+  // GRA Admin Portal flow
   if (showMonitoringDashboard) {
     return (
       <MonitoringDashboard
-        onLogout={() => {
-          setShowMonitoringDashboard(false);
-          setShowMonitoringLogin(false);
-          setShowGRAAdminPortal(false);
-        }}
+        onLogout={handleLogout}
       />
     );
   }
 
-  if (showMonitoringLogin) {
+  if (showConfigDashboard) {
     return (
-      <MonitoringLogin
-        onBack={() => {
-          setShowMonitoringLogin(false);
-          setShowGRAAdminPortal(true);
-        }}
-        onLoginSuccess={(data) => {
-          console.log('Login successful:', data);
-          setShowMonitoringLogin(false);
-          setShowMonitoringDashboard(true);
-        }}
+      <ConfigDashboard
+        onLogout={handleLogout}
+        userRole={userRole}
       />
     );
   }
 
-  if (showGRAAdminPortal) {
+  if (showGRAAdminLogin) {
     return (
-      <GRAAdminPortal
-        onBack={() => setShowGRAAdminPortal(false)}
-        onSelectPortal={handlePortalSelect}
+      <GRAAdminLogin
+        onBack={() => setShowGRAAdminLogin(false)}
+        onLoginSuccess={handleGRALoginSuccess}
       />
     );
   }
@@ -80,7 +98,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
       <div className="row g-4">
 
         {/* GRA Officer */}
-        <div className="col-md-4" onClick={() => setShowGRAAdminPortal(true)}>
+        <div className="col-md-4" onClick={() => setShowGRAAdminLogin(true)}>
           <div
             className="py-4 h-100"
             style={{
