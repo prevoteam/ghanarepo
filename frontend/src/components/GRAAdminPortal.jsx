@@ -12,18 +12,11 @@ const GRAAdminPortal = ({ onBack, onSelectPortal }) => {
   return (
     <div className="admin-portal-content">
       {/* Main Content Section */}
-      <section className="admin-main-section">
-        {/* Decorative Circles */}
-        <div className="decorative-circles">
-          <div className="deco-circle deco-circle-1"></div>
-          <div className="deco-circle deco-circle-2"></div>
-          <div className="deco-circle deco-circle-3"></div>
-          <div className="deco-circle deco-circle-4"></div>
-          <div className="deco-circle deco-circle-5"></div>
-        </div>
+      <section className="admin-main-section bg">
+     
 
         {/* Admin Portal Card */}
-        <div className="admin-portal-card">
+        <div className="admin-portal-card my-3">
           <h1 className="admin-portal-title">GRA Admin Portal</h1>
           <p className="admin-portal-subtitle">
             Restricted access for GRA personnel only. Select your system.

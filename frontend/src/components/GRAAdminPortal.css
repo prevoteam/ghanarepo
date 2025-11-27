@@ -147,9 +147,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+
   overflow: hidden;
   background: #ffffff;
+ 
+}
+
+.bg{
+   background-image: url('../assets/bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 /* Decorative Circles */
@@ -247,18 +254,18 @@
 }
 
 .admin-option-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.5rem 1.25rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    background: #ffffff;
+    border-bottom: 2px solid #274372;
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
 }
 
 .admin-option-card:hover {
   background: rgba(45, 59, 143, 0.08);
-  border-color: rgba(45, 59, 143, 0.2);
   box-shadow: 0 4px 12px rgba(45, 59, 143, 0.1);
 }
 

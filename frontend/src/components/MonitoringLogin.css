@@ -159,7 +159,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
+
 }
 
 /* Background Circles */
@@ -212,14 +212,15 @@
 
 /* Login Card */
 .mon-login-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem 3rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  max-width: 500px;
-  width: 100%;
-  position: relative;
-  z-index: 1;
+ background: white;
+    border-radius: 16px;
+    padding: 3rem 3.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    max-width: 580px;
+    width: 100%;
 }
 
 .mon-card-title {
@@ -264,6 +265,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #1F2937;
+  text-align: left;
 }
 
 .mon-field-input {

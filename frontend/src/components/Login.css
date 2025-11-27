@@ -359,50 +359,6 @@
   margin-top: auto;
 }
 
-.footer-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-}
-
-.footer-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.footer-copyright {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-.assistant-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: #F59E0B;
-  border: none;
-  border-radius: 24px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.assistant-btn:hover {
-  background: #d97706;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-.assistant-btn svg {
-  stroke: white;
-}
-
 /* OTP Modal */
 .modal-overlay {
   position: fixed;
@@ -532,7 +488,6 @@
   gap: 8px;
   font-size: 14px;
   color: #6b7280;
-  margin-bottom: 24px;
 }
 
 .otp-timer svg {
@@ -625,15 +580,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .footer-content {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    text-align: center;
-  }
-}
+
 
 @media (max-width: 768px) {
   .login-header {
@@ -690,9 +637,4 @@
     font-size: 20px;
   }
 
-  .footer-content {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
 }
