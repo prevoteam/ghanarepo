@@ -12,6 +12,7 @@ import FAQ from './components/FAQ'
 import PSPOnboarding from './components/PSPOnboarding'
 import DeveloperSandbox from './components/DeveloperSandbox'
 import DeveloperPortal from './components/DeveloperPortal'
+import TaxpayerCorner from './components/TaxpayerCorner'
 import { Header, Footer } from './components/shared'
 import './App.css'
 
@@ -87,6 +88,7 @@ function App() {
   const handleGoToGuidelines = () => setCurrentView('guidelines')
   const handleGoToFAQ = () => setCurrentView('faq')
   const handleGoToPSP = () => setCurrentView('pspOnboarding')
+  const handleGoToTaxpayerCorner = () => setCurrentView('taxpayerCorner')
 
   const handleSelectLoginType = (type) => {
     setLoginType(type)
@@ -115,6 +117,7 @@ function App() {
       case 'guidelines': return 'guidelines'
       case 'faq': return 'faq'
       case 'pspOnboarding': return 'psp'
+      case 'taxpayerCorner': return 'taxpayer-corner'
       default: return ''
     }
   }
@@ -167,6 +170,9 @@ function App() {
       case 'faq':
         return <FAQ onBack={handleGoHome} />
 
+      case 'taxpayerCorner':
+        return <TaxpayerCorner />
+
       case 'pspOnboarding':
         return <PSPOnboarding onBack={handleGoHome} onSuccess={handlePSPSuccess} />
 
@@ -214,6 +220,7 @@ function App() {
         onGuidelinesClick={handleGoToGuidelines}
         onFAQClick={handleGoToFAQ}
         onPSPClick={handleGoToPSP}
+        onTaxpayerCornerClick={handleGoToTaxpayerCorner}
         showPSPNav={currentView !== 'login'}
       />
       <main className="app-main">
