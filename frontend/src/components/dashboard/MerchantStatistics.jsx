@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import './DashboardPages.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { ADMIN_API_BASE_URL } from '../../utils/api';
 
 const MerchantStatistics = () => {
   const [tableData, setTableData] = useState([]);
@@ -11,7 +10,7 @@ const MerchantStatistics = () => {
   const fetchMerchantStatistics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/merchant-statistics?limit=100`);
+      const response = await fetch(`${ADMIN_API_BASE_URL}/merchant-statistics?limit=100`);
       const data = await response.json();
 
       if (data.status) {

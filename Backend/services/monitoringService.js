@@ -114,26 +114,25 @@ const sendLoginSuccessEmail = async (email, username) => {
 };
 
 // -------------------------
-// Monitoring Login (Simple username/password check)
+// Monitoring Login (Simple username/password check) - Now uses unified users table
 // -------------------------
 const MonitoringLogin = async (req, res) => {
     try {
         const { user_id, password } = req.body;
 
-        
+
         if (!user_id || !password) {
             return res.status(400).json(
                 success(false, 400, "User ID and password are required", null)
             );
         }
-        console.log("Monitoring Login attempt for username:70000", user_id,password);
+        console.log("Monitoring Login attempt for username:", user_id);
 
-        // 1️⃣ Find user by username from monitoring_login table using pool
-        // console.log("Executing user query...",pool);
+        // 1️⃣ Find user by username from users table (GRA admin roles only)
         const userQuery = await pool.query(
-            `SELECT id, username, password, email
-             FROM monitoring_login
-             WHERE username = $1`,
+            `SELECT id, unique_id, username, password, email, user_role, full_name, is_active
+             FROM users
+             WHERE username = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
             [user_id]
         );
 
@@ -146,6 +145,13 @@ const MonitoringLogin = async (req, res) => {
         }
 
         const user = userQuery.rows[0];
+
+        // Check if user is active
+        if (user.is_active === false) {
+            return res.status(403).json(
+                success(false, 403, "Account is deactivated. Please contact administrator.", null)
+            );
+        }
 
         // 2️⃣ Verify password (plain text comparison)
         if (password !== user.password) {
@@ -161,7 +167,7 @@ const MonitoringLogin = async (req, res) => {
 
         // 4️⃣ Store OTP and session in database
         await pool.query(
-            `UPDATE monitoring_login
+            `UPDATE users
              SET otp_code = $1,
                  otp_expires_at = $2,
                  session_id = $3,
@@ -181,13 +187,14 @@ const MonitoringLogin = async (req, res) => {
             }
         }
 
-        // 6️⃣ Return session_id and masked email for OTP verification
+        // 6️⃣ Return session_id, user_role and masked email for OTP verification
         const maskedEmail = user.email ? user.email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
 
         return res.status(200).json(
             success(true, 200, "OTP sent successfully. Please verify to complete login.", {
                 session_id: sessionId,
-                email: maskedEmail
+                email: maskedEmail,
+                user_role: user.user_role
             })
         );
 
@@ -198,7 +205,7 @@ const MonitoringLogin = async (req, res) => {
 };
 
 // -------------------------
-// Verify Monitoring OTP (Step 2: Complete login)
+// Verify Monitoring OTP (Step 2: Complete login) - Now uses unified users table
 // -------------------------
 const MonitoringVerifyOTP = async (req, res) => {
     try {
@@ -212,11 +219,11 @@ const MonitoringVerifyOTP = async (req, res) => {
             );
         }
 
-        // 1️⃣ Find user by session_id
+        // 1️⃣ Find user by session_id from users table
         const userQuery = await pool.query(
-            `SELECT id, username, email, otp_code, otp_expires_at
-             FROM monitoring_login
-             WHERE session_id = $1`,
+            `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at
+             FROM users
+             WHERE session_id = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
             [session_id]
         );
 
@@ -242,11 +249,12 @@ const MonitoringVerifyOTP = async (req, res) => {
             );
         }
 
-        // 4️⃣ Clear OTP
+        // 4️⃣ Clear OTP and update last login
         await pool.query(
-            `UPDATE monitoring_login
+            `UPDATE users
              SET otp_code = NULL,
                  otp_expires_at = NULL,
+                 last_login_at = NOW(),
                  updated_at = NOW()
              WHERE id = $1`,
             [user.id]
@@ -255,7 +263,7 @@ const MonitoringVerifyOTP = async (req, res) => {
         // 5️⃣ Send login success email
         if (user.email) {
             try {
-                await sendLoginSuccessEmail(user.email, user.username);
+                await sendLoginSuccessEmail(user.email, user.username || user.full_name);
             } catch (emailError) {
                 console.error("Login success email failed:", emailError);
             }
@@ -265,7 +273,9 @@ const MonitoringVerifyOTP = async (req, res) => {
             success(true, 200, "Login successful", {
                 user: {
                     username: user.username,
-                    email: user.email
+                    email: user.email,
+                    user_role: user.user_role,
+                    full_name: user.full_name
                 }
             })
         );
@@ -277,7 +287,7 @@ const MonitoringVerifyOTP = async (req, res) => {
 };
 
 // -------------------------
-// Resend Monitoring OTP
+// Resend Monitoring OTP - Now uses unified users table
 // -------------------------
 const MonitoringResendOTP = async (req, res) => {
     try {
@@ -289,9 +299,9 @@ const MonitoringResendOTP = async (req, res) => {
             );
         }
 
-        // 1️⃣ Find user by session_id
+        // 1️⃣ Find user by session_id from users table
         const userQuery = await pool.query(
-            `SELECT id, email FROM monitoring_login WHERE session_id = $1`,
+            `SELECT id, email FROM users WHERE session_id = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
             [session_id]
         );
 
@@ -309,7 +319,7 @@ const MonitoringResendOTP = async (req, res) => {
 
         // 3️⃣ Update OTP
         await pool.query(
-            `UPDATE monitoring_login
+            `UPDATE users
              SET otp_code = $1,
                  otp_expires_at = $2,
                  updated_at = NOW()
@@ -337,7 +347,7 @@ const MonitoringResendOTP = async (req, res) => {
 };
 
 // -------------------------
-// Monitoring Logout
+// Monitoring Logout - Now uses unified users table
 // -------------------------
 const MonitoringLogout = async (req, res) => {
     try {
@@ -349,14 +359,14 @@ const MonitoringLogout = async (req, res) => {
             );
         }
 
-        // Clear auth token and session
+        // Clear auth token and session from users table
         await pool.query(
-            `UPDATE monitoring_login
+            `UPDATE users
              SET auth_token = NULL,
                  auth_token_expires_at = NULL,
                  session_id = NULL,
                  updated_at = NOW()
-             WHERE auth_token = $1`,
+             WHERE auth_token = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
             [authToken]
         );
 
@@ -371,7 +381,7 @@ const MonitoringLogout = async (req, res) => {
 };
 
 // -------------------------
-// Set Password (for first-time setup or password reset)
+// Set Password (for first-time setup or password reset) - Now uses unified users table
 // -------------------------
 const SetPassword = async (req, res) => {
     try {
@@ -390,12 +400,12 @@ const SetPassword = async (req, res) => {
             );
         }
 
-        // Update user password (plain text)
+        // Update user password (plain text) from users table
         const result = await pool.query(
-            `UPDATE monitoring_login
+            `UPDATE users
              SET password = $1,
                  updated_at = NOW()
-             WHERE username = $2
+             WHERE username = $2 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')
              RETURNING id, username`,
             [password, username]
         );
@@ -790,7 +800,7 @@ const ConfigurationResendOTP = async (req, res) => {
 };
 
 // -------------------------
-// GRA Admin Unified Login (checks both monitoring_login and users tables)
+// GRA Admin Unified Login - Now uses only users table
 // -------------------------
 const GRAAdminLogin = async (req, res) => {
     try {
@@ -804,110 +814,68 @@ const GRAAdminLogin = async (req, res) => {
             );
         }
 
-        let user = null;
-        let userTable = null;
-        let userRole = null;
-
-        // 1️⃣ First check monitoring_login table
-        const monitoringQuery = await pool.query(
-            `SELECT id, username, password, email
-             FROM monitoring_login
-             WHERE username = $1`,
+        // Find user by username from users table (GRA admin roles only)
+        const userQuery = await pool.query(
+            `SELECT id, unique_id, username, password, email, user_role, full_name, is_active
+             FROM users
+             WHERE username = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
             [user_id]
         );
 
-        if (monitoringQuery.rows.length > 0) {
-            const monitoringUser = monitoringQuery.rows[0];
-
-            // Verify password
-            if (password === monitoringUser.password) {
-                user = {
-                    id: monitoringUser.id,
-                    username: monitoringUser.username,
-                    email: monitoringUser.email
-                };
-                userTable = 'monitoring_login';
-                userRole = 'monitoring';
-            }
-        }
-
-        // 2️⃣ If not found in monitoring_login, check users table
-        if (!user) {
-            const usersQuery = await pool.query(
-                `SELECT id, unique_id, contact_value, password, user_role, full_name
-                 FROM users
-                 WHERE contact_value = $1 OR agent_tin = $1 OR ghana_card_number = $1`,
-                [user_id]
-            );
-
-            if (usersQuery.rows.length > 0) {
-                const dbUser = usersQuery.rows[0];
-
-                // Verify password
-                if (password === dbUser.password) {
-                    user = {
-                        id: dbUser.id,
-                        unique_id: dbUser.unique_id,
-                        username: dbUser.full_name || dbUser.contact_value,
-                        email: dbUser.contact_value
-                    };
-                    userTable = 'users';
-                    userRole = dbUser.user_role || 'maker';
-                }
-            }
-        }
-
-        // 3️⃣ If no user found or password incorrect
-        if (!user) {
+        if (userQuery.rows.length === 0) {
             return res.status(401).json(
                 success(false, 401, "Invalid credentials. Please check your User ID and Password.", null)
             );
         }
 
-        // 4️⃣ Generate OTP and session
+        const dbUser = userQuery.rows[0];
+
+        // Check if user is active
+        if (dbUser.is_active === false) {
+            return res.status(403).json(
+                success(false, 403, "Account is deactivated. Please contact administrator.", null)
+            );
+        }
+
+        // Verify password
+        if (password !== dbUser.password) {
+            return res.status(401).json(
+                success(false, 401, "Invalid credentials. Please check your User ID and Password.", null)
+            );
+        }
+
+        // Generate OTP and session
         const otp = generateOTP();
         const sessionId = generateSessionId();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-        // 5️⃣ Store OTP based on user table
-        if (userTable === 'monitoring_login') {
-            await pool.query(
-                `UPDATE monitoring_login
-                 SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
-                 WHERE id = $4`,
-                [otp, expiresAt, sessionId, user.id]
-            );
-        } else {
-            await pool.query(
-                `UPDATE users
-                 SET otp_code = $1, otp_expires_at = $2, updated_at = NOW()
-                 WHERE id = $3`,
-                [otp, expiresAt, user.id]
-            );
-            // Store session_id in a temporary way (using login_role field)
-          
-        }
+        // Store OTP and session in users table
+        await pool.query(
+            `UPDATE users
+             SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
+             WHERE id = $4`,
+            [otp, expiresAt, sessionId, dbUser.id]
+        );
 
-        // 6️⃣ Send OTP via email
-        if (user.email) {
-            console.log("Sending GRA Admin OTP to:", user.email);
+        // Send OTP via email
+        if (dbUser.email) {
+            console.log("Sending GRA Admin OTP to:", dbUser.email);
             try {
-                await sendMonitoringOTPEmail(user.email, otp);
+                await sendMonitoringOTPEmail(dbUser.email, otp);
             } catch (emailError) {
                 console.error("OTP email failed:", emailError);
             }
         }
 
-        // 7️⃣ Return session info
-        const maskedEmail = user.email ? user.email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+        // Return session info
+        const maskedEmail = dbUser.email ? dbUser.email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
 
         return res.status(200).json(
             success(true, 200, "OTP sent successfully. Please verify to complete login.", {
                 session_id: sessionId,
-                unique_id: user.unique_id || null,
+                unique_id: dbUser.unique_id,
                 email: maskedEmail,
-                user_role: userRole,
-                user_table: userTable
+                user_role: dbUser.user_role
             })
         );
 
@@ -918,113 +886,79 @@ const GRAAdminLogin = async (req, res) => {
 };
 
 // -------------------------
-// GRA Admin Verify OTP
+// GRA Admin Verify OTP - Now uses only users table
 // -------------------------
 const GRAAdminVerifyOTP = async (req, res) => {
     try {
-        const { session_id, otp, unique_id } = req.body;
+        const { session_id, otp } = req.body;
 
-        console.log("GRA Admin OTP verification for session:", session_id, "unique_id:", unique_id);
+        console.log("GRA Admin OTP verification for session:", session_id);
 
-        if (!otp) {
+        if (!session_id || !otp) {
             return res.status(400).json(
-                success(false, 400, "OTP is required", null)
+                success(false, 400, "Session ID and OTP are required", null)
             );
         }
 
-        let user = null;
-        let userTable = null;
-        let userRole = null;
+        // Find user by session_id from users table
+        const userQuery = await pool.query(
+            `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at
+             FROM users
+             WHERE session_id = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
+            [session_id]
+        );
 
-        // 1️⃣ Check monitoring_login table by session_id
-        if (session_id) {
-            const monitoringQuery = await pool.query(
-                `SELECT id, username, email, otp_code, otp_expires_at
-                 FROM monitoring_login
-                 WHERE session_id = $1`,
-                [session_id]
-            );
-
-            if (monitoringQuery.rows.length > 0) {
-                user = monitoringQuery.rows[0];
-                userTable = 'monitoring_login';
-                userRole = 'monitoring';
-            }
-        }
-
-        // 2️⃣ If not found in monitoring_login, check users table by unique_id
-        if (!user && unique_id) {
-            const usersQuery = await pool.query(
-                `SELECT id, unique_id, contact_value, otp_code, otp_expires_at, user_role, full_name
-                 FROM users
-                 WHERE unique_id = $1`,
-                [unique_id]
-            );
-
-            if (usersQuery.rows.length > 0) {
-                const dbUser = usersQuery.rows[0];
-                user = {
-                    id: dbUser.id,
-                    unique_id: dbUser.unique_id,
-                    username: dbUser.full_name || dbUser.contact_value,
-                    email: dbUser.contact_value,
-                    otp_code: dbUser.otp_code,
-                    otp_expires_at: dbUser.otp_expires_at
-                };
-                userTable = 'users';
-                userRole = dbUser.user_role || 'maker';
-            }
-        }
-
-        if (!user) {
+        if (userQuery.rows.length === 0) {
             return res.status(404).json(
                 success(false, 404, "Invalid session. Please login again.", null)
             );
         }
 
-        // 3️⃣ Check OTP expiration
+        const user = userQuery.rows[0];
+
+        // Check OTP expiration
         if (!user.otp_expires_at || new Date() > new Date(user.otp_expires_at)) {
             return res.status(400).json(
                 success(false, 400, "OTP has expired. Please request a new one.", null)
             );
         }
 
-        // 4️⃣ Verify OTP
+        // Verify OTP
         if (otp !== user.otp_code) {
             return res.status(401).json(
                 success(false, 401, "Invalid OTP. Please try again.", null)
             );
         }
 
-        // 5️⃣ Generate auth token
+        // Generate auth token
         const authToken = generateSessionId();
 
-        // 6️⃣ Clear OTP and update last login
-        if (userTable === 'monitoring_login') {
-            await pool.query(
-                `UPDATE monitoring_login
-                 SET otp_code = NULL, otp_expires_at = NULL
-                 WHERE id = $1`,
-                [ user.id]
-            );
-        } else {
-            await pool.query(
-                `UPDATE users
-                 SET otp_code = NULL, otp_expires_at = NULL
-                 WHERE id = $1`,
-                [user.id]
-            );
+        // Clear OTP and update last login
+        await pool.query(
+            `UPDATE users
+             SET otp_code = NULL, otp_expires_at = NULL, auth_token = $1, last_login_at = NOW(), updated_at = NOW()
+             WHERE id = $2`,
+            [authToken, user.id]
+        );
+
+        // Send login success email
+        if (user.email) {
+            try {
+                await sendLoginSuccessEmail(user.email, user.username || user.full_name);
+            } catch (emailError) {
+                console.error("Login success email failed:", emailError);
+            }
         }
 
         return res.status(200).json(
             success(true, 200, "Login successful", {
                 token: authToken,
-                user_role: userRole,
-                user_table: userTable,
-                unique_id: user.unique_id || user.id,
+                user_role: user.user_role,
+                unique_id: user.unique_id,
                 user: {
                     username: user.username,
-                    email: user.email
+                    email: user.email,
+                    full_name: user.full_name
                 }
             })
         );
@@ -1036,63 +970,41 @@ const GRAAdminVerifyOTP = async (req, res) => {
 };
 
 // -------------------------
-// GRA Admin Resend OTP
+// GRA Admin Resend OTP - Now uses only users table
 // -------------------------
 const GRAAdminResendOTP = async (req, res) => {
     try {
-        const { session_id, unique_id } = req.body;
+        const { session_id } = req.body;
 
-        let user = null;
-        let userTable = null;
-
-        // Check monitoring_login table by session_id
-        if (session_id) {
-            const monitoringQuery = await pool.query(
-                `SELECT id, email FROM monitoring_login WHERE session_id = $1`,
-                [session_id]
+        if (!session_id) {
+            return res.status(400).json(
+                success(false, 400, "Session ID is required", null)
             );
-
-            if (monitoringQuery.rows.length > 0) {
-                user = monitoringQuery.rows[0];
-                userTable = 'monitoring_login';
-            }
         }
 
-        // If not found, check users table by unique_id
-        if (!user && unique_id) {
-            const usersQuery = await pool.query(
-                `SELECT id, contact_value as email FROM users WHERE unique_id = $1`,
-                [unique_id]
-            );
+        // Find user by session_id from users table
+        const userQuery = await pool.query(
+            `SELECT id, email FROM users WHERE session_id = $1 AND user_role IN ('gra_maker', 'gra_checker', 'monitoring', 'admin')`,
+            [session_id]
+        );
 
-            if (usersQuery.rows.length > 0) {
-                user = usersQuery.rows[0];
-                userTable = 'users';
-            }
-        }
-
-        if (!user) {
+        if (userQuery.rows.length === 0) {
             return res.status(404).json(
                 success(false, 404, "Invalid session. Please login again.", null)
             );
         }
+
+        const user = userQuery.rows[0];
 
         // Generate new OTP
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         // Update OTP
-        if (userTable === 'monitoring_login') {
-            await pool.query(
-                `UPDATE monitoring_login SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
-                [otp, expiresAt, user.id]
-            );
-        } else {
-            await pool.query(
-                `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
-                [otp, expiresAt, user.id]
-            );
-        }
+        await pool.query(
+            `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+            [otp, expiresAt, user.id]
+        );
 
         // Send OTP
         if (user.email) {

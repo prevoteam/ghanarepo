@@ -3,11 +3,13 @@ import './RegisterNow.css';
 import GRAAdminLogin from './GRAAdminLogin';
 import MonitoringDashboard from './MonitoringDashboard';
 import ConfigDashboard from './ConfigDashboard';
+import AdminDashboard from './AdminDashboard';
 
-const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
+const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateChange }) => {
   const [showGRAAdminLogin, setShowGRAAdminLogin] = useState(false);
   const [showMonitoringDashboard, setShowMonitoringDashboard] = useState(false);
   const [showConfigDashboard, setShowConfigDashboard] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
   const handleNonResidentClick = () => {
@@ -20,21 +22,34 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
     console.log('GRA Admin Login successful:', data);
 
     const role = data.userRole || sessionStorage.getItem('gra_user_role');
-    const userTable = data.userTable || sessionStorage.getItem('gra_user_table');
 
     setShowGRAAdminLogin(false);
     setUserRole(role);
 
     // Route based on user role
-    if (role === 'monitoring' || userTable === 'monitoring_login') {
+    // - admin -> AdminDashboard
+    // - monitoring -> MonitoringDashboard
+    // - gra_maker, gra_checker -> ConfigDashboard
+    if (role === 'admin') {
+      // Admin user - go to Admin Dashboard
+      setShowAdminDashboard(true);
+      // Notify parent to hide navbar
+      if (onDashboardStateChange) onDashboardStateChange(true);
+    } else if (role === 'monitoring') {
       // Monitoring user - go to Monitoring Dashboard
       setShowMonitoringDashboard(true);
-    } else if (role === 'maker' || role === 'checker') {
-      // Maker/Checker from users table - go to Config Dashboard
+      // Notify parent to hide navbar
+      if (onDashboardStateChange) onDashboardStateChange(true);
+    } else if (role === 'gra_maker' || role === 'gra_checker') {
+      // Maker/Checker - go to Config Dashboard
       setShowConfigDashboard(true);
+      // Notify parent to hide navbar
+      if (onDashboardStateChange) onDashboardStateChange(true);
     } else {
       // Default to Monitoring Dashboard
       setShowMonitoringDashboard(true);
+      // Notify parent to hide navbar
+      if (onDashboardStateChange) onDashboardStateChange(true);
     }
   };
 
@@ -42,16 +57,24 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
     // Clear all session data
     sessionStorage.removeItem('gra_session_id');
     sessionStorage.removeItem('gra_user_role');
-    sessionStorage.removeItem('gra_user_table');
     sessionStorage.removeItem('gra_token');
 
     setShowMonitoringDashboard(false);
     setShowConfigDashboard(false);
+    setShowAdminDashboard(false);
     setShowGRAAdminLogin(false);
     setUserRole(null);
   };
 
   // GRA Admin Portal flow
+  if (showAdminDashboard) {
+    return (
+      <AdminDashboard
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   if (showMonitoringDashboard) {
     return (
       <MonitoringDashboard
@@ -61,10 +84,12 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
   }
 
   if (showConfigDashboard) {
+    // Normalize role: convert 'gra_maker' -> 'maker' and 'gra_checker' -> 'checker'
+    const normalizedRole = userRole?.replace('gra_', '') || 'maker';
     return (
       <ConfigDashboard
         onLogout={handleLogout}
-        userRole={userRole}
+        userRole={normalizedRole}
       />
     );
   }
@@ -98,11 +123,13 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
         {/* GRA Officer */}
         <div className="col-md-4" onClick={() => setShowGRAAdminLogin(true)}>
           <div
-            className="py-4 h-100"
+            className="py-4 h-100 role-card"
             style={{
-              background: "#CBD3E8",
+              background: "#ffffff",
+              border: "1px solid #E5E7EB",
               borderRadius: "18px",
-              position: "relative"
+              position: "relative",
+              transition: "background 0.3s ease"
             }}
           >
             {/* Icon box exactly like image */}
@@ -138,11 +165,12 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
         {/* Resident Merchant */}
         <div className="col-md-4" onClick={onLoginClick}>
          <div
-            className="py-4 h-100"
+            className="py-4 h-100 role-card"
             style={{
               background: "#ffffff",
               border: "1px solid #E5E7EB",
-              borderRadius: "18px"
+              borderRadius: "18px",
+              transition: "background 0.3s ease"
             }}
           >
             <div
@@ -174,11 +202,12 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick }) => {
         {/* Non-Resident Merchant */}
         <div className="col-md-4" onClick={handleNonResidentClick}>
          <div
-            className="py-4 h-100"
+            className="py-4 h-100 role-card"
             style={{
               background: "#ffffff",
               border: "1px solid #E5E7EB",
-              borderRadius: "18px"
+              borderRadius: "18px",
+              transition: "background 0.3s ease"
             }}
           >
             <div

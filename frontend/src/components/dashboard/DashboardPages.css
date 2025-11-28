@@ -240,12 +240,12 @@
 .table-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1F2937;
+  color: white;
 }
 
 .table-subtitle {
   font-size: 0.875rem;
-  color: #6B7280;
+  color: white;
 }
 
 .table-actions {
