@@ -55,7 +55,6 @@ const GRAAdminLogin = ({ onBack, onLoginSuccess }) => {
         sessionStorage.setItem('gra_session_id', data.results.session_id);
         sessionStorage.setItem('gra_unique_id', data.results.unique_id || '');
         sessionStorage.setItem('gra_user_role', data.results.user_role);
-        sessionStorage.setItem('gra_user_table', data.results.user_table);
         setUserRole(data.results.user_role);
         setUserEmail(data.results.email || '');
         setShowOTPModal(true);
@@ -74,13 +73,11 @@ const GRAAdminLogin = ({ onBack, onLoginSuccess }) => {
     setShowOTPModal(false);
 
     const role = sessionStorage.getItem('gra_user_role');
-    const userTable = sessionStorage.getItem('gra_user_table');
 
     // Pass role info to parent for routing
     onLoginSuccess({
       ...data,
-      userRole: role,
-      userTable: userTable
+      userRole: role
     });
   };
 

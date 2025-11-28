@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './DashboardPages.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { ADMIN_API_BASE_URL } from '../../utils/api';
 
 const MerchantDiscovery = () => {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   // Fetch merchant discovery data
   const fetchMerchantData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/merchant-discovery?limit=100`);
+      const response = await fetch(`${ADMIN_API_BASE_URL}/merchant-discovery?limit=100`);
       const data = await response.json();
 
       if (data.status) {
@@ -28,6 +30,104 @@ const MerchantDiscovery = () => {
     fetchMerchantData();
   }, []);
 
+  // Export table data to PDF
+  const handleExportPDF = () => {
+    if (tableData.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    setExporting(true);
+
+    try {
+      const doc = new jsPDF('landscape');
+
+      // Add header
+      doc.setFontSize(18);
+      doc.setTextColor(31, 58, 131); // GRA blue color
+      doc.text('Ghana Unified E-Commerce Registration Portal', 14, 15);
+
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Merchant Discovery by PSP', 14, 25);
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 32);
+
+      // Define table columns
+      const columns = [
+        { header: 'Sr No.', dataKey: 'srNo' },
+        { header: 'PSP Name', dataKey: 'pspName' },
+        { header: 'Merchant Discovered', dataKey: 'merchantDiscovered' },
+        { header: 'Registered', dataKey: 'registered' },
+        { header: 'Unregistered', dataKey: 'unregistered' },
+        { header: 'VAT Eligible', dataKey: 'vatEligible' },
+        { header: 'Compliance Rate', dataKey: 'complianceRate' }
+      ];
+
+      // Prepare table data
+      const rows = tableData.map((row, index) => ({
+        srNo: String(index + 1).padStart(2, '0'),
+        pspName: row.psp_provider || '-',
+        merchantDiscovered: row.transaction_id || '-',
+        registered: row.sender_account || '-',
+        unregistered: row.receiver_account || '-',
+        vatEligible: row.amount_ghs || '0.00',
+        complianceRate: row.e_levy_amount || '0.00'
+      }));
+
+      // Add table using autoTable
+      doc.autoTable({
+        columns: columns,
+        body: rows,
+        startY: 40,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [31, 58, 131],
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [0, 0, 0]
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        },
+        margin: { top: 40, left: 14, right: 14 }
+      });
+
+      // Add footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.getWidth() / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: 'center' }
+        );
+        doc.text(
+          'Ghana Revenue Authority - Confidential',
+          14,
+          doc.internal.pageSize.getHeight() - 10
+        );
+      }
+
+      // Save the PDF
+      doc.save(`Merchant_Discovery_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="page-content">
       <div className="table-card">
@@ -43,13 +143,17 @@ const MerchantDiscovery = () => {
               </svg>
               Filter
             </button>
-            <button className="action-btn outline">
+            <button
+              className="action-btn outline"
+              onClick={handleExportPDF}
+              disabled={exporting || loading || tableData.length === 0}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Export
+              {exporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>

@@ -7,9 +7,53 @@ import VATEligibility from './dashboard/VATEligibility';
 import HighRiskEntities from './dashboard/HighRiskEntities';
 import ECommercePortals from './dashboard/ECommercePortals';
 import BIReports from './dashboard/BIReports';
+import EcommerceDiscoveryResults from './dashboard/EcommerceDiscoveryResults';
+import { GHANA_SITES_API_URL } from '../utils/api';
 
 const MonitoringDashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('psp-ingestion');
+  const [discoveryData, setDiscoveryData] = useState(null);
+  const [discoveryLoading, setDiscoveryLoading] = useState(false);
+  const [discoveryError, setDiscoveryError] = useState(null);
+  const [showDiscoveryResults, setShowDiscoveryResults] = useState(false);
+
+  const handleEcommerceDiscovery = async () => {
+    setShowDiscoveryResults(true);
+    setDiscoveryLoading(true);
+    setDiscoveryError(null);
+
+    // Static data for now - TODO: Enable API call later
+    // const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
+    const staticSites = [
+      "https://ghanacommerce.com",
+      "https://www.jumia.com.gh",
+      "https://ghanamallonline.com",
+      "https://www.aftership.com",
+      "https://www.f6s.com",
+      "https://www.noxmall.com",
+      "https://www.tospinomall.com.gh",
+      "https://www.trade.gov",
+      "https://emmarnitechs.com",
+      "https://smaizshop.com"
+    ];
+
+    // Simulate loading delay
+    setTimeout(() => {
+      const formattedData = staticSites.map((url, index) => ({
+        id: index + 1,
+        url: url
+      }));
+
+      setDiscoveryData(formattedData);
+      setDiscoveryLoading(false);
+    }, 500);
+  };
+
+  const handleCloseDiscovery = () => {
+    setShowDiscoveryResults(false);
+    setDiscoveryData(null);
+    setDiscoveryError(null);
+  };
 
   const menuItems = [
     { id: 'psp-ingestion', label: 'PSP Ingestion Status', icon: 'database' },
@@ -161,7 +205,7 @@ const MonitoringDashboard = ({ onLogout }) => {
                 <span className="status-dot"></span>
                 <span>System Operation</span>
               </div>
-              <button className="initiate-btn">E-Commerce Discovery</button>
+              <button className="initiate-btn" onClick={handleEcommerceDiscovery}>E-Commerce Discovery</button>
               <button className="logout-btn" onClick={onLogout} title="Logout">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -174,12 +218,24 @@ const MonitoringDashboard = ({ onLogout }) => {
 
           {/* Page Content */}
           <div className="dashboard-content">
-            {renderContent()}
+            {/* E-Commerce Discovery Section - Shows inline when button is clicked */}
+            {showDiscoveryResults && (
+              <div className="ecommerce-discovery-section">
+                <EcommerceDiscoveryResults
+                  data={discoveryData}
+                  loading={discoveryLoading}
+                  error={discoveryError}
+                  onClose={handleCloseDiscovery}
+                  isInline={true}
+                />
+              </div>
+            )}
+
+            {/* Regular Content */}
+            {!showDiscoveryResults && renderContent()}
           </div>
         </main>
       </div>
-
- 
     </div>
   );
 };

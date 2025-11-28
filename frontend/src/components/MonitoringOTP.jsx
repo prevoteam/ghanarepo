@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './MonitoringOTP.css';
+import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const MonitoringOTP = ({ email, onVerified, onClose }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -72,7 +73,7 @@ const MonitoringOTP = ({ email, onVerified, onClose }) => {
     if (!canResend) return;
 
     try {
-      await fetch('http://localhost:3000/v1/admin/monitoring/resend-otp', {
+      await fetch(`${ADMIN_API_BASE_URL}/resend-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ const MonitoringOTP = ({ email, onVerified, onClose }) => {
     try {
       const sessionId = sessionStorage.getItem('monitoring_session_id');
 
-      const response = await fetch('http://localhost:3000/v1/admin/monitoring/verify-otp', {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

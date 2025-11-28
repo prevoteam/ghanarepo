@@ -2,6 +2,10 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1';
 const API_BASE_URL = `${BASE_URL}/home`;
 const ADMIN_API_BASE_URL = `${BASE_URL}/admin/monitoring`;
+const ADMIN_USERS_API_BASE_URL = `${BASE_URL}/admin`;
+const QR_CODE_API_URL = import.meta.env.VITE_QR_CODE_API_URL || 'https://api.qrserver.com/v1/create-qr-code';
+const PAYMENT_PORTAL_URL = import.meta.env.VITE_PAYMENT_PORTAL_URL || 'https://pay.gra.gov.gh';
+const GHANA_SITES_API_URL = import.meta.env.VITE_GHANA_SITES_API_URL || 'http://127.0.0.1:8000/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -239,7 +243,16 @@ export const pspApi = {
 };
 
 // Export all
-export { ApiError, API_BASE_URL, ADMIN_API_BASE_URL };
+export {
+  ApiError,
+  BASE_URL,
+  API_BASE_URL,
+  ADMIN_API_BASE_URL,
+  ADMIN_USERS_API_BASE_URL,
+  QR_CODE_API_URL,
+  PAYMENT_PORTAL_URL,
+  GHANA_SITES_API_URL
+};
 export default {
   registrationApi,
   loginApi,

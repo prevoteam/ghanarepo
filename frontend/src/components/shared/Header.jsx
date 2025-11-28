@@ -9,7 +9,8 @@ const Header = ({
   onFAQClick,
   onPSPClick,
   onTaxpayerCornerClick,
-  showPSPNav = true
+  showPSPNav = true,
+  hideNavbar = false
 }) => {
   return (
     <>
@@ -53,11 +54,12 @@ const Header = ({
           </div>
 
 
-       
+
         </div>
       </header>
 
-      {/* Navigation */}
+      {/* Navigation - Only show if hideNavbar is false */}
+      {!hideNavbar && (
     <section className='header-box'>
       <nav className="container">
         <div className='shared-navigation'>
@@ -130,19 +132,17 @@ const Header = ({
           </button>
         )}
         <a
-          type="button"
-          
-          className={`nav-item ${activeNav === 'faq' ? 'active' : ''}`}
+          className="nav-item"
           href="https://risewithprotean.io/"
           target="_blank"
           rel="noopener noreferrer"
         >
-       
           Rise With Protean
         </a>
         </div>
       </nav>
       </section>
+      )}
     </>
   );
 };

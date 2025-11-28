@@ -134,7 +134,7 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
       setTimeout(() => {
         setShowOtpModal(false);
         const userId = result.data.unique_id || result.data.uniqueId;
-        const userRole = result.data.user_role || 'maker';
+        const userRole = result.data.user_role || 'resident';
         onLoginSuccess(userId, userRole);
       }, 1000);
     } else {
@@ -212,7 +212,7 @@ const Login = ({ onLoginSuccess, loginType = 'resident', onRegisterNow }) => {
 
       setTimeout(() => {
         const userId = result.data.unique_id || result.data.uniqueId || credential;
-        const userRole = result.data.user_role || 'maker';
+        const userRole = result.data.user_role || 'nonresident';
         onLoginSuccess(userId, userRole);
       }, 1000);
     }
