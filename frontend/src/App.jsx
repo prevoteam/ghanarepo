@@ -3,6 +3,7 @@ import RegisterNow from './components/RegisterNow'
 import TaxpayerPortalLogin from './components/TaxpayerPortalLogin'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
+import ResidentDashboard from './components/ResidentDashboard'
 import NonResidentDashboard from './components/NonResidentDashboard'
 import MonitoringDashboard from './components/MonitoringDashboard'
 import ConfigDashboard from './components/ConfigDashboard'
@@ -28,7 +29,7 @@ function App() {
   const [resetHomeCounter, setResetHomeCounter] = useState(0)
 
   // Views that should NOT have centralized Header/Footer (they have their own)
-  const dashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
+  const dashboardViews = ['dashboard', 'residentDashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
 
   // Restore session on page load
   useEffect(() => {
@@ -38,7 +39,7 @@ function App() {
     const savedLoginType = localStorage.getItem('loginType')
 
     // Restore session for any dashboard view
-    const validDashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
+    const validDashboardViews = ['dashboard', 'residentDashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
     if (savedUserId && validDashboardViews.includes(savedView)) {
       setLoggedInUserId(savedUserId)
       setCurrentView(savedView)
@@ -71,6 +72,9 @@ function App() {
     } else if (role === 'nonresident' || loginType === 'nonresident') {
       targetView = 'nonResidentDashboard'
       targetLoginType = 'nonresident'
+    } else if (role === 'resident' || loginType === 'resident') {
+      targetView = 'residentDashboard'
+      targetLoginType = 'resident'
     } else {
       targetView = 'dashboard'
       targetLoginType = 'resident'
@@ -167,6 +171,10 @@ function App() {
 
     if (currentView === 'nonResidentDashboard' && loggedInUserId) {
       return <NonResidentDashboard uniqueId={loggedInUserId} onLogout={handleLogout} />
+    }
+
+    if (currentView === 'residentDashboard' && loggedInUserId) {
+      return <ResidentDashboard uniqueId={loggedInUserId} onLogout={handleLogout} />
     }
 
     if (currentView === 'dashboard' && loggedInUserId) {

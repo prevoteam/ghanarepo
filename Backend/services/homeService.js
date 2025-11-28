@@ -732,9 +732,9 @@ const SendOtp = async (req, res) => {
     // 1️⃣ Check if user exists
     const checkUser = await pool.query(
       `
-        SELECT unique_id, tin, subject_name,contact_value
+        SELECT unique_id, agent_tin, subject_name,contact_value
         FROM users
-        WHERE tin = $1 
+        WHERE agent_tin = $1 
       `,
       [credential]
     );
@@ -945,7 +945,7 @@ const LoginVerifyOtp = async (req, res) => {
       `
         SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role
         FROM users
-        WHERE tin = $1
+        WHERE agent_tin = $1
       `,
       [credential]
     );
