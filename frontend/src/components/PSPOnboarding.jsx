@@ -61,14 +61,9 @@ const PSPOnboarding = ({ onBack, onSuccess }) => {
   };
 
   return (
-    <div className="psp-content">
-      {/* Main Content */}
+    <div className="psp-content bg">
       <main className="psp-main">
-        <div className="psp-circles">
-          <div className="psp-circle psp-circle-1"></div>
-          <div className="psp-circle psp-circle-2"></div>
-          <div className="psp-circle psp-circle-3"></div>
-        </div>
+  
 
         <div className="psp-form-container">
           <button className="back-button" onClick={onBack}>
