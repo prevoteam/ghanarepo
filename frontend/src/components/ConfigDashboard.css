@@ -145,7 +145,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 200px;
+  height: 178px;
   pointer-events: none;
 }
 
@@ -303,6 +303,12 @@
   border-radius: none;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table-header-new {
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
 .table-header {

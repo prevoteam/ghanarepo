@@ -2,8 +2,8 @@ import './AboutUs.css';
 
 const AboutUs = ({ onBack }) => {
   return (
-    <div className="aboutus-page">
-      <div className="aboutus-content">
+    <div className="aboutus-page bg">
+      <div className="aboutus-content ">
         <button className="back-button" onClick={onBack}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -44,12 +44,7 @@ const AboutUs = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Decorative circles */}
-      <div className="aboutus-circles">
-        <div className="aboutus-circle aboutus-circle-1"></div>
-        <div className="aboutus-circle aboutus-circle-2"></div>
-        <div className="aboutus-circle aboutus-circle-3"></div>
-      </div>
+   
     </div>
   );
 };

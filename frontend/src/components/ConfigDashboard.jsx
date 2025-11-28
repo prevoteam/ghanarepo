@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './ConfigDashboard.css';
 import { ADMIN_API_BASE_URL } from '../utils/api';
+import sidebar from "../assets/sidebar-bottom.png";
 
 const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
   const [activeMenu, setActiveMenu] = useState('evat-rules');
@@ -221,8 +222,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
 
           {/* Decorative circles at bottom */}
           <div className="sidebar-decoration">
-            <div className="sidebar-circle sidebar-circle-1"></div>
-            <div className="sidebar-circle sidebar-circle-2"></div>
+          <img src={sidebar} alt="" />
           </div>
         </aside>
 

@@ -387,20 +387,22 @@ const VATEligibility = () => {
 
   return (
     <div className="page-content">
-      <div className="table-card">
-        <div className="table-header">
-          <div className="table-title-section">
-            <h2 className="table-title" style={{ color: 'white' }}>VAT Eligibility</h2>
-            <p className="table-subtitle" style={{ color: 'white' }}>List of merchants eligible for VAT collection based on transaction thresholds.</p>
+         <div className="table-header-new row align-items-center">
+          <div className='col-xl-7 col-lg-7 col-md-12 col-sm-12 col-12'>
+            <div className="table-title-section">
+            <h2 className="table-title text-dark">VAT Eligibility</h2>
+            <p className="table-subtitle text-muted">List of merchants eligible for VAT collection based on transaction thresholds.</p>
           </div>
-          <div className="table-actions">
-            <button className="action-btn outline" onClick={() => setFilterStatus(filterStatus ? '' : 'Unregistered')}>
+          </div> 
+         <div className='col-xl-5 col-lg-5 col-md-12 col-sm-12 col-12'>
+          <div className="table-actions d-flex justify-content-end">
+            <button className="action-btn-outline" onClick={() => setFilterStatus(filterStatus ? '' : 'Unregistered')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
               </svg>
               Filter Status
             </button>
-            <button className="action-btn primary" style={{ background: '#10B981', border: 'none' }} onClick={handleExportPDF}>
+            <button  className="action-btn" onClick={handleExportPDF}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -409,7 +411,11 @@ const VATEligibility = () => {
               Export List
             </button>
           </div>
+          </div>
         </div>
+
+      <div className="table-card">
+   
 
         <div className="table-container">
           {loading ? (

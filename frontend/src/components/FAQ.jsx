@@ -32,7 +32,7 @@ const FAQ = ({ onBack }) => {
   };
 
   return (
-    <div className="faq-page">
+    <div className="faq-page bg">
       <div className="faq-content">
         <button className="back-button" onClick={onBack}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -81,12 +81,7 @@ const FAQ = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Decorative circles */}
-      <div className="faq-circles">
-        <div className="faq-circle faq-circle-1"></div>
-        <div className="faq-circle faq-circle-2"></div>
-        <div className="faq-circle faq-circle-3"></div>
-      </div>
+   
     </div>
   );
 };

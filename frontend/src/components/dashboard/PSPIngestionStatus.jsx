@@ -1,4 +1,7 @@
 import './DashboardPages.css';
+import one from "../../assets/img-1-2.png";
+// import two from "../assets/img-1-2.png";
+// import three from "../assets/img-1-3.png";
 
 const PSPIngestionStatus = () => {
   const statsCards = [
@@ -42,11 +45,12 @@ const PSPIngestionStatus = () => {
           <div key={index} className="stat-card">
             <div className="stat-header">
               <div className={`stat-icon stat-icon-${stat.color}`}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                {/* <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <path d="M3 9h18"/>
                   <path d="M9 21V9"/>
-                </svg>
+                </svg> */}
+                <img src={one} alt="database" width={20} height={20} />
               </div>
               <span className="stat-title">{stat.title}</span>
             </div>

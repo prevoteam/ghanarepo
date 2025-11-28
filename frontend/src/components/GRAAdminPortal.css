@@ -153,11 +153,7 @@
  
 }
 
-.bg{
-   background-image: url('../assets/bg.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-}
+
 
 /* Decorative Circles */
 .decorative-circles {

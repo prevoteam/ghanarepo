@@ -24,7 +24,7 @@ const ContactUs = ({ onBack }) => {
   };
 
   return (
-    <div className="contactus-page">
+    <div className="contactus-page bg">
       <div className="contactus-container">
         <button className="back-button" onClick={onBack}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -114,13 +114,6 @@ const ContactUs = ({ onBack }) => {
             <button type="submit" className="submit-btn">Send Message</button>
           </form>
         </div>
-      </div>
-
-      {/* Decorative circles */}
-      <div className="contactus-circles">
-        <div className="contactus-circle contactus-circle-1"></div>
-        <div className="contactus-circle contactus-circle-2"></div>
-        <div className="contactus-circle contactus-circle-3"></div>
       </div>
     </div>
   );

@@ -116,7 +116,7 @@
 
 .shared-navigation .nav-item.active {
   color: #1a365d;
-  border-bottom-color: #c4a000;
+  /* border-bottom-color: #c4a000; */
   font-weight: 600;
 }
 

@@ -172,7 +172,7 @@
 /* Top Bar */
 .dashboard-topbar {
   background: white;
-  padding: 25px 40px;
+  padding: 15px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
