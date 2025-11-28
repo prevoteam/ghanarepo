@@ -85,16 +85,10 @@ const GRAAdminLogin = ({ onBack, onLoginSuccess }) => {
   };
 
   return (
-    <div className="gra-login-content">
+    <div className="">
       {/* Main Content */}
-      <main className="gra-login-main">
-        {/* Background Circles */}
-        <div className="gra-bg-circles">
-          <div className="gra-bg-circle gra-bg-circle-1"></div>
-          <div className="gra-bg-circle gra-bg-circle-2"></div>
-          <div className="gra-bg-circle gra-bg-circle-3"></div>
-          <div className="gra-bg-circle gra-bg-circle-4"></div>
-        </div>
+      <main className="gra-login-main bg">
+      
 
         {/* Login Card */}
         <div className="gra-login-card">
