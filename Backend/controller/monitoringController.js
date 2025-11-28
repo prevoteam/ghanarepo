@@ -103,5 +103,20 @@ module.exports = ({ config }) => {
         return monitoringService.DownloadNoticePDF(req, res, next);
     });
 
+    // GET /v1/admin/monitoring/notifications - Get notifications for user
+    router.get('/notifications', (req, res, next) => {
+        return monitoringService.GetNotifications(req, res, next);
+    });
+
+    // PUT /v1/admin/monitoring/notifications/:notification_id/read - Mark notification as read
+    router.put('/notifications/:notification_id/read', (req, res, next) => {
+        return monitoringService.MarkNotificationRead(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/notifications/mark-all-read - Mark all notifications as read
+    router.post('/notifications/mark-all-read', (req, res, next) => {
+        return monitoringService.MarkAllNotificationsRead(req, res, next);
+    });
+
     return router;
 };

@@ -1081,6 +1081,24 @@ const SubmitVATRateChange = async (req, res) => {
             );
         }
 
+        // Create notification for checkers
+        const rateData = result.rows[0];
+        await pool.query(
+            `INSERT INTO notifications (
+                notification_type, title, message, target_role,
+                reference_id, reference_type, created_by
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+                'rate_approval',
+                'VAT Rate Approval Required',
+                `A VAT rate change for ${rateData.levy_type || 'VAT'} is pending approval. Please review.`,
+                'gra_checker',
+                rate_id,
+                'vat_rate',
+                submitted_by || 'maker'
+            ]
+        );
+
         return res.status(200).json(
             success(true, 200, "Rate change submitted for approval", {
                 rate: result.rows[0]
@@ -1674,6 +1692,120 @@ const ExportVATEligibilityPDF = async (req, res) => {
     }
 };
 
+// -------------------------
+// Get Notifications for User
+// -------------------------
+const GetNotifications = async (req, res) => {
+    try {
+        const { user_role, user_id } = req.query;
+
+        if (!user_role) {
+            return res.status(400).json(
+                success(false, 400, "User role is required", null)
+            );
+        }
+
+        // Get notifications for the user's role
+        const result = await pool.query(
+            `SELECT id, notification_type, title, message, target_role,
+                    reference_id, reference_type, is_read, created_by, created_at, read_at
+             FROM notifications
+             WHERE target_role = $1
+             ORDER BY created_at DESC
+             LIMIT 50`,
+            [user_role]
+        );
+
+        // Get unread count
+        const unreadResult = await pool.query(
+            `SELECT COUNT(*) as unread_count
+             FROM notifications
+             WHERE target_role = $1 AND is_read = FALSE`,
+            [user_role]
+        );
+
+        return res.status(200).json(
+            success(true, 200, "Notifications fetched successfully", {
+                notifications: result.rows,
+                unread_count: parseInt(unreadResult.rows[0].unread_count)
+            })
+        );
+
+    } catch (err) {
+        console.error("GetNotifications error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
+// -------------------------
+// Mark Notification as Read
+// -------------------------
+const MarkNotificationRead = async (req, res) => {
+    try {
+        const { notification_id } = req.params;
+
+        if (!notification_id) {
+            return res.status(400).json(
+                success(false, 400, "Notification ID is required", null)
+            );
+        }
+
+        const result = await pool.query(
+            `UPDATE notifications
+             SET is_read = TRUE, read_at = NOW()
+             WHERE id = $1
+             RETURNING *`,
+            [notification_id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json(
+                success(false, 404, "Notification not found", null)
+            );
+        }
+
+        return res.status(200).json(
+            success(true, 200, "Notification marked as read", {
+                notification: result.rows[0]
+            })
+        );
+
+    } catch (err) {
+        console.error("MarkNotificationRead error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
+// -------------------------
+// Mark All Notifications as Read
+// -------------------------
+const MarkAllNotificationsRead = async (req, res) => {
+    try {
+        const { user_role } = req.body;
+
+        if (!user_role) {
+            return res.status(400).json(
+                success(false, 400, "User role is required", null)
+            );
+        }
+
+        await pool.query(
+            `UPDATE notifications
+             SET is_read = TRUE, read_at = NOW()
+             WHERE target_role = $1 AND is_read = FALSE`,
+            [user_role]
+        );
+
+        return res.status(200).json(
+            success(true, 200, "All notifications marked as read", null)
+        );
+
+    } catch (err) {
+        console.error("MarkAllNotificationsRead error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
 module.exports = {
     MonitoringLogin,
     MonitoringVerifyOTP,
@@ -1695,5 +1827,8 @@ module.exports = {
     GetVATEligibilityList,
     ProcessComplianceAction,
     DownloadNoticePDF,
-    ExportVATEligibilityPDF
+    ExportVATEligibilityPDF,
+    GetNotifications,
+    MarkNotificationRead,
+    MarkAllNotificationsRead
 };
