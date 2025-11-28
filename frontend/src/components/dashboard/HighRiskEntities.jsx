@@ -85,22 +85,27 @@ const HighRiskEntities = () => {
 
   return (
     <div className="page-content">
-      <div className="table-card">
-        <div className="table-header">
-          <div className="table-title-section">
-            <h2 className="table-title">High Risk Entities</h2>
-            <p className="table-subtitle">Entities flagged with high risk scores requiring immediate attention.</p>
+        <div className="table-header-new row align-items-center">
+          <div className='col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12'>
+            <div className="table-title-section">
+            <h2 className="table-title text-dark">High Risk Entities</h2>
+            <p className="table-subtitle text-muted">Entities flagged with high risk scores requiring immediate attention.</p>
           </div>
-          <div className="table-actions">
-            <button className="action-btn outline">
+          </div> 
+         <div className='col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12'>
+          <div className="table-actions d-flex justify-content-end">
+          
+            <button className="action-btn-outline">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
               </svg>
               Filter
             </button>
           </div>
+          </div>
         </div>
 
+      <div className="table-card">
         <div className="table-container">
           <table className="data-table">
             <thead>

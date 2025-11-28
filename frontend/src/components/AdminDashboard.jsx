@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { ADMIN_USERS_API_BASE_URL } from '../utils/api';
 
+
 const AdminDashboard = ({ onLogout, onLogoClick }) => {
   const [activeMenu, setActiveMenu] = useState('user-list');
   const [users, setUsers] = useState([]);
@@ -634,14 +635,10 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
           <aside className="admin-sidebar">
             <div className="admin-sidebar-header">
               <div className="admin-logo">
-                <svg width="40" height="40" viewBox="0 0 40 40">
-                  <rect width="40" height="40" rx="8" fill="#F59E0B" />
-                  <text x="20" y="26" fontSize="16" fontWeight="bold" fill="#2D3B8F" textAnchor="middle">G</text>
-                </svg>
+             <img src={logo} alt="" />
               </div>
               <div className="admin-title">
-                <span className="admin-title-main">Dashboard</span>
-                <span className="admin-title-sub">Admin</span>
+              <img src={sidebar} alt="" />
               </div>
             </div>
 

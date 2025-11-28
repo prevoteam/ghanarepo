@@ -338,8 +338,25 @@
   gap: 0.5rem;
 }
 
-.action-btn {
-  padding: 0.5rem;
+.action-btn-outline {
+     padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s;
+  background-color:#2D3B8F;
+}
+.action-btn-outline:hover{
+  border: 1px solid #2D3B8F;
+  color: #2D3B8F;
+  background-color: white;
+}
+.action-btn{
+      padding: 12px 20px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -347,6 +364,12 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  border: 1px solid #2D3B8F;
+  color: #2D3B8F;
+}
+.action-btn:hover{
+  color: #ffffff;
+  background-color: #2D3B8F;
 }
 
 .edit-btn {
