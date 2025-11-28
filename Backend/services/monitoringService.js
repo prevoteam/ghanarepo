@@ -3,6 +3,8 @@ const { success } = require("../model/responseModel");
 const nodemailer = require("nodemailer");
 const fs = require('fs');
 const crypto = require('crypto');
+const PDFDocument = require('pdfkit');
+const QRCode = require('qrcode');
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -1277,6 +1279,489 @@ const ApproveRejectVATRate = async (req, res) => {
     }
 };
 
+// -------------------------
+// Get VAT Eligibility List
+// -------------------------
+const GetVATEligibilityList = async (req, res) => {
+    try {
+        const { status, page = 1, limit = 50 } = req.query;
+
+        console.log("GetVATEligibilityList params:", { status, page, limit });
+
+        let query = `
+            SELECT id, merchant_name, merchant_email, psp_name,
+                   registration_status, transaction_value, vat_amount,
+                   tin, action_status, created_at, updated_at
+            FROM vat_eligibility
+            WHERE 1=1
+        `;
+        const params = [];
+        let paramIndex = 1;
+
+        // Filter by registration status if provided
+        if (status) {
+            query += ` AND registration_status = $${paramIndex}`;
+            params.push(status);
+            paramIndex++;
+        }
+
+        // Get total count for pagination
+        const countQuery = query.replace(/SELECT .* FROM/, 'SELECT COUNT(*) as total FROM');
+        const countResult = await pool.query(countQuery, params);
+        const total = parseInt(countResult.rows[0].total);
+
+        // Add ordering and pagination
+        query += ` ORDER BY id ASC`;
+
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(parseInt(limit), offset);
+
+        const result = await pool.query(query, params);
+
+        return res.status(200).json(
+            success(true, 200, "VAT eligibility list fetched successfully", {
+                merchants: result.rows,
+                pagination: {
+                    total,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    totalPages: Math.ceil(total / parseInt(limit))
+                }
+            })
+        );
+
+    } catch (err) {
+        console.error("GetVATEligibilityList error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
+// -------------------------
+// Generate TIN Number
+// -------------------------
+const generateTIN = async () => {
+    try {
+        const result = await pool.query(`SELECT nextval('tin_sequence') as tin_number`);
+        const tinNumber = result.rows[0].tin_number;
+        return `P${String(tinNumber).padStart(9, '0')}`;
+    } catch (error) {
+        // Fallback if sequence doesn't exist - generate random TIN
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000);
+        return `P${String(timestamp).slice(-6)}${String(random).padStart(3, '0')}`;
+    }
+};
+
+// -------------------------
+// Process Compliance Action
+// -------------------------
+const ProcessComplianceAction = async (req, res) => {
+    try {
+        const {
+            merchant_id,
+            merchant_name,
+            merchant_email,
+            transaction_value,
+            vat_amount,
+            levies_amount,
+            total_liability
+        } = req.body;
+
+        console.log("ProcessComplianceAction request:", req.body);
+
+        if (!merchant_id) {
+            return res.status(400).json(
+                success(false, 400, "Merchant ID is required", null)
+            );
+        }
+
+        // Check if merchant already has a TIN
+        const existingCheck = await pool.query(
+            `SELECT id, tin, action_status FROM vat_eligibility WHERE id = $1`,
+            [merchant_id]
+        );
+
+        if (existingCheck.rows.length === 0) {
+            return res.status(404).json(
+                success(false, 404, "Merchant not found", null)
+            );
+        }
+
+        if (existingCheck.rows[0].action_status === 'Processed' && existingCheck.rows[0].tin) {
+            return res.status(400).json(
+                success(false, 400, "Compliance action already processed for this merchant", {
+                    tin: existingCheck.rows[0].tin
+                })
+            );
+        }
+
+        // Generate TIN
+        const tin = await generateTIN();
+
+        // Generate payment link
+        const paymentLink = `https://pay.gra.gov.gh/invoice/${tin}/${Date.now()}`;
+
+        // Update vat_eligibility with TIN and status
+        const result = await pool.query(
+            `UPDATE vat_eligibility SET
+                tin = $1,
+                registration_status = 'Actioned',
+                action_status = 'Processed',
+                updated_at = NOW()
+            WHERE id = $2
+            RETURNING *`,
+            [tin, merchant_id]
+        );
+
+        console.log("Compliance action processed successfully:", result.rows[0]);
+
+        return res.status(200).json(
+            success(true, 200, "Compliance action processed successfully", {
+                tin,
+                merchant_id,
+                merchant_name: result.rows[0].merchant_name,
+                merchant_email: result.rows[0].merchant_email,
+                payment_link: paymentLink,
+                registration_status: 'Actioned',
+                action_status: 'Processed'
+            })
+        );
+
+    } catch (err) {
+        console.error("ProcessComplianceAction error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
+// -------------------------
+// Download Notice of Liability PDF
+// -------------------------
+const DownloadNoticePDF = async (req, res) => {
+    try {
+        const { tin } = req.params;
+
+        if (!tin) {
+            return res.status(400).json(success(false, 400, "TIN is required", null));
+        }
+
+        // Get merchant details from database
+        const result = await pool.query(
+            `SELECT * FROM vat_eligibility WHERE tin = $1`,
+            [tin]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json(success(false, 404, "Merchant not found", null));
+        }
+
+        const merchant = result.rows[0];
+        const currentDate = new Date().toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        // Generate payment link and QR code
+        const paymentLink = `https://pay.gra.gov.gh/invoice/${tin}`;
+
+        // Generate QR code as PNG buffer
+        const qrCodeBuffer = await QRCode.toBuffer(paymentLink, {
+            type: 'png',
+            width: 200,
+            margin: 2
+        });
+
+        console.log('QR Code generated, buffer size:', qrCodeBuffer.length);
+
+        // Create PDF document
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+        // Set response headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=Notice_of_Liability_${tin}.pdf`);
+
+        // Pipe PDF to response
+        doc.pipe(res);
+
+        // Header
+        doc.fontSize(18).font('Helvetica-Bold').fillColor('#1e40af')
+           .text('GHANA REVENUE AUTHORITY', { align: 'center' });
+        doc.fontSize(12).font('Helvetica').fillColor('#333')
+           .text('VAT Compliance Division', { align: 'center' });
+        doc.moveDown(1.5);
+
+        // Title
+        doc.fontSize(16).font('Helvetica-Bold').fillColor('#000')
+           .text('NOTICE OF VAT LIABILITY', { align: 'center', underline: true });
+        doc.moveDown(1.5);
+
+        // Date and Reference
+        doc.fontSize(10).font('Helvetica').fillColor('#333')
+           .text(`Date: ${currentDate}`, { align: 'right' });
+        doc.text(`Reference: GRA/VAT/${tin}`, { align: 'right' });
+        doc.moveDown(1.5);
+
+        // Merchant Details
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#000').text('To:');
+        doc.font('Helvetica').text(merchant.merchant_name || 'N/A');
+        doc.text(merchant.merchant_email || 'N/A');
+        doc.moveDown(1.5);
+
+        // Body
+        doc.fontSize(11).font('Helvetica-Bold').text('RE: Notice of Registration and VAT Liability Assessment');
+        doc.moveDown(0.5);
+
+        doc.font('Helvetica').text(
+            `This notice serves to inform you that based on our records, your entity has been identified as a ` +
+            `Non-Resident Entity conducting taxable transactions within the jurisdiction of Ghana.`,
+            { align: 'justify' }
+        );
+        doc.moveDown(0.5);
+
+        doc.text(
+            `In accordance with the Value Added Tax Act, 2013 (Act 870) as amended, you are hereby required to ` +
+            `register for VAT and remit the assessed liability as detailed below:`,
+            { align: 'justify' }
+        );
+        doc.moveDown(1.5);
+
+        // Liability Details Box
+        const liabilityBoxY = doc.y;
+        doc.rect(50, liabilityBoxY, 495, 100).stroke('#1e40af');
+
+        doc.fontSize(12).font('Helvetica-Bold').fillColor('#1e40af')
+           .text('LIABILITY ASSESSMENT DETAILS', 60, liabilityBoxY + 8);
+
+        doc.fontSize(10).font('Helvetica').fillColor('#333');
+        doc.text(`Administrative TIN:`, 60, liabilityBoxY + 28);
+        doc.font('Helvetica-Bold').text(`${tin}`, 200, liabilityBoxY + 28);
+
+        doc.font('Helvetica').text(`Gross Transaction Value:`, 60, liabilityBoxY + 45);
+        doc.text(`GHS ${parseFloat(merchant.transaction_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 200, liabilityBoxY + 45);
+
+        doc.text(`Total VAT Liability:`, 60, liabilityBoxY + 62);
+        doc.font('Helvetica-Bold').fillColor('#DC2626')
+           .text(`GHS ${parseFloat(merchant.vat_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 200, liabilityBoxY + 62);
+
+        doc.font('Helvetica').fillColor('#333').text(`Status:`, 60, liabilityBoxY + 79);
+        doc.font('Helvetica-Bold').fillColor('#10B981').text(`${merchant.action_status || 'Processed'}`, 200, liabilityBoxY + 79);
+
+        // Move below the box
+        doc.y = liabilityBoxY + 115;
+
+        // Payment Instructions
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#000')
+           .text('Payment Instructions:');
+        doc.moveDown(0.3);
+
+        doc.font('Helvetica').text(
+            `Please remit the assessed amount within 30 days of receiving this notice. Payment can be made ` +
+            `through the GRA online payment portal by scanning the QR code below or using the payment link.`,
+            { align: 'justify' }
+        );
+        doc.moveDown(1);
+
+        // QR Code Section
+        const qrSectionY = doc.y;
+        doc.rect(50, qrSectionY, 495, 130).stroke('#1e40af');
+
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#1e40af')
+           .text('SCAN TO PAY', 60, qrSectionY + 8);
+
+        // Add QR Code image - place it directly
+        try {
+            doc.image(qrCodeBuffer, 60, qrSectionY + 25, {
+                width: 90,
+                height: 90
+            });
+            console.log('QR Code added to PDF successfully');
+        } catch (imgErr) {
+            console.error('Error adding QR image:', imgErr);
+        }
+
+        // Payment link text next to QR code
+        doc.fontSize(10).font('Helvetica').fillColor('#333')
+           .text('Payment Link:', 170, qrSectionY + 30);
+        doc.fontSize(9).fillColor('#1e40af')
+           .text(paymentLink, 170, qrSectionY + 45);
+
+        doc.fontSize(9).font('Helvetica').fillColor('#666')
+           .text('Scan this QR code with your mobile device', 170, qrSectionY + 65);
+        doc.text('to make a secure payment directly to GRA.', 170, qrSectionY + 78);
+
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#DC2626')
+           .text(`Amount Due: GHS ${parseFloat(merchant.vat_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 170, qrSectionY + 100);
+
+        // Footer - positioned at bottom
+        doc.fontSize(9).font('Helvetica').fillColor('#666')
+           .text('This is an official document generated by the Ghana Revenue Authority.', 50, 750, { align: 'center', width: 495 });
+        doc.text('For inquiries, contact: vat.compliance@gra.gov.gh', 50, 762, { align: 'center', width: 495 });
+
+        // Finalize PDF
+        doc.end();
+
+    } catch (err) {
+        console.error("DownloadNoticePDF error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
+// -------------------------
+// Export VAT Eligibility List as PDF
+// -------------------------
+const ExportVATEligibilityPDF = async (req, res) => {
+    try {
+        const { status } = req.query;
+
+        let query = `
+            SELECT id, merchant_name, merchant_email, psp_name,
+                   registration_status, transaction_value, vat_amount,
+                   tin, action_status, created_at
+            FROM vat_eligibility
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (status) {
+            query += ` AND registration_status = $1`;
+            params.push(status);
+        }
+
+        query += ` ORDER BY created_at DESC`;
+
+        const result = await pool.query(query, params);
+        const merchants = result.rows;
+
+        const currentDate = new Date().toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        // Create PDF document
+        const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=VAT_Eligibility_List_${Date.now()}.pdf`);
+
+        doc.pipe(res);
+
+        // Header
+        doc.fontSize(16).font('Helvetica-Bold').fillColor('#1e40af')
+           .text('GHANA REVENUE AUTHORITY', { align: 'center' });
+        doc.fontSize(10).font('Helvetica').fillColor('#333')
+           .text('VAT Compliance Division', { align: 'center' });
+        doc.moveDown(1);
+
+        // Title
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
+           .text('VAT ELIGIBILITY LIST', { align: 'center' });
+        doc.fontSize(9).font('Helvetica').fillColor('#666')
+           .text(`Generated on: ${currentDate}`, { align: 'center' });
+        doc.moveDown(1.5);
+
+        // Table Header
+        const tableTop = doc.y;
+        const colWidths = [30, 130, 150, 80, 80, 90, 90, 80];
+        const headers = ['#', 'Merchant Name', 'Email', 'PSP', 'Status', 'Transaction', 'VAT Amount', 'Action'];
+
+        // Draw header background
+        doc.rect(40, tableTop - 5, 760, 20).fill('#1e40af');
+
+        // Draw header text
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff');
+        let xPos = 45;
+        headers.forEach((header, i) => {
+            doc.text(header, xPos, tableTop, { width: colWidths[i], align: 'left' });
+            xPos += colWidths[i];
+        });
+
+        // Draw rows
+        let yPos = tableTop + 20;
+        doc.font('Helvetica').fontSize(8).fillColor('#333');
+
+        merchants.forEach((merchant, index) => {
+            // Check if we need a new page
+            if (yPos > 520) {
+                doc.addPage();
+                yPos = 50;
+
+                // Redraw header on new page
+                doc.rect(40, yPos - 5, 760, 20).fill('#1e40af');
+                doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff');
+                xPos = 45;
+                headers.forEach((header, i) => {
+                    doc.text(header, xPos, yPos, { width: colWidths[i], align: 'left' });
+                    xPos += colWidths[i];
+                });
+                yPos += 20;
+                doc.font('Helvetica').fontSize(8).fillColor('#333');
+            }
+
+            // Alternate row background
+            if (index % 2 === 0) {
+                doc.rect(40, yPos - 3, 760, 18).fill('#f3f4f6');
+            }
+
+            doc.fillColor('#333');
+            xPos = 45;
+
+            // Row data
+            doc.text(String(index + 1), xPos, yPos, { width: colWidths[0] });
+            xPos += colWidths[0];
+
+            doc.text(merchant.merchant_name || 'N/A', xPos, yPos, { width: colWidths[1] - 5 });
+            xPos += colWidths[1];
+
+            doc.text(merchant.merchant_email || 'N/A', xPos, yPos, { width: colWidths[2] - 5 });
+            xPos += colWidths[2];
+
+            doc.text(merchant.psp_name || 'N/A', xPos, yPos, { width: colWidths[3] - 5 });
+            xPos += colWidths[3];
+
+            doc.text(merchant.registration_status || 'N/A', xPos, yPos, { width: colWidths[4] - 5 });
+            xPos += colWidths[4];
+
+            const transValue = parseFloat(merchant.transaction_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+            doc.text(`GH₵${transValue}`, xPos, yPos, { width: colWidths[5] - 5 });
+            xPos += colWidths[5];
+
+            const vatValue = parseFloat(merchant.vat_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+            doc.text(`GH₵${vatValue}`, xPos, yPos, { width: colWidths[6] - 5 });
+            xPos += colWidths[6];
+
+            doc.text(merchant.action_status || 'Pending', xPos, yPos, { width: colWidths[7] - 5 });
+
+            yPos += 18;
+        });
+
+        // Summary
+        doc.moveDown(2);
+        yPos = doc.y + 10;
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#1e40af')
+           .text(`Total Merchants: ${merchants.length}`, 40, yPos);
+
+        // Calculate totals
+        const totalTransaction = merchants.reduce((sum, m) => sum + parseFloat(m.transaction_value || 0), 0);
+        const totalVAT = merchants.reduce((sum, m) => sum + parseFloat(m.vat_amount || 0), 0);
+
+        doc.text(`Total Transaction Value: GH₵${totalTransaction.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 40, yPos + 15);
+        doc.text(`Total VAT Amount: GH₵${totalVAT.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 40, yPos + 30);
+
+        // Footer
+        doc.fontSize(8).font('Helvetica').fillColor('#666')
+           .text('This is an official document generated by the Ghana Revenue Authority.', 40, 550, { align: 'center', width: 760 });
+
+        doc.end();
+
+    } catch (err) {
+        console.error("ExportVATEligibilityPDF error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
 module.exports = {
     MonitoringLogin,
     MonitoringVerifyOTP,
@@ -1294,5 +1779,9 @@ module.exports = {
     GRAAdminResendOTP,
     GetVATRates,
     SubmitVATRateChange,
-    ApproveRejectVATRate
+    ApproveRejectVATRate,
+    GetVATEligibilityList,
+    ProcessComplianceAction,
+    DownloadNoticePDF,
+    ExportVATEligibilityPDF
 };
