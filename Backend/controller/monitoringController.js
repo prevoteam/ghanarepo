@@ -88,5 +88,20 @@ module.exports = ({ config }) => {
         return monitoringService.ApproveRejectVATRate(req, res, next);
     });
 
+    // GET /v1/admin/monitoring/vat-eligibility - Get VAT eligibility list
+    router.get('/vat-eligibility', (req, res, next) => {
+        return monitoringService.GetVATEligibilityList(req, res, next);
+    });
+
+    // POST /v1/admin/monitoring/compliance-action - Process compliance action
+    router.post('/compliance-action', (req, res, next) => {
+        return monitoringService.ProcessComplianceAction(req, res, next);
+    });
+
+    // GET /v1/admin/monitoring/download-notice/:tin - Download Notice of Liability PDF
+    router.get('/download-notice/:tin', (req, res, next) => {
+        return monitoringService.DownloadNoticePDF(req, res, next);
+    });
+
     return router;
 };
