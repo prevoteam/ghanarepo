@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './ConfigDashboard.css';
 import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
   const [activeMenu, setActiveMenu] = useState('evat-rules');
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef(null);
 
   const menuItems = [
     { id: 'evat-rules', label: 'E-VAT Applicability Rules', icon: 'clipboard' },
@@ -13,6 +17,85 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
     { id: 'user-roles', label: 'User Roles & Permissions', icon: 'users' },
     { id: 'notifications', label: 'Notifications and templates', icon: 'bell' },
   ];
+
+  // Fetch notifications for checker role
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/notifications?user_role=${userRole === 'checker' ? 'gra_checker' : 'gra_maker'}`);
+      const data = await response.json();
+      if (data.status && data.results) {
+        setNotifications(data.results.notifications || []);
+        setUnreadCount(data.results.unread_count || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
+  // Fetch notifications on mount and periodically (every 30 seconds) - Only for checker
+  useEffect(() => {
+    if (userRole === 'checker') {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [userRole]);
+
+  // Handle click outside to close notification dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Mark notification as read
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await fetch(`${ADMIN_API_BASE_URL}/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      // Refresh notifications
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
+  };
+
+  // Mark all notifications as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      await fetch(`${ADMIN_API_BASE_URL}/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_role: userRole === 'checker' ? 'gra_checker' : 'gra_maker' })
+      });
+      // Refresh notifications
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+    }
+  };
+
+  // Format notification time
+  const formatNotificationTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
 
   const renderIcon = (iconName) => {
     switch (iconName) {
@@ -155,6 +238,78 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
                 </svg>
                 <span>All Systems Nominal</span>
               </div>
+
+              {/* Bell Notification - Only for Checker */}
+              {userRole === 'checker' && (
+                <div className="notification-bell-container" ref={notificationRef}>
+                  <button
+                    className="notification-bell-btn"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    )}
+                  </button>
+
+                  {/* Notification Dropdown */}
+                  {showNotifications && (
+                    <div className="notification-dropdown">
+                      <div className="notification-dropdown-header">
+                        <h3>Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button className="mark-all-read-btn" onClick={handleMarkAllAsRead}>
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                      <div className="notification-dropdown-body">
+                        {notifications.length === 0 ? (
+                          <div className="no-notifications">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+                              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <p>No notifications yet</p>
+                          </div>
+                        ) : (
+                          notifications.map((notification) => (
+                            <div
+                              key={notification.id}
+                              className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+                              onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
+                            >
+                              <div className="notification-icon">
+                                {notification.notification_type === 'rate_approval' ? (
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 8v4"/>
+                                    <path d="M12 16h.01"/>
+                                  </svg>
+                                ) : (
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="notification-content">
+                                <h4>{notification.title}</h4>
+                                <p>{notification.message}</p>
+                                <span className="notification-time">{formatNotificationTime(notification.created_at)}</span>
+                              </div>
+                              {!notification.is_read && <span className="unread-dot"></span>}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button className="logout-btn" onClick={onLogout}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
