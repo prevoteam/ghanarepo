@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './ConfigDashboard.css';
+import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
   const [activeMenu, setActiveMenu] = useState('evat-rules');
@@ -171,20 +172,6 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
           </div>
         </main>
       </div>
-
-      {/* Footer - Full Width Outside Dashboard */}
-      <footer className="config-footer">
-        <div className="footer-content">
-          <div className="footer-text">Integrity. Fairness. Service</div>
-          <div className="footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
-          <button className="assistant-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            Ask GRA Assistant
-          </button>
-        </div>
-      </footer>
     </div>
   );
 };
@@ -260,7 +247,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
   const fetchRates = async () => {
     try {
       setError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1'}/admin/monitoring/vat-rates`);
+      const response = await fetch(`${ADMIN_API_BASE_URL}/vat-rates`);
       const data = await response.json();
       if (data.status && data.results?.rates) {
         // Map API response to component format
@@ -305,7 +292,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
     setError(null);
     try {
       // API call to submit rate change for approval
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1'}/admin/monitoring/vat-rate-change`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/vat-rate-change`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -341,7 +328,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1'}/admin/monitoring/vat-rate-approve`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/vat-rate-approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -370,7 +357,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1'}/admin/monitoring/vat-rate-approve`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/vat-rate-approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -430,6 +417,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
           <div className="table-cell cell-rate">Rate (%)</div>
           <div className="table-cell cell-date">Effective Date</div>
           <div className="table-cell cell-order">Calculation Order</div>
+          <div className="table-cell cell-vat-status">Status</div>
           <div className="table-cell cell-actions">Action</div>
         </div>
         {rates.map((rate, index) => (
@@ -464,6 +452,11 @@ const VATRateTable = ({ userRole = 'maker' }) => {
             </div>
             <div className="table-cell cell-date">{rate.effectiveDate}</div>
             <div className="table-cell cell-order">{rate.order}</div>
+            <div className="table-cell cell-vat-status">
+              <span className={`vat-status-badge ${rate.pendingRate || rate.status === 'pending' ? 'pending' : 'approved'}`}>
+                {rate.pendingRate || rate.status === 'pending' ? 'Pending' : 'Approved'}
+              </span>
+            </div>
             <div className="table-cell cell-actions">
               {userRole === 'maker' && (
                 <>

@@ -2,8 +2,7 @@ import { useState } from 'react';
 import './ConfigurationLogin.css';
 import ConfigOTPVerification from './ConfigOTPVerification';
 import ConfigDashboard from './ConfigDashboard';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const ConfigurationLogin = ({ onBack }) => {
   const [userRole, setUserRole] = useState('maker');
@@ -27,7 +26,7 @@ const ConfigurationLogin = ({ onBack }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-login`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/config-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

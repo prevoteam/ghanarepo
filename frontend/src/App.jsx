@@ -4,6 +4,9 @@ import TaxpayerPortalLogin from './components/TaxpayerPortalLogin'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import NonResidentDashboard from './components/NonResidentDashboard'
+import MonitoringDashboard from './components/MonitoringDashboard'
+import ConfigDashboard from './components/ConfigDashboard'
+import AdminDashboard from './components/AdminDashboard'
 import RegistrationForm from './components/RegistrationForm'
 import AboutUs from './components/AboutUs'
 import ContactUs from './components/ContactUs'
@@ -25,7 +28,7 @@ function App() {
   const [resetHomeCounter, setResetHomeCounter] = useState(0)
 
   // Views that should NOT have centralized Header/Footer (they have their own)
-  const dashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard']
+  const dashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
 
   // Restore session on page load
   useEffect(() => {
@@ -34,35 +37,57 @@ function App() {
     const savedUserRole = localStorage.getItem('userRole')
     const savedLoginType = localStorage.getItem('loginType')
 
-    if (savedUserId && (savedView === 'dashboard' || savedView === 'nonResidentDashboard')) {
+    // Restore session for any dashboard view
+    const validDashboardViews = ['dashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
+    if (savedUserId && validDashboardViews.includes(savedView)) {
       setLoggedInUserId(savedUserId)
       setCurrentView(savedView)
-      setUserRole(savedUserRole || 'maker')
+      setUserRole(savedUserRole || 'resident')
       setLoginType(savedLoginType || 'resident')
     }
   }, [])
 
-  const handleLoginSuccess = (uniqueId, role = 'maker') => {
+  const handleLoginSuccess = (uniqueId, role = 'resident') => {
     setLoggedInUserId(uniqueId)
     setUserRole(role)
 
-    if (loginType === 'nonresident') {
-      setCurrentView('nonResidentDashboard')
-      localStorage.setItem('currentView', 'nonResidentDashboard')
-      localStorage.setItem('loginType', 'nonresident')
+    // Route based on user role:
+    // - gra_maker, gra_checker -> ConfigDashboard
+    // - monitoring -> MonitoringDashboard
+    // - nonresident -> NonResidentDashboard
+    // - resident (default) -> Dashboard
+    let targetView = 'dashboard'
+    let targetLoginType = 'resident'
+
+    if (role === 'admin') {
+      targetView = 'adminDashboard'
+      targetLoginType = 'admin'
+    } else if (role === 'gra_maker' || role === 'gra_checker') {
+      targetView = 'configDashboard'
+      targetLoginType = 'gra'
+    } else if (role === 'monitoring') {
+      targetView = 'monitoringDashboard'
+      targetLoginType = 'monitoring'
+    } else if (role === 'nonresident' || loginType === 'nonresident') {
+      targetView = 'nonResidentDashboard'
+      targetLoginType = 'nonresident'
     } else {
-      setCurrentView('dashboard')
-      localStorage.setItem('currentView', 'dashboard')
-      localStorage.setItem('loginType', 'resident')
+      targetView = 'dashboard'
+      targetLoginType = 'resident'
     }
 
+    setCurrentView(targetView)
+    setLoginType(targetLoginType)
+
     localStorage.setItem('loggedInUserId', uniqueId)
+    localStorage.setItem('currentView', targetView)
     localStorage.setItem('userRole', role)
+    localStorage.setItem('loginType', targetLoginType)
   }
 
   const handleLogout = () => {
     setLoggedInUserId(null)
-    setUserRole('maker')
+    setUserRole('resident')
     setLoginType('resident')
     setCurrentView('home')
 
@@ -128,6 +153,18 @@ function App() {
   // Render content based on current view
   const renderContent = () => {
     // Dashboard views (no centralized header/footer)
+    if (currentView === 'monitoringDashboard' && loggedInUserId) {
+      return <MonitoringDashboard onLogout={handleLogout} />
+    }
+
+    if (currentView === 'configDashboard' && loggedInUserId) {
+      return <ConfigDashboard onLogout={handleLogout} userRole={userRole} />
+    }
+
+    if (currentView === 'adminDashboard' && loggedInUserId) {
+      return <AdminDashboard onLogout={handleLogout} onLogoClick={handleGoHome} />
+    }
+
     if (currentView === 'nonResidentDashboard' && loggedInUserId) {
       return <NonResidentDashboard uniqueId={loggedInUserId} onLogout={handleLogout} />
     }

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './ConfigOTPVerification.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const ConfigOTPVerification = ({ contactInfo, uniqueId, onClose, onVerified, userRole }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -76,7 +75,7 @@ const ConfigOTPVerification = ({ contactInfo, uniqueId, onClose, onVerified, use
 
   const handleResendOTP = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-resend-otp`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/config-resend-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +110,7 @@ const ConfigOTPVerification = ({ contactInfo, uniqueId, onClose, onVerified, use
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/admin/monitoring/config-verify-otp`, {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/config-verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

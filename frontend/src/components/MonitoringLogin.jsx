@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './MonitoringLogin.css';
 import MonitoringOTP from './MonitoringOTP';
+import { ADMIN_API_BASE_URL } from '../utils/api';
 
 const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/v1/admin/monitoring/login', {
+      const response = await fetch(`${ADMIN_API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

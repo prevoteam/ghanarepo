@@ -508,3 +508,13 @@ body {
 .border-bottom-1px{
   border-top: 1px solid #1E3A8A;
 }
+
+/* Role Cards Hover Effect */
+.role-card {
+  cursor: pointer;
+}
+
+.role-card:hover {
+  background: #CBD3E8 !important;
+  border-color: #CBD3E8 !important;
+}

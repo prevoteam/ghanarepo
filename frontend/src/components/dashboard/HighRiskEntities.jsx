@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import './DashboardPages.css';
+import { QR_CODE_API_URL, PAYMENT_PORTAL_URL } from '../../utils/api';
 
 const HighRiskEntities = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -353,7 +354,7 @@ const HighRiskEntities = () => {
                             doc.text('Payment Link:', 20, 185);
                             doc.setFont('helvetica', 'normal');
                             doc.setTextColor(45, 59, 143);
-                            doc.text(`https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}`, 20, 192);
+                            doc.text(`${PAYMENT_PORTAL_URL}/invoice/${selectedMerchant.tin}`, 20, 192);
 
                             // Footer
                             doc.setTextColor(128, 128, 128);
@@ -375,7 +376,7 @@ const HighRiskEntities = () => {
                     <div className="action-details-right">
                       <div className="qr-code">
                         <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}`}
+                          src={`${QR_CODE_API_URL}/?size=80x80&data=${PAYMENT_PORTAL_URL}/invoice/${selectedMerchant.tin}`}
                           alt="Payment QR Code"
                           width="80"
                           height="80"
@@ -391,10 +392,10 @@ const HighRiskEntities = () => {
                       <input
                         type="text"
                         readOnly
-                        value={`https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}/${Date.now()}`}
+                        value={`${PAYMENT_PORTAL_URL}/invoice/${selectedMerchant.tin}/${Date.now()}`}
                         className="payment-link-input"
                       />
-                      <button className="copy-btn" onClick={() => navigator.clipboard.writeText(`https://pay.gra.gov.gh/invoice/${selectedMerchant.tin}/${Date.now()}`)}>
+                      <button className="copy-btn" onClick={() => navigator.clipboard.writeText(`${PAYMENT_PORTAL_URL}/invoice/${selectedMerchant.tin}/${Date.now()}`)}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
