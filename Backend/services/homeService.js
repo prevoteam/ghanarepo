@@ -799,9 +799,9 @@ const SendNonResidentLoginOTP = async (req, res) => {
       });
     }
 
-    // 1️⃣ Check if user exists with the given TIN
+    // 1️⃣ Check if user exists with the given TIN (check agent_tin, tin, or username)
     const result = await pool.query(
-      `SELECT unique_id, contact_value FROM users WHERE agent_tin = $1`,
+      `SELECT id, unique_id, contact_value FROM users WHERE agent_tin = $1 OR tin = $1 OR username = $1`,
       [tin]
     );
 
@@ -818,10 +818,10 @@ const SendNonResidentLoginOTP = async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // 3️⃣ Update user with OTP
+    // 3️⃣ Update user with OTP (use user ID for more precise update)
     await pool.query(
-      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE agent_tin = $3`,
-      [otp, expiresAt, tin]
+      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+      [otp, expiresAt, user.id]
     );
 
     // 4️⃣ Send OTP via email
@@ -858,12 +858,12 @@ const NonResidentMerchantLogin = async (req, res) => {
       });
     }
 
-    // 1️⃣ Check if user exists with the given TIN
+    // 1️⃣ Check if user exists with the given TIN (check agent_tin, tin, or username)
     const result = await pool.query(
       `
-        SELECT unique_id, otp_code, otp_expires_at, contact_value, user_role, password
+        SELECT id, unique_id, otp_code, otp_expires_at, contact_value, user_role, password
         FROM users
-        WHERE agent_tin = $1
+        WHERE agent_tin = $1 OR tin = $1 OR username = $1
       `,
       [tin]
     );
@@ -901,20 +901,20 @@ const NonResidentMerchantLogin = async (req, res) => {
       });
     }
 
-    // 5️⃣ Update last login timestamp
+    // 5️⃣ Clear OTP after successful login
     await pool.query(
       `UPDATE users
        SET otp_code = NULL,
            otp_expires_at = NULL
-       WHERE agent_tin = $1`,
-      [tin]
+       WHERE id = $1`,
+      [user.id]
     );
 
     return res.status(200).json({
       status: true,
       message: "Login successful!",
       unique_id: user.unique_id,
-      user_role: user.user_role || 'maker'
+      user_role: user.user_role || 'nonresident'
     });
 
   } catch (err) {

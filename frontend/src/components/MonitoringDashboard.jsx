@@ -18,6 +18,7 @@ import warning from "../assets/risk 1.svg";
 import cart from "../assets/cart-shopping-fast 1.svg";
 import moon from "../assets/chart-pie-alt 1.svg";
 import sidebar from "../assets/sidebar-bottom.png";
+
 const MonitoringDashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('psp-ingestion');
   const [discoveryData, setDiscoveryData] = useState(null);
@@ -170,9 +171,9 @@ const MonitoringDashboard = ({ onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-wrapper">
-        {/* Sidebar */}
-        <aside className="dashboard-sidebar">
+        <div className="dashboard-wrapper">
+          {/* Sidebar */}
+          <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="sidebar-logo">
                <img src={logo} alt="" />
@@ -241,8 +242,8 @@ const MonitoringDashboard = ({ onLogout }) => {
             {!showDiscoveryResults && renderContent()}
           </div>
         </main>
+        </div>
       </div>
-    </div>
   );
 };
 
