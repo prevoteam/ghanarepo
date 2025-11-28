@@ -8,7 +8,6 @@ import HighRiskEntities from './dashboard/HighRiskEntities';
 import ECommercePortals from './dashboard/ECommercePortals';
 import BIReports from './dashboard/BIReports';
 import EcommerceDiscoveryResults from './dashboard/EcommerceDiscoveryResults';
-import { GHANA_SITES_API_URL } from '../utils/api';
 
 const MonitoringDashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('psp-ingestion');
@@ -160,9 +159,9 @@ const MonitoringDashboard = ({ onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-wrapper">
-        {/* Sidebar */}
-        <aside className="dashboard-sidebar">
+        <div className="dashboard-wrapper">
+          {/* Sidebar */}
+          <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="sidebar-logo">
               <svg width="40" height="40" viewBox="0 0 40 40">
@@ -235,8 +234,8 @@ const MonitoringDashboard = ({ onLogout }) => {
             {!showDiscoveryResults && renderContent()}
           </div>
         </main>
+        </div>
       </div>
-    </div>
   );
 };
 
