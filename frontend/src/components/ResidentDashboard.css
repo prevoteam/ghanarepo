@@ -1,0 +1,716 @@
+/* Resident Dashboard Container */
+.rd-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.rd-main {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.rd-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* Company Banner */
+.rd-banner {
+  background: linear-gradient(135deg, #2D3B8F 0%, #1e2a6e 100%);
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.rd-banner-info {
+  z-index: 1;
+}
+
+.rd-company-name {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.rd-company-ids {
+  display: flex;
+  gap: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+.rd-id-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rd-id-item svg {
+  opacity: 0.8;
+}
+
+/* Banner Right Section */
+.rd-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1;
+}
+
+/* Compliance Badge */
+.rd-compliance-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+}
+
+/* Logout Button */
+.rd-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rd-logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.rd-compliance-icon {
+  width: 40px;
+  height: 40px;
+  background: #10B981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rd-compliance-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rd-compliance-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rd-compliance-value {
+  font-size: 0.95rem;
+  color: #10B981;
+  font-weight: 600;
+}
+
+/* Banner Decorative Circles */
+.rd-banner-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rd-circle-1 {
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  right: 150px;
+}
+
+.rd-circle-2 {
+  width: 150px;
+  height: 150px;
+  bottom: -30px;
+  right: 50px;
+}
+
+/* Main Grid */
+.rd-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+}
+
+/* Cards */
+.rd-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.rd-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+/* At a Glance Card */
+.rd-glance-card {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.rd-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rd-card-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.rd-glance-content {
+  display: flex;
+  gap: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.rd-glance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rd-glance-label {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.rd-glance-value {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.rd-value-blue {
+  color: #2D3B8F;
+}
+
+.rd-value-orange {
+  color: #F59E0B;
+}
+
+.rd-glance-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.rd-glance-link:hover {
+  color: #2D3B8F;
+}
+
+/* Messages Card */
+.rd-messages-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.rd-messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rd-message-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.rd-message-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.rd-message-dot.warning {
+  background: #F59E0B;
+}
+
+.rd-message-dot.info {
+  background: #3B82F6;
+}
+
+.rd-message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rd-message-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.rd-message-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.rd-view-all-link {
+  color: #2D3B8F;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  display: inline-block;
+}
+
+.rd-view-all-link:hover {
+  color: #1e2a6e;
+}
+
+/* Recent History Card */
+.rd-history-card {
+  grid-column: 1;
+  grid-row: 2;
+  max-width: 400px;
+}
+
+.rd-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rd-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rd-history-period {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.rd-history-amount {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.rd-view-statement-link {
+  color: #2D3B8F;
+  font-size: 0.85rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.rd-view-statement-link:hover {
+  text-decoration: underline;
+}
+
+/* Decorative Bottom Circles */
+.rd-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rd-deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(45, 59, 143, 0.05);
+}
+
+.rd-deco-1 {
+  width: 300px;
+  height: 300px;
+  bottom: -150px;
+  left: -50px;
+}
+
+.rd-deco-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  left: 100px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .rd-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rd-glance-card,
+  .rd-messages-card,
+  .rd-history-card {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .rd-history-card {
+    max-width: 100%;
+  }
+
+  .rd-banner {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .rd-company-ids {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .rd-banner-right {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .rd-glance-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .rd-content {
+    padding: 1rem;
+  }
+
+  .rd-banner {
+    padding: 1.5rem;
+  }
+
+  .rd-company-name {
+    font-size: 1.3rem;
+  }
+
+  .rd-glance-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* ===========================================
+   VAT Computation Modal Styles
+   =========================================== */
+
+.rd-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.rd-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rd-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 16px 16px 0 0;
+}
+
+.rd-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.rd-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: #64748b;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.rd-modal-close:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.rd-modal-body {
+  padding: 1.5rem;
+}
+
+/* Sales Input Section */
+.rd-sales-input-section {
+  margin-bottom: 1.5rem;
+}
+
+.rd-sales-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.rd-sales-label span {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.rd-sales-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rd-currency-prefix {
+  padding: 0.875rem 1rem;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.rd-sales-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.875rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+}
+
+.rd-sales-input:focus {
+  background: #e8f0fe;
+}
+
+/* VAT Table */
+.rd-vat-table {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rd-vat-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  background: #f8fafc;
+  padding: 0.875rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rd-vat-table-header span:last-child {
+  text-align: right;
+}
+
+.rd-vat-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
+}
+
+.rd-vat-table-row span:first-child {
+  color: #1e293b;
+}
+
+.rd-vat-table-row span:nth-child(2) {
+  color: #64748b;
+  text-align: center;
+}
+
+.rd-vat-table-row span:last-child {
+  text-align: right;
+  color: #1e293b;
+}
+
+.rd-taxable-row {
+  background: #f8fafc;
+}
+
+.rd-vat-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.rd-vat-amount {
+  font-weight: 600;
+}
+
+.rd-vat-table-total {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  padding: 1rem;
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+.rd-vat-table-total span:first-child {
+  color: #2D3B8F;
+  font-size: 1rem;
+}
+
+.rd-total-amount {
+  text-align: right;
+  color: #2D3B8F;
+  font-size: 1.1rem;
+}
+
+/* Modal Footer */
+.rd-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
+}
+
+.rd-btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rd-btn-cancel:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.rd-btn-pay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #3B82F6;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.rd-btn-pay:hover {
+  background: #2563eb;
+}
+
+/* Modal Responsive */
+@media (max-width: 600px) {
+  .rd-modal {
+    max-height: 95vh;
+    margin: 0.5rem;
+  }
+
+  .rd-modal-header {
+    padding: 1rem;
+  }
+
+  .rd-modal-body {
+    padding: 1rem;
+  }
+
+  .rd-vat-table-header,
+  .rd-vat-table-row,
+  .rd-vat-table-total {
+    grid-template-columns: 1.5fr 0.75fr 1fr;
+    font-size: 0.8rem;
+    padding: 0.75rem;
+  }
+
+  .rd-modal-footer {
+    flex-direction: column;
+  }
+
+  .rd-btn-cancel,
+  .rd-btn-pay {
+    width: 100%;
+    justify-content: center;
+  }
+}
