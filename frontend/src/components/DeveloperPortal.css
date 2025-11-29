@@ -1,5 +1,5 @@
 .portal-container {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

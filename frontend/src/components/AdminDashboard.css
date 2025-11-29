@@ -222,6 +222,12 @@
   gap: 1rem;
 }
 
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
@@ -260,7 +266,10 @@
 .search-box svg {
   position: absolute;
   right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: #9ca3af;
+  pointer-events: none;
 }
 
 /* Add User Button */
@@ -704,5 +713,74 @@
 
   .modal-actions button {
     width: 100%;
+  }
+}
+
+/* Sidebar Decoration Image */
+.sidebar-decoration-img {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  opacity: 1;
+}
+
+/* Admin Footer */
+.admin-footer {
+  background: #2D3B8F;
+  padding: 1rem 2rem;
+  flex-shrink: 0;
+}
+
+.admin-footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-tagline {
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.footer-copyright {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+}
+
+.ask-assistant-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: transparent;
+  border: 1px solid #F59E0B;
+  border-radius: 25px;
+  color: #F59E0B;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ask-assistant-btn:hover {
+  background: #F59E0B;
+  color: #2D3B8F;
+}
+
+.ask-assistant-btn svg {
+  fill: currentColor;
+}
+
+@media (max-width: 768px) {
+  .admin-footer-content {
+    flex-direction: column;
+    text-align: center;
   }
 }

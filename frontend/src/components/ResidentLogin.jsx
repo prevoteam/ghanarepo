@@ -3,7 +3,7 @@ import './Login.css';
 import { loginApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 
-const Login = ({ onLoginSuccess, onRegisterNow }) => {
+const ResidentLogin = ({ onLoginSuccess, onRegisterNow }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -63,7 +63,7 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
       return;
     }
 
-    // Call merchant login API
+    // Call resident login API
     const result = await execute(loginApi.merchantLogin, username, password);
 
     if (result && result.success) {
@@ -91,14 +91,14 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
 
     // Auto-focus next input
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
+      const nextInput = document.getElementById(`resident-otp-${index + 1}`);
       if (nextInput) nextInput.focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
+      const prevInput = document.getElementById(`resident-otp-${index - 1}`);
       if (prevInput) prevInput.focus();
     }
   };
@@ -125,12 +125,12 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
       setTimeout(() => {
         setShowOtpModal(false);
         const userId = result.data?.results?.unique_id || result.data?.results?.uniqueId || sessionId;
-        const userRole = result.data?.results?.user_role || 'nonresident';
+        const userRole = result.data?.results?.user_role || 'resident';
         onLoginSuccess(userId, userRole);
       }, 1000);
     } else {
       setOtp(['', '', '', '', '', '']);
-      const firstInput = document.getElementById('otp-0');
+      const firstInput = document.getElementById('resident-otp-0');
       if (firstInput) firstInput.focus();
     }
   };
@@ -153,7 +153,7 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
         console.log('Development OTP (Resent):', result.data?.results?.otpDev || result.data?.results?.otp);
       }
 
-      const firstInput = document.getElementById('otp-0');
+      const firstInput = document.getElementById('resident-otp-0');
       if (firstInput) firstInput.focus();
     }
   };
@@ -169,7 +169,7 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
       {/* Login Form */}
       <div className="login-content">
         <div className="login-card">
-          <h1 className="login-title">Non Resident Login</h1>
+          <h1 className="login-title">Resident Login</h1>
           <p className="login-subtitle">Enter your credentials to access your dashboard</p>
 
           {error && (
@@ -195,9 +195,9 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
 
           <form onSubmit={handleLogin} className="login-form">
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="resident-username">Username</label>
               <input
-                id="username"
+                id="resident-username"
                 type="text"
                 className="credential-input"
                 placeholder="Enter your Username"
@@ -208,9 +208,9 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="resident-password">Password</label>
               <input
-                id="password"
+                id="resident-password"
                 type="password"
                 className="credential-input"
                 placeholder="Enter your Password"
@@ -291,7 +291,7 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  id={`otp-${index}`}
+                  id={`resident-otp-${index}`}
                   type="text"
                   inputMode="numeric"
                   maxLength="1"
@@ -340,4 +340,4 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
   );
 };
 
-export default Login;
+export default ResidentLogin;

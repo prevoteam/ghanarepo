@@ -592,9 +592,9 @@ const ConfigurationLogin = async (req, res) => {
             );
         }
 
-        // 1️⃣ Find user by ghanacardnumber or tin from users table
+        // 1️⃣ Find user by ghanacardnumber or agent_tin from users table
         const userQuery = await pool.query(
-            `SELECT id, unique_id,  ghana_card_number, tin ,contact_value
+            `SELECT id, unique_id, ghana_card_number, agent_tin, contact_value
              FROM users
              WHERE ghana_card_number = $1`,
             [String(tin_ghana_card)]
@@ -673,7 +673,7 @@ const ConfigurationVerifyOTP = async (req, res) => {
 
         // 1️⃣ Find user by unique_id
         const userQuery = await pool.query(
-            `SELECT id, unique_id, contact_value, fullname, full_name, ghanacardnumber, tin, otp_code, otp_expires_at
+            `SELECT id, unique_id, contact_value, fullname, full_name, ghanacardnumber, agent_tin, otp_code, otp_expires_at
              FROM users
              WHERE unique_id = $1`,
             [unique_id]
@@ -728,7 +728,7 @@ const ConfigurationVerifyOTP = async (req, res) => {
                     email: user.contact_value,
                     name: user.fullname || user.full_name,
                     ghana_card: user.ghanacardnumber,
-                    tin: user.tin
+                    tin: user.agent_tin
                 }
             })
         );

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { ADMIN_USERS_API_BASE_URL } from '../utils/api';
-import logo from "../assets/dashboard-monitor.png";
-import sidebar from "../assets/sidebar-bottom.png";
+import logo from '../assets/dashboard-monitor.png';
+import sidebar from '../assets/sidebar-bottom.png';
 
 
 const AdminDashboard = ({ onLogout, onLogoClick }) => {
@@ -106,7 +106,7 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
     setEditFormData({
       first_name: firstName,
       last_name: lastName,
-      tin: user.tin || '',
+      tin: user.agent_tin || '',
       ghana_id: user.ghana_card_number || '',
       user_role: user.user_role || '',
       email: user.email || ''
@@ -272,7 +272,7 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       (user.full_name || '').toLowerCase().includes(searchLower) ||
-      (user.tin || '').toLowerCase().includes(searchLower) ||
+      (user.agent_tin || '').toLowerCase().includes(searchLower) ||
       (user.ghana_card_number || '').toLowerCase().includes(searchLower) ||
       (user.email || '').toLowerCase().includes(searchLower)
     );
@@ -282,29 +282,20 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
     switch (iconName) {
       case 'list':
         return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="8" y1="6" x2="21" y2="6" />
-            <line x1="8" y1="12" x2="21" y2="12" />
-            <line x1="8" y1="18" x2="21" y2="18" />
-            <line x1="3" y1="6" x2="3.01" y2="6" />
-            <line x1="3" y1="12" x2="3.01" y2="12" />
-            <line x1="3" y1="18" x2="3.01" y2="18" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
           </svg>
         );
       case 'add':
         return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="16" />
-            <line x1="8" y1="12" x2="16" y2="12" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
           </svg>
         );
       case 'manage':
         return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-            <line x1="12" y1="9" x2="12" y2="13" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
           </svg>
         );
       default:
@@ -320,8 +311,8 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
   const renderUserList = () => (
     <div className="admin-content-section">
       <div className="section-header">
-        <h2 className="section-title">All Users</h2>
-        <div className="section-actions">
+        <div className="section-header-left">
+          <h2 className="section-title">All Users</h2>
           <div className="search-box">
             <input
               type="text"
@@ -329,20 +320,20 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
             </svg>
           </div>
-          <button className="add-user-btn" onClick={() => setActiveMenu('add-user')}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="16" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-            </svg>
-            Add User
-          </button>
         </div>
+        <button className="add-user-btn" onClick={() => setActiveMenu('add-user')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Add User
+        </button>
       </div>
 
       {error && <div className="error-alert">{error}</div>}
@@ -374,7 +365,7 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
                 <tr key={user.id}>
                   <td>{String(index + 1).padStart(2, '0')}</td>
                   <td>{user.full_name || 'N/A'}</td>
-                  <td>{user.tin || 'N/A'}</td>
+                  <td>{user.agent_tin || 'N/A'}</td>
                   <td>{user.ghana_card_number || 'N/A'}</td>
                   <td>{getRoleLabel(user.user_role)}</td>
                   <td className="actions-cell">
@@ -513,8 +504,8 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
   const renderManageUser = () => (
     <div className="admin-content-section">
       <div className="section-header">
-        <h2 className="section-title">All Users</h2>
-        <div className="section-actions">
+        <div className="section-header-left">
+          <h2 className="section-title">All Users</h2>
           <div className="search-box">
             <input
               type="text"
@@ -522,20 +513,20 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
             </svg>
           </div>
-          <button className="add-user-btn" onClick={() => setActiveMenu('add-user')}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="16" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-            </svg>
-            Add User
-          </button>
         </div>
+        <button className="add-user-btn" onClick={() => setActiveMenu('add-user')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Add User
+        </button>
       </div>
 
       {error && <div className="error-alert">{error}</div>}
@@ -567,7 +558,7 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
                 <tr key={user.id}>
                   <td>{String(index + 1).padStart(2, '0')}</td>
                   <td>{user.full_name || 'N/A'}</td>
-                  <td>{user.tin || 'N/A'}</td>
+                  <td>{user.agent_tin || 'N/A'}</td>
                   <td>{user.ghana_card_number || 'N/A'}</td>
                   <td>
                     <div className="role-dropdown-cell">
@@ -637,10 +628,11 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
           <aside className="admin-sidebar">
             <div className="admin-sidebar-header">
               <div className="admin-logo">
-             <img src={logo} alt="" />
+                <img src={logo} alt="GRA Logo" />
               </div>
               <div className="admin-title">
-              <img src={sidebar} alt="" />
+                <span className="admin-title-main">Dashboard</span>
+                <span className="admin-title-sub">Admin</span>
               </div>
             </div>
 
@@ -658,8 +650,7 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
             </nav>
 
             <div className="admin-sidebar-decoration">
-              <div className="admin-circle admin-circle-1"></div>
-              <div className="admin-circle admin-circle-2"></div>
+              <img src={sidebar} alt="" className="sidebar-decoration-img" />
             </div>
           </aside>
 
@@ -670,7 +661,9 @@ const AdminDashboard = ({ onLogout, onLogoClick }) => {
               <h1 className="admin-topbar-title">User Management</h1>
               <div className="admin-topbar-actions">
                 <div className="system-status">
-                  <span className="status-dot"></span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                   <span>All Systems Nominal</span>
                 </div>
                 <button className="logout-btn" onClick={onLogout} title="Logout">

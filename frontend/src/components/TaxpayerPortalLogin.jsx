@@ -1,14 +1,6 @@
 import './TaxpayerPortalLogin.css';
 
-const TaxpayerPortalLogin = ({ onSelectLoginType }) => {
-  const handleResidentLogin = () => {
-    onSelectLoginType('resident');
-  };
-
-  const handleNonResidentLogin = () => {
-    onSelectLoginType('nonresident');
-  };
-
+const TaxpayerPortalLogin = ({ onResidentLogin, onNonResidentLogin }) => {
   return (
     <div className="taxpayer-portal-content">
       <main className="portal-main">
@@ -18,19 +10,19 @@ const TaxpayerPortalLogin = ({ onSelectLoginType }) => {
 
           <div className="login-cards">
             {/* Resident Login Card */}
-            <div className="login-card resident" onClick={handleResidentLogin}>
+            <div className="login-card resident" onClick={onResidentLogin}>
               <div className="card-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                   <circle cx="12" cy="10" r="3"/>
                 </svg>
               </div>
-              <h3 className="card-title">Resident Login</h3>
-              <p className="card-description">Login with your username and password.</p>
+              <h3 className="card-title">Resident Merchant</h3>
+              <p className="card-description">Login for domestic businesses and merchants.</p>
             </div>
 
             {/* Non-Resident Login Card */}
-            <div className="login-card nonresident" onClick={handleNonResidentLogin}>
+            <div className="login-card nonresident" onClick={onNonResidentLogin}>
               <div className="card-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -38,7 +30,7 @@ const TaxpayerPortalLogin = ({ onSelectLoginType }) => {
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                 </svg>
               </div>
-              <h3 className="card-title">Non-Resident Login</h3>
+              <h3 className="card-title">Non-Resident Merchant</h3>
               <p className="card-description">International entities and e-Service providers.</p>
             </div>
           </div>

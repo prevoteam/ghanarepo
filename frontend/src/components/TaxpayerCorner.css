@@ -1,7 +1,7 @@
 .taxpayer-corner-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 220px);
+  flex: 1;
   background: #f5f7fa;
   position: relative;
   overflow: hidden;

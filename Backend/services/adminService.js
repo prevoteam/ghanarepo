@@ -17,7 +17,7 @@ const GetAllUsers = async (req, res) => {
     try {
         const { page = 1, limit = 10, search, user_role } = req.query;
 
-        let query = `SELECT id, unique_id, username, full_name, email, tin, ghana_card_number, user_role, is_active, created_at
+        let query = `SELECT id, unique_id, username, full_name, email, agent_tin, ghana_card_number, user_role, is_active, created_at
                      FROM users WHERE 1=1`;
         const params = [];
         let paramIndex = 1;
@@ -29,9 +29,9 @@ const GetAllUsers = async (req, res) => {
             paramIndex++;
         }
 
-        // Search by name, tin, ghana_card_number, or email
+        // Search by name, agent_tin, ghana_card_number, or email
         if (search) {
-            query += ` AND (full_name ILIKE $${paramIndex} OR tin ILIKE $${paramIndex} OR ghana_card_number ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR username ILIKE $${paramIndex})`;
+            query += ` AND (full_name ILIKE $${paramIndex} OR agent_tin ILIKE $${paramIndex} OR ghana_card_number ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR username ILIKE $${paramIndex})`;
             params.push(`%${search}%`);
             paramIndex++;
         }
@@ -76,7 +76,7 @@ const GetUserById = async (req, res) => {
         const { id } = req.params;
 
         const result = await pool.query(
-            `SELECT id, unique_id, username, full_name, email, tin, ghana_card_number, user_role, is_active, created_at, updated_at
+            `SELECT id, unique_id, username, full_name, email, agent_tin, ghana_card_number, user_role, is_active, created_at, updated_at
              FROM users WHERE id = $1`,
             [id]
         );
@@ -104,9 +104,9 @@ const GetUserById = async (req, res) => {
 // -------------------------
 const AddUser = async (req, res) => {
     try {
-        const { first_name, last_name, tin, ghana_id, user_role, email, password, username } = req.body;
+        const { first_name, last_name, tin: agent_tin, ghana_id, user_role, email, password, username } = req.body;
 
-        console.log("Adding new user:", { first_name, last_name, tin, ghana_id, user_role, username });
+        console.log("Adding new user:", { first_name, last_name, agent_tin, ghana_id, user_role, username });
 
         // Validate required fields
         if (!first_name || !last_name) {
@@ -154,8 +154,8 @@ const AddUser = async (req, res) => {
         }
 
         // Check if user already exists with same TIN or Ghana ID
-        if (tin) {
-            const existingTIN = await pool.query('SELECT id FROM users WHERE tin = $1', [tin]);
+        if (agent_tin) {
+            const existingTIN = await pool.query('SELECT id FROM users WHERE agent_tin = $1', [agent_tin]);
             if (existingTIN.rows.length > 0) {
                 return res.status(400).json(
                     success(false, 400, "A user with this TIN already exists", null)
@@ -175,21 +175,21 @@ const AddUser = async (req, res) => {
         // Insert new user
         const result = await pool.query(
             `INSERT INTO users (
-                unique_id, username, full_name, tin, ghana_card_number, user_role,
+                unique_id, username, full_name, agent_tin, ghana_card_number, user_role,
                 email, password, contact_method, contact_value, is_verified, is_active
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-             RETURNING id, unique_id, username, full_name, tin, ghana_card_number, user_role, email, is_active, created_at`,
+             RETURNING id, unique_id, username, full_name, agent_tin, ghana_card_number, user_role, email, is_active, created_at`,
             [
                 unique_id,
                 finalUsername,
                 full_name,
-                tin || null,
+                agent_tin || null,
                 ghana_id || null,
                 user_role,
                 email || null,
                 password,
                 email ? 'email' : 'mobile',
-                email || tin || ghana_id || finalUsername,
+                email || agent_tin || ghana_id || finalUsername,
                 true,
                 true
             ]
@@ -218,9 +218,9 @@ const AddUser = async (req, res) => {
 const UpdateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { first_name, last_name, tin, ghana_id, user_role, email, is_active } = req.body;
+        const { first_name, last_name, tin: agent_tin, ghana_id, user_role, email, is_active } = req.body;
 
-        console.log("Updating user:", { id, first_name, last_name, tin, ghana_id, user_role });
+        console.log("Updating user:", { id, first_name, last_name, agent_tin, ghana_id, user_role });
 
         // Check if user exists
         const existingUser = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
@@ -254,9 +254,9 @@ const UpdateUser = async (req, res) => {
             }
         }
 
-        if (tin !== undefined) {
-            updates.push(`tin = $${paramIndex}`);
-            params.push(tin || null);
+        if (agent_tin !== undefined) {
+            updates.push(`agent_tin = $${paramIndex}`);
+            params.push(agent_tin || null);
             paramIndex++;
         }
 
@@ -294,7 +294,7 @@ const UpdateUser = async (req, res) => {
 
         params.push(id);
         const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}
-                       RETURNING id, unique_id, username, full_name, tin, ghana_card_number, user_role, email, is_active, updated_at`;
+                       RETURNING id, unique_id, username, full_name, agent_tin, ghana_card_number, user_role, email, is_active, updated_at`;
 
         const result = await pool.query(query, params);
 
