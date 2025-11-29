@@ -67,11 +67,11 @@ const Register = async (req, res) => {
         [otp, expiresAt, password || null, contact]
       );
     } else {
-      // 3️⃣ Insert new user with new UUID
+      // 3️⃣ Insert new user with new UUID - explicitly set user_role to 'resident'
       const insertUser = await pool.query(
         `
-          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password)
-          VALUES ($1, $2, $3, $4, $5)
+          INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password, user_role)
+          VALUES ($1, $2, $3, $4, $5, 'resident')
           RETURNING unique_id
         `,
         [method, contact, otp, expiresAt, password || null]
@@ -686,7 +686,7 @@ const UpdateCredential = async (req, res) => {
     await pool.query(
       `
         UPDATE users
-        SET tin = $1,
+        SET agent_tin = $1,
             verifiable_credential = $2,
             subject_name = $3,
             issue_date = $4,
@@ -734,7 +734,7 @@ const SendOtp = async (req, res) => {
       `
         SELECT unique_id, agent_tin, subject_name,contact_value
         FROM users
-        WHERE agent_tin = $1 
+        WHERE agent_tin = $1
       `,
       [credential]
     );
@@ -799,9 +799,9 @@ const SendNonResidentLoginOTP = async (req, res) => {
       });
     }
 
-    // 1️⃣ Check if user exists with the given TIN (check agent_tin, tin, or username)
+    // 1️⃣ Check if user exists with the given TIN (check agent_tin or username)
     const result = await pool.query(
-      `SELECT id, unique_id, contact_value FROM users WHERE agent_tin = $1 OR tin = $1 OR username = $1`,
+      `SELECT id, unique_id, contact_value FROM users WHERE agent_tin = $1 OR username = $1`,
       [tin]
     );
 
@@ -858,12 +858,12 @@ const NonResidentMerchantLogin = async (req, res) => {
       });
     }
 
-    // 1️⃣ Check if user exists with the given TIN (check agent_tin, tin, or username)
+    // 1️⃣ Check if user exists with the given TIN (check agent_tin or username)
     const result = await pool.query(
       `
         SELECT id, unique_id, otp_code, otp_expires_at, contact_value, user_role, password
         FROM users
-        WHERE agent_tin = $1 OR tin = $1 OR username = $1
+        WHERE agent_tin = $1 OR username = $1
       `,
       [tin]
     );
@@ -1223,7 +1223,7 @@ const CompleteRegistration = async (req, res) => {
 
     // Fetch user details
     const result = await pool.query(
-      `SELECT id, unique_id, full_name, subject_name, tin, vat_id
+      `SELECT id, unique_id, full_name, subject_name, agent_tin, vat_id
        FROM users
        WHERE unique_id = $1`,
       [unique_id]
@@ -1236,7 +1236,7 @@ const CompleteRegistration = async (req, res) => {
     const user = result.rows[0];
 
     // Generate TIN if not exists
-    let tin = user.tin;
+    let tin = user.agent_tin;
     if (!tin) {
       tin = `GHA${Math.floor(10000000 + Math.random() * 90000000)}`;
     }
@@ -1270,7 +1270,7 @@ const CompleteRegistration = async (req, res) => {
     // Update user with complete registration
     await pool.query(
       `UPDATE users
-       SET tin = $1,
+       SET agent_tin = $1,
            vat_id = $2,
            subject_name = $3,
            issue_date = $4,
@@ -1322,7 +1322,7 @@ const GetDashboard = async (req, res) => {
       `SELECT
         unique_id,
         full_name,
-        tin,
+        agent_tin,
         vat_id,
         compliance_status,
         total_sales,
@@ -1377,7 +1377,7 @@ const GetDashboard = async (req, res) => {
       success(true, 200, "Dashboard data fetched successfully", {
         user: {
           name: user.full_name || "User",
-          tin: user.tin,
+          tin: user.agent_tin,
           vat_id: user.vat_id,
           compliance_status: user.compliance_status || "ONTRACK",
           entity_type: user.entity_type,
@@ -1438,560 +1438,398 @@ const UpdateSalesData = async (req, res) => {
   }
 };
 
-// ----------------------------------------------------------------------
-// Non-Resident Login with Username/Password + OTP (Step 1: Verify credentials & Send OTP)
-// ----------------------------------------------------------------------
-const NonResidentLogin = async (req, res) => {
+// -------------------------
+// Generate Session ID
+// -------------------------
+const crypto = require('crypto');
+const generateSessionId = () => crypto.randomBytes(32).toString('hex');
+
+// -------------------------
+// Unified Merchant Login (Username + Password)
+// -------------------------
+const MerchantLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    console.log("Non-Resident Login attempt for username:", username);
+    console.log("Merchant Login attempt for username:", username);
 
     if (!username || !password) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Username and password are required"
-      });
+      return res.status(400).json(
+        success(false, 400, "Username and password are required", null)
+      );
     }
 
-    // 1️⃣ Find user by username with role 'nonresident'
+    // Find user by username
     const userQuery = await pool.query(
-      `SELECT id, unique_id, username, password, email, user_role, full_name, is_active, contact_value
+      `SELECT id, unique_id, username, password, contact_value, user_role, full_name, is_active
        FROM users
-       WHERE username = $1 AND user_role = 'nonresident'`,
+       WHERE username = $1`,
       [username]
     );
 
     if (userQuery.rows.length === 0) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid credentials. Please check your username and password."
-      });
+      return res.status(404).json(
+        success(false, 404, "Invalid credentials. User not found.", null)
+      );
     }
 
     const user = userQuery.rows[0];
 
-    // 2️⃣ Check if user is active
+    // Check if user is active
     if (user.is_active === false) {
-      return res.status(403).json({
-        status: false,
-        code: 403,
-        message: "Account is deactivated. Please contact administrator."
-      });
+      return res.status(403).json(
+        success(false, 403, "Account is deactivated. Please contact administrator.", null)
+      );
     }
 
-    // 3️⃣ Verify password (plain text comparison)
+    // Verify password
     if (password !== user.password) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid credentials. Please check your username and password."
-      });
+      return res.status(401).json(
+        success(false, 401, "Invalid credentials. Incorrect password.", null)
+      );
     }
 
-    // 4️⃣ Generate OTP and session
-    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-    const sessionId = require('crypto').randomBytes(32).toString('hex');
+    // Generate OTP and session
+    const otp = generateOTP();
+    const sessionId = generateSessionId();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // 5️⃣ Store OTP and session in database
+    // Store OTP and session in database
     await pool.query(
       `UPDATE users
-       SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
+       SET otp_code = $1,
+           otp_expires_at = $2,
+           session_id = $3,
+           updated_at = NOW()
        WHERE id = $4`,
       [otp, expiresAt, sessionId, user.id]
     );
 
-    // 6️⃣ Send OTP via email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
-      console.log("Sending Non-Resident Login OTP to:", userEmail);
+    // Send OTP via email
+    if (user.contact_value) {
+      console.log("Sending OTP email to:", user.contact_value);
       try {
-        await sendEmailOTP(userEmail, otp);
+        await sendEmailOTP(user.contact_value, otp);
       } catch (emailError) {
         console.error("OTP email failed:", emailError);
       }
     }
 
-    // 7️⃣ Return session info
-    const maskedEmail = userEmail ? userEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+    // Return session_id and masked email
+    const maskedEmail = user.contact_value ? user.contact_value.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
 
-    console.log("OTP for", username, ":", otp);
-
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "OTP sent successfully. Please verify to complete login.",
-      results: {
+    return res.status(200).json(
+      success(true, 200, "OTP sent successfully. Please verify to complete login.", {
         session_id: sessionId,
-        unique_id: user.unique_id,
         email: maskedEmail,
-        user_role: user.user_role,
-        otpDev: otp // For development only
-      }
-    });
+        user_role: user.user_role
+      })
+    );
 
   } catch (err) {
-    console.error("NonResidentLogin error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
+    console.error("MerchantLogin error:", err);
+    return res.status(500).json(success(false, 500, err.message, null));
   }
 };
 
-// ----------------------------------------------------------------------
-// Non-Resident Verify OTP (Step 2: Complete login)
-// ----------------------------------------------------------------------
-const NonResidentVerifyOTP = async (req, res) => {
+// -------------------------
+// Merchant Verify OTP
+// -------------------------
+const MerchantVerifyOTP = async (req, res) => {
   try {
     const { session_id, otp } = req.body;
 
-    console.log("Non-Resident OTP verification for session:", session_id);
+    console.log("Merchant OTP verification for session:", session_id);
 
     if (!session_id || !otp) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Session ID and OTP are required"
-      });
+      return res.status(400).json(
+        success(false, 400, "Session ID and OTP are required", null)
+      );
     }
 
-    // 1️⃣ Find user by session_id with role 'nonresident'
+    // Find user by session_id
     const userQuery = await pool.query(
-      `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at, contact_value
+      `SELECT id, unique_id, username, contact_value, user_role, full_name, otp_code, otp_expires_at
        FROM users
-       WHERE session_id = $1 AND user_role = 'nonresident'`,
+       WHERE session_id = $1`,
       [session_id]
     );
 
     if (userQuery.rows.length === 0) {
-      return res.status(404).json({
-        status: false,
-        code: 404,
-        message: "Invalid session. Please login again."
-      });
+      return res.status(404).json(
+        success(false, 404, "Invalid session. Please login again.", null)
+      );
     }
 
     const user = userQuery.rows[0];
 
-    // 2️⃣ Check OTP expiration
+    // Check OTP expiration
     if (!user.otp_expires_at || new Date() > new Date(user.otp_expires_at)) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "OTP has expired. Please request a new one."
-      });
+      return res.status(400).json(
+        success(false, 400, "OTP has expired. Please request a new one.", null)
+      );
     }
 
-    // 3️⃣ Verify OTP
+    // Verify OTP
     if (otp !== user.otp_code) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid OTP. Please try again."
-      });
+      return res.status(401).json(
+        success(false, 401, "Invalid OTP. Please try again.", null)
+      );
     }
 
-    // 4️⃣ Generate auth token
-    const authToken = require('crypto').randomBytes(32).toString('hex');
-
-    // 5️⃣ Clear OTP and update last login
+    // Clear OTP and update last login
     await pool.query(
       `UPDATE users
-       SET otp_code = NULL, otp_expires_at = NULL, auth_token = $1, last_login_at = NOW(), updated_at = NOW()
-       WHERE id = $2`,
-      [authToken, user.id]
+       SET otp_code = NULL,
+           otp_expires_at = NULL,
+           last_login_at = NOW(),
+           updated_at = NOW()
+       WHERE id = $1`,
+      [user.id]
     );
 
-    // 6️⃣ Send welcome email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
+    // Send login success email
+    if (user.contact_value) {
       try {
-        await sendWelcomeEmail(userEmail, user.full_name || user.username);
+        await sendLoginSuccessEmail(user.contact_value, user.username || user.full_name);
       } catch (emailError) {
-        console.error("Welcome email failed:", emailError);
+        console.error("Login success email failed:", emailError);
       }
     }
 
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "Login successful",
-      results: {
-        token: authToken,
-        user_role: user.user_role,
+    return res.status(200).json(
+      success(true, 200, "Login successful", {
         unique_id: user.unique_id,
+        user_role: user.user_role || 'resident',
         user: {
           username: user.username,
-          email: userEmail,
+          email: user.contact_value,
           full_name: user.full_name
         }
-      }
-    });
+      })
+    );
 
   } catch (err) {
-    console.error("NonResidentVerifyOTP error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
+    console.error("MerchantVerifyOTP error:", err);
+    return res.status(500).json(success(false, 500, err.message, null));
   }
 };
 
-// ----------------------------------------------------------------------
-// Non-Resident Resend OTP
-// ----------------------------------------------------------------------
-const NonResidentResendOTP = async (req, res) => {
+// -------------------------
+// Merchant Resend OTP
+// -------------------------
+const MerchantResendOTP = async (req, res) => {
   try {
     const { session_id } = req.body;
 
     if (!session_id) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Session ID is required"
-      });
+      return res.status(400).json(
+        success(false, 400, "Session ID is required", null)
+      );
     }
 
-    // 1️⃣ Find user by session_id with role 'nonresident'
+    // Find user by session_id
     const userQuery = await pool.query(
-      `SELECT id, email, contact_value, username FROM users WHERE session_id = $1 AND user_role = 'nonresident'`,
+      `SELECT id, contact_value FROM users WHERE session_id = $1`,
       [session_id]
     );
 
     if (userQuery.rows.length === 0) {
-      return res.status(404).json({
-        status: false,
-        code: 404,
-        message: "Invalid session. Please login again."
-      });
+      return res.status(404).json(
+        success(false, 404, "Invalid session. Please login again.", null)
+      );
     }
 
     const user = userQuery.rows[0];
 
-    // 2️⃣ Generate new OTP
-    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    // Generate new OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // 3️⃣ Update OTP in database
+    // Update OTP
     await pool.query(
-      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+      `UPDATE users
+       SET otp_code = $1,
+           otp_expires_at = $2,
+           updated_at = NOW()
+       WHERE id = $3`,
       [otp, expiresAt, user.id]
     );
 
-    // 4️⃣ Send OTP via email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
-      console.log("Resending Non-Resident OTP to:", userEmail);
+    // Send OTP
+    if (user.contact_value) {
       try {
-        await sendEmailOTP(userEmail, otp);
+        await sendEmailOTP(user.contact_value, otp);
       } catch (emailError) {
-        console.error("OTP email failed:", emailError);
+        console.error("Email sending failed:", emailError);
       }
     }
 
-    console.log("Resent OTP for", user.username, ":", otp);
-
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "OTP resent successfully",
-      results: {
-        otpDev: otp // For development only
-      }
-    });
+    return res.status(200).json(
+      success(true, 200, "OTP resent successfully", null)
+    );
 
   } catch (err) {
-    console.error("NonResidentResendOTP error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
+    console.error("MerchantResendOTP error:", err);
+    return res.status(500).json(success(false, 500, err.message, null));
   }
 };
 
-// ----------------------------------------------------------------------
-// Resident Login with Username/Password + OTP (Step 1: Verify credentials & Send OTP)
-// ----------------------------------------------------------------------
-const ResidentLogin = async (req, res) => {
+// -------------------------
+// Send Login Success Email
+// -------------------------
+const sendLoginSuccessEmail = async (email, username) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_CONFIG_EMAIL,
+      pass: process.env.EMAIL_CONFIG_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+
+  const loginTime = new Date().toLocaleString('en-US', {
+    timeZone: 'Africa/Accra',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  const htmlTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #1e40af; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">GRA Merchant Portal</h1>
+      </div>
+      <div style="padding: 30px; background-color: #f8fafc; border: 1px solid #e2e8f0;">
+        <h2 style="color: #1e40af;">Login Successful</h2>
+        <p>Hello <strong>${username}</strong>,</p>
+        <p>You have successfully logged into the GRA Merchant Portal.</p>
+        <div style="background-color: #e0f2fe; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0;"><strong>Login Time:</strong> ${loginTime}</p>
+        </div>
+        <p>If you did not perform this login, please contact the administrator immediately.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+        <p style="color: #64748b; font-size: 12px;">This is an automated message from GRA Merchant Portal. Please do not reply to this email.</p>
+      </div>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"GRA Merchant Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
+    to: email,
+    subject: "GRA Merchant Portal - Login Successful",
+    html: htmlTemplate,
+  });
+
+  console.log("Login Success Email Sent to:", email);
+};
+
+// -------------------------
+// Resident Registration - Complete Registration with Business Details
+// -------------------------
+const ResidentCompleteRegistration = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { unique_id, full_name, trading_name, sector, website } = req.body;
 
-    console.log("Resident Login attempt for username:", username);
-
-    if (!username || !password) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Username and password are required"
-      });
+    if (!unique_id) {
+      return res.status(400).json(success(false, 400, "unique_id is required"));
     }
 
-    // 1️⃣ Find user by username with role 'resident'
-    const userQuery = await pool.query(
-      `SELECT id, unique_id, username, password, email, user_role, full_name, is_active, contact_value
-       FROM users
-       WHERE username = $1 AND user_role = 'resident'`,
-      [username]
+    // Check if user exists
+    const checkUser = await pool.query(
+      "SELECT id, unique_id, contact_value FROM users WHERE unique_id = $1",
+      [unique_id]
     );
 
-    if (userQuery.rows.length === 0) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid credentials. Please check your username and password."
-      });
+    if (checkUser.rows.length === 0) {
+      return res.status(404).json(success(false, 404, "User not found"));
     }
 
-    const user = userQuery.rows[0];
+    // Generate TIN for resident
+    const tin = `P${Math.floor(100000000 + Math.random() * 900000000)}`;
 
-    // 2️⃣ Check if user is active
-    if (user.is_active === false) {
-      return res.status(403).json({
-        status: false,
-        code: 403,
-        message: "Account is deactivated. Please contact administrator."
-      });
-    }
+    // Use full email as username (userID for login)
+    const email = checkUser.rows[0].contact_value;
+    const username = email || `user_${Date.now()}`;
 
-    // 3️⃣ Verify password (plain text comparison)
-    if (password !== user.password) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid credentials. Please check your username and password."
-      });
-    }
-
-    // 4️⃣ Generate OTP and session
-    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-    const sessionId = require('crypto').randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    // 5️⃣ Store OTP and session in database
+    // Update user with business details and set role as 'resident'
     await pool.query(
       `UPDATE users
-       SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
-       WHERE id = $4`,
-      [otp, expiresAt, sessionId, user.id]
+       SET full_name = $1,
+           trading_name = $2,
+           service_type = $3,
+           website = $4,
+           user_role = 'resident',
+           entity_type = 'DomesticIndividual',
+           agent_tin = $5,
+           username = $6,
+           registration_completed = TRUE,
+           updated_at = NOW()
+       WHERE unique_id = $7`,
+      [full_name, trading_name, sector, website, tin, username, unique_id]
     );
 
-    // 6️⃣ Send OTP via email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
-      console.log("Sending Resident Login OTP to:", userEmail);
-      try {
-        await sendEmailOTP(userEmail, otp);
-      } catch (emailError) {
-        console.error("OTP email failed:", emailError);
-        // Continue even if email fails - OTP is stored in DB
-      }
-    }
-
-    // 7️⃣ Return session info
-    const maskedEmail = userEmail ? userEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
-
-    console.log("OTP for", username, ":", otp);
-
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "OTP sent successfully. Please verify to complete login.",
-      results: {
-        session_id: sessionId,
-        unique_id: user.unique_id,
-        email: maskedEmail,
-        user_role: user.user_role,
-        otpDev: otp // For development only - remove in production
-      }
-    });
-
+    return res.status(200).json(
+      success(true, 200, "Registration completed successfully", {
+        unique_id,
+        tin,
+        username,
+        user_role: 'resident'
+      })
+    );
   } catch (err) {
-    console.error("ResidentLogin error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
+    console.error("ResidentCompleteRegistration error:", err);
+    return res.status(500).json(success(false, 500, err.message));
   }
 };
 
-// ----------------------------------------------------------------------
-// Resident Verify OTP (Step 2: Complete login)
-// ----------------------------------------------------------------------
-const ResidentVerifyOTP = async (req, res) => {
+// -------------------------
+// Get Active VAT Rates (Public endpoint for Dashboard)
+// -------------------------
+const GetActiveVATRates = async (req, res) => {
   try {
-    const { session_id, otp } = req.body;
-
-    console.log("Resident OTP verification for session:", session_id);
-
-    if (!session_id || !otp) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Session ID and OTP are required"
-      });
-    }
-
-    // 1️⃣ Find user by session_id with role 'resident'
-    const userQuery = await pool.query(
-      `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at, contact_value
-       FROM users
-       WHERE session_id = $1 AND user_role = 'resident'`,
-      [session_id]
+    const result = await pool.query(
+      `SELECT id, levy_type, rate, effective_date, calculation_order
+       FROM vat_rates
+       WHERE status = 'active'
+       ORDER BY calculation_order ASC, id ASC`
     );
 
-    if (userQuery.rows.length === 0) {
-      return res.status(404).json({
-        status: false,
-        code: 404,
-        message: "Invalid session. Please login again."
-      });
-    }
+    // Transform the rates into a more usable format for the frontend
+    const rates = {};
+    result.rows.forEach(row => {
+      // Create a key based on levy_type
+      const key = row.levy_type
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
 
-    const user = userQuery.rows[0];
-
-    // 2️⃣ Check OTP expiration
-    if (!user.otp_expires_at || new Date() > new Date(user.otp_expires_at)) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "OTP has expired. Please request a new one."
-      });
-    }
-
-    // 3️⃣ Verify OTP
-    if (otp !== user.otp_code) {
-      return res.status(401).json({
-        status: false,
-        code: 401,
-        message: "Invalid OTP. Please try again."
-      });
-    }
-
-    // 4️⃣ Generate auth token
-    const authToken = require('crypto').randomBytes(32).toString('hex');
-
-    // 5️⃣ Clear OTP and update last login
-    await pool.query(
-      `UPDATE users
-       SET otp_code = NULL, otp_expires_at = NULL, auth_token = $1, last_login_at = NOW(), updated_at = NOW()
-       WHERE id = $2`,
-      [authToken, user.id]
-    );
-
-    // 6️⃣ Send welcome email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
-      try {
-        await sendWelcomeEmail(userEmail, user.full_name || user.username);
-      } catch (emailError) {
-        console.error("Welcome email failed:", emailError);
-      }
-    }
-
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "Login successful",
-      results: {
-        token: authToken,
-        user_role: user.user_role,
-        unique_id: user.unique_id,
-        user: {
-          username: user.username,
-          email: userEmail,
-          full_name: user.full_name
-        }
-      }
+      rates[key] = {
+        id: row.id,
+        name: row.levy_type,
+        rate: parseFloat(row.rate),
+        effective_date: row.effective_date,
+        calculation_order: row.calculation_order
+      };
     });
 
+    return res.status(200).json(
+      success(true, 200, "VAT rates fetched successfully", {
+        rates: result.rows,
+        ratesMap: rates
+      })
+    );
   } catch (err) {
-    console.error("ResidentVerifyOTP error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
-  }
-};
-
-// ----------------------------------------------------------------------
-// Resident Resend OTP
-// ----------------------------------------------------------------------
-const ResidentResendOTP = async (req, res) => {
-  try {
-    const { session_id } = req.body;
-
-    if (!session_id) {
-      return res.status(400).json({
-        status: false,
-        code: 400,
-        message: "Session ID is required"
-      });
-    }
-
-    // 1️⃣ Find user by session_id with role 'resident'
-    const userQuery = await pool.query(
-      `SELECT id, email, contact_value, username FROM users WHERE session_id = $1 AND user_role = 'resident'`,
-      [session_id]
-    );
-
-    if (userQuery.rows.length === 0) {
-      return res.status(404).json({
-        status: false,
-        code: 404,
-        message: "Invalid session. Please login again."
-      });
-    }
-
-    const user = userQuery.rows[0];
-
-    // 2️⃣ Generate new OTP
-    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    // 3️⃣ Update OTP in database
-    await pool.query(
-      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
-      [otp, expiresAt, user.id]
-    );
-
-    // 4️⃣ Send OTP via email
-    const userEmail = user.email || user.contact_value;
-    if (userEmail) {
-      console.log("Resending Resident OTP to:", userEmail);
-      try {
-        await sendEmailOTP(userEmail, otp);
-      } catch (emailError) {
-        console.error("OTP email failed:", emailError);
-      }
-    }
-
-    console.log("Resent OTP for", user.username, ":", otp);
-
-    return res.status(200).json({
-      status: true,
-      code: 200,
-      message: "OTP resent successfully",
-      results: {
-        otpDev: otp // For development only - remove in production
-      }
-    });
-
-  } catch (err) {
-    console.error("ResidentResendOTP error:", err);
-    return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message
-    });
+    console.error("GetActiveVATRates error:", err);
+    return res.status(500).json(success(false, 500, err.message));
   }
 };
 
@@ -2006,6 +1844,9 @@ module.exports = {
     LoginVerifyOtp,
     NonResidentMerchantLogin,
     SendNonResidentLoginOTP,
+    MerchantLogin,
+    MerchantVerifyOTP,
+    MerchantResendOTP,
     UpdateMarketDeclaration,
     UpdatePaymentGateway,
     DisconnectPaymentGateway,
@@ -2016,10 +1857,6 @@ module.exports = {
     UpdateAgentDetails,
     UpdateBusinessDetails,
     VerifyAgentTIN,
-    ResidentLogin,
-    ResidentVerifyOTP,
-    ResidentResendOTP,
-    NonResidentLogin,
-    NonResidentVerifyOTP,
-    NonResidentResendOTP
+    ResidentCompleteRegistration,
+    GetActiveVATRates
 };

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import RegisterNow from './components/RegisterNow'
 import TaxpayerPortalLogin from './components/TaxpayerPortalLogin'
 import Login from './components/Login'
+import ResidentLogin from './components/ResidentLogin'
 import Dashboard from './components/Dashboard'
 import ResidentDashboard from './components/ResidentDashboard'
 import NonResidentDashboard from './components/NonResidentDashboard'
@@ -9,6 +10,7 @@ import MonitoringDashboard from './components/MonitoringDashboard'
 import ConfigDashboard from './components/ConfigDashboard'
 import AdminDashboard from './components/AdminDashboard'
 import RegistrationForm from './components/RegistrationForm'
+import ResidentRegistration from './components/ResidentRegistration'
 import AboutUs from './components/AboutUs'
 import ContactUs from './components/ContactUs'
 import Guidelines from './components/Guidelines'
@@ -55,8 +57,8 @@ function App() {
     // Route based on user role:
     // - gra_maker, gra_checker -> ConfigDashboard
     // - monitoring -> MonitoringDashboard
-    // - nonresident -> NonResidentDashboard
-    // - resident (default) -> Dashboard
+    // - admin -> AdminDashboard
+    // - resident, nonresident -> Dashboard (main merchant dashboard)
     let targetView = 'dashboard'
     let targetLoginType = 'resident'
 
@@ -69,11 +71,13 @@ function App() {
     } else if (role === 'monitoring') {
       targetView = 'monitoringDashboard'
       targetLoginType = 'monitoring'
-    } else if (role === 'nonresident' || loginType === 'nonresident') {
-      targetView = 'nonResidentDashboard'
+    } else if (role === 'nonresident') {
+      // Nonresident merchants go to main dashboard
+      targetView = 'dashboard'
       targetLoginType = 'nonresident'
-    } else if (role === 'resident' || loginType === 'resident') {
-      targetView = 'residentDashboard'
+    } else if (role === 'resident') {
+      // Resident merchants go to main dashboard
+      targetView = 'dashboard'
       targetLoginType = 'resident'
     } else {
       targetView = 'dashboard'
@@ -110,8 +114,9 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleGoToTaxpayerPortal = () => setCurrentView('taxpayerPortal')
+  const handleGoToTaxpayerPortal = () => setCurrentView('residentLogin')
   const handleGoToRegistrationForm = () => setCurrentView('registration')
+  const handleGoToResidentRegistration = () => setCurrentView('residentRegistration')
   const handleGoToAboutUs = () => setCurrentView('aboutUs')
   const handleGoToContactUs = () => setCurrentView('contactUs')
   const handleGoToGuidelines = () => setCurrentView('guidelines')
@@ -119,13 +124,11 @@ function App() {
   const handleGoToPSP = () => setCurrentView('pspOnboarding')
   const handleGoToTaxpayerCorner = () => setCurrentView('taxpayerCorner')
 
-  const handleSelectLoginType = (type) => {
-    setLoginType(type)
-    setCurrentView('login')
+  const handleResidentLoginClick = () => {
+    setCurrentView('residentLogin')
   }
 
   const handleNonResidentLoginClick = () => {
-    setLoginType('nonresident')
     setCurrentView('login')
   }
 
@@ -178,19 +181,48 @@ function App() {
     }
 
     if (currentView === 'dashboard' && loggedInUserId) {
-      return <Dashboard uniqueId={loggedInUserId} onLogout={handleLogout} userRole={userRole} />
+      return (
+        <Dashboard
+          uniqueId={loggedInUserId}
+          onLogout={handleLogout}
+          userRole={userRole}
+          onLogoClick={handleGoHome}
+          onAboutUsClick={handleGoToAboutUs}
+          onContactUsClick={handleGoToContactUs}
+          onGuidelinesClick={handleGoToGuidelines}
+          onFAQClick={handleGoToFAQ}
+          onPSPClick={handleGoToPSP}
+          onTaxpayerCornerClick={handleGoToTaxpayerCorner}
+        />
+      )
     }
 
     // Pages with centralized header/footer
     switch (currentView) {
       case 'taxpayerPortal':
-        return <TaxpayerPortalLogin onSelectLoginType={handleSelectLoginType} onRegisterNow={handleGoHome} />
+        return <TaxpayerPortalLogin onResidentLogin={handleResidentLoginClick} onNonResidentLogin={handleNonResidentLoginClick} />
+
+      case 'residentLogin':
+        return (
+          <ResidentLogin
+            onLoginSuccess={handleLoginSuccess}
+            onRegisterNow={handleGoToResidentRegistration}
+          />
+        )
+
+      case 'residentRegistration':
+        return (
+          <ResidentRegistration
+            onBack={handleGoHome}
+            onLoginRedirect={handleResidentLoginClick}
+            onGoToDashboard={(uniqueId, role) => handleLoginSuccess(uniqueId, role || 'resident')}
+          />
+        )
 
       case 'login':
         return (
           <Login
             onLoginSuccess={handleLoginSuccess}
-            loginType={loginType}
             onRegisterNow={handleGoToRegistrationForm}
           />
         )

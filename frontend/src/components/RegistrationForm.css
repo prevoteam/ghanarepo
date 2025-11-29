@@ -1,5 +1,5 @@
 .registration-page {
-  min-height: 100vh;
+  flex: 1;
   background: #F3F4F6;
   display: flex;
   flex-direction: column;

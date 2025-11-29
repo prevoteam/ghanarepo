@@ -99,6 +99,14 @@ export const registrationApi = {
     });
   },
 
+  // Resident Complete Registration
+  residentCompleteRegistration: async (unique_id, full_name, trading_name, sector, website) => {
+    return apiRequest('/ResidentCompleteRegistration', {
+      method: 'POST',
+      body: JSON.stringify({ unique_id, full_name, trading_name, sector, website }),
+    });
+  },
+
   // Step 2: Set Entity Type
   setEntity: async (unique_id, entity_type) => {
     return apiRequest('/SetEntity', {
@@ -165,7 +173,7 @@ export const registrationApi = {
 
 // Login APIs
 export const loginApi = {
-  // Send login OTP (legacy - TIN/Ghana Card)
+  // Send login OTP
   sendOTP: async (credential) => {
     return apiRequest('/send-otp', {
       method: 'POST',
@@ -173,7 +181,7 @@ export const loginApi = {
     });
   },
 
-  // Verify login OTP (legacy - TIN/Ghana Card)
+  // Verify login OTP
   verifyOTP: async (credential, otp) => {
     return apiRequest('/verify-otp', {
       method: 'POST',
@@ -181,51 +189,43 @@ export const loginApi = {
     });
   },
 
-  // Resident Login with Username/Password (Step 1: sends OTP)
-  residentLogin: async (username, password) => {
-    return apiRequest('/resident-login', {
+  // Merchant Login (Username + Password) - sends OTP
+  merchantLogin: async (username, password) => {
+    return apiRequest('/merchant-login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
   },
 
-  // Resident Verify OTP (Step 2: complete login)
-  residentVerifyOTP: async (session_id, otp) => {
-    return apiRequest('/resident-verify-otp', {
+  // Merchant Verify OTP
+  merchantVerifyOTP: async (session_id, otp) => {
+    return apiRequest('/merchant-verify-otp', {
       method: 'POST',
       body: JSON.stringify({ session_id, otp }),
     });
   },
 
-  // Resident Resend OTP
-  residentResendOTP: async (session_id) => {
-    return apiRequest('/resident-resend-otp', {
+  // Merchant Resend OTP
+  merchantResendOTP: async (session_id) => {
+    return apiRequest('/merchant-resend-otp', {
       method: 'POST',
       body: JSON.stringify({ session_id }),
     });
   },
 
-  // Non-Resident Login with Username/Password (Step 1: sends OTP)
-  nonResidentLogin: async (username, password) => {
-    return apiRequest('/nonresident-login', {
+  // Send OTP for Non-Resident Login (legacy)
+  sendNonResidentOTP: async (tin) => {
+    return apiRequest('/non-resident-send-otp', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ tin }),
     });
   },
 
-  // Non-Resident Verify OTP (Step 2: complete login)
-  nonResidentVerifyOTP: async (session_id, otp) => {
-    return apiRequest('/nonresident-verify-otp', {
+  // Non-Resident Merchant Login (legacy)
+  nonResidentLogin: async (tin, password, otp) => {
+    return apiRequest('/non-resident-login', {
       method: 'POST',
-      body: JSON.stringify({ session_id, otp }),
-    });
-  },
-
-  // Non-Resident Resend OTP
-  nonResidentResendOTP: async (session_id) => {
-    return apiRequest('/nonresident-resend-otp', {
-      method: 'POST',
-      body: JSON.stringify({ session_id }),
+      body: JSON.stringify({ tin, password, otp }),
     });
   },
 };
@@ -244,6 +244,13 @@ export const dashboardApi = {
     return apiRequest('/UpdateSalesData', {
       method: 'POST',
       body: JSON.stringify({ unique_id, total_sales }),
+    });
+  },
+
+  // Get active VAT rates for calculation
+  getVATRates: async () => {
+    return apiRequest('/GetVATRates', {
+      method: 'GET',
     });
   },
 };

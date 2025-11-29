@@ -79,34 +79,19 @@ module.exports = ({ config }) => {
     return homeService.SendNonResidentLoginOTP(req, res, next);
   });
 
-  // Resident Login with Username/Password + OTP
-  router.post('/resident-login', (req, res, next) => {
-    return homeService.ResidentLogin(req, res, next);
+  // Unified Merchant Login (Username + Password) - sends OTP
+  router.post('/merchant-login', (req, res, next) => {
+    return homeService.MerchantLogin(req, res, next);
   });
 
-  // Resident Verify OTP
-  router.post('/resident-verify-otp', (req, res, next) => {
-    return homeService.ResidentVerifyOTP(req, res, next);
+  // Merchant Verify OTP
+  router.post('/merchant-verify-otp', (req, res, next) => {
+    return homeService.MerchantVerifyOTP(req, res, next);
   });
 
-  // Resident Resend OTP
-  router.post('/resident-resend-otp', (req, res, next) => {
-    return homeService.ResidentResendOTP(req, res, next);
-  });
-
-  // Non-Resident Login with Username/Password + OTP
-  router.post('/nonresident-login', (req, res, next) => {
-    return homeService.NonResidentLogin(req, res, next);
-  });
-
-  // Non-Resident Verify OTP
-  router.post('/nonresident-verify-otp', (req, res, next) => {
-    return homeService.NonResidentVerifyOTP(req, res, next);
-  });
-
-  // Non-Resident Resend OTP
-  router.post('/nonresident-resend-otp', (req, res, next) => {
-    return homeService.NonResidentResendOTP(req, res, next);
+  // Merchant Resend OTP
+  router.post('/merchant-resend-otp', (req, res, next) => {
+    return homeService.MerchantResendOTP(req, res, next);
   });
 
   // Market Declaration (Step 5)
@@ -133,6 +118,11 @@ module.exports = ({ config }) => {
     return homeService.CompleteRegistration(req, res, next);
   });
 
+  // Resident Complete Registration
+  router.post('/ResidentCompleteRegistration', (req, res, next) => {
+    return homeService.ResidentCompleteRegistration(req, res, next);
+  });
+
   // Dashboard
   router.get('/GetDashboard', (req, res, next) => {
     return homeService.GetDashboard(req, res, next);
@@ -141,6 +131,11 @@ module.exports = ({ config }) => {
   // Update Sales Data
   router.post('/UpdateSalesData', (req, res, next) => {
     return homeService.UpdateSalesData(req, res, next);
+  });
+
+  // Get Active VAT Rates (Public endpoint for Dashboard)
+  router.get('/GetVATRates', (req, res, next) => {
+    return homeService.GetActiveVATRates(req, res, next);
   });
 
   return router;
