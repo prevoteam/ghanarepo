@@ -165,7 +165,7 @@ export const registrationApi = {
 
 // Login APIs
 export const loginApi = {
-  // Send login OTP
+  // Send login OTP (legacy - TIN/Ghana Card)
   sendOTP: async (credential) => {
     return apiRequest('/send-otp', {
       method: 'POST',
@@ -173,7 +173,7 @@ export const loginApi = {
     });
   },
 
-  // Verify login OTP
+  // Verify login OTP (legacy - TIN/Ghana Card)
   verifyOTP: async (credential, otp) => {
     return apiRequest('/verify-otp', {
       method: 'POST',
@@ -181,19 +181,51 @@ export const loginApi = {
     });
   },
 
-  // Send OTP for Non-Resident Login
-  sendNonResidentOTP: async (tin) => {
-    return apiRequest('/non-resident-send-otp', {
+  // Resident Login with Username/Password (Step 1: sends OTP)
+  residentLogin: async (username, password) => {
+    return apiRequest('/resident-login', {
       method: 'POST',
-      body: JSON.stringify({ tin }),
+      body: JSON.stringify({ username, password }),
     });
   },
 
-  // Non-Resident Merchant Login (TIN + Password + OTP)
-  nonResidentLogin: async (tin, password, otp) => {
-    return apiRequest('/non-resident-login', {
+  // Resident Verify OTP (Step 2: complete login)
+  residentVerifyOTP: async (session_id, otp) => {
+    return apiRequest('/resident-verify-otp', {
       method: 'POST',
-      body: JSON.stringify({ tin, password, otp }),
+      body: JSON.stringify({ session_id, otp }),
+    });
+  },
+
+  // Resident Resend OTP
+  residentResendOTP: async (session_id) => {
+    return apiRequest('/resident-resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ session_id }),
+    });
+  },
+
+  // Non-Resident Login with Username/Password (Step 1: sends OTP)
+  nonResidentLogin: async (username, password) => {
+    return apiRequest('/nonresident-login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  // Non-Resident Verify OTP (Step 2: complete login)
+  nonResidentVerifyOTP: async (session_id, otp) => {
+    return apiRequest('/nonresident-verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ session_id, otp }),
+    });
+  },
+
+  // Non-Resident Resend OTP
+  nonResidentResendOTP: async (session_id) => {
+    return apiRequest('/nonresident-resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ session_id }),
     });
   },
 };

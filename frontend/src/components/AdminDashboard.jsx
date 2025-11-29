@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { ADMIN_USERS_API_BASE_URL } from '../utils/api';
+import logo from "../assets/dashboard-monitor.png";
+import sidebar from "../assets/sidebar-bottom.png";
 
 
 const AdminDashboard = ({ onLogout, onLogoClick }) => {

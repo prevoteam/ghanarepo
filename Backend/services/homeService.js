@@ -1438,6 +1438,563 @@ const UpdateSalesData = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Non-Resident Login with Username/Password + OTP (Step 1: Verify credentials & Send OTP)
+// ----------------------------------------------------------------------
+const NonResidentLogin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    console.log("Non-Resident Login attempt for username:", username);
+
+    if (!username || !password) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Username and password are required"
+      });
+    }
+
+    // 1️⃣ Find user by username with role 'nonresident'
+    const userQuery = await pool.query(
+      `SELECT id, unique_id, username, password, email, user_role, full_name, is_active, contact_value
+       FROM users
+       WHERE username = $1 AND user_role = 'nonresident'`,
+      [username]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid credentials. Please check your username and password."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Check if user is active
+    if (user.is_active === false) {
+      return res.status(403).json({
+        status: false,
+        code: 403,
+        message: "Account is deactivated. Please contact administrator."
+      });
+    }
+
+    // 3️⃣ Verify password (plain text comparison)
+    if (password !== user.password) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid credentials. Please check your username and password."
+      });
+    }
+
+    // 4️⃣ Generate OTP and session
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const sessionId = require('crypto').randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 5️⃣ Store OTP and session in database
+    await pool.query(
+      `UPDATE users
+       SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
+       WHERE id = $4`,
+      [otp, expiresAt, sessionId, user.id]
+    );
+
+    // 6️⃣ Send OTP via email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      console.log("Sending Non-Resident Login OTP to:", userEmail);
+      try {
+        await sendEmailOTP(userEmail, otp);
+      } catch (emailError) {
+        console.error("OTP email failed:", emailError);
+      }
+    }
+
+    // 7️⃣ Return session info
+    const maskedEmail = userEmail ? userEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+
+    console.log("OTP for", username, ":", otp);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "OTP sent successfully. Please verify to complete login.",
+      results: {
+        session_id: sessionId,
+        unique_id: user.unique_id,
+        email: maskedEmail,
+        user_role: user.user_role,
+        otpDev: otp // For development only
+      }
+    });
+
+  } catch (err) {
+    console.error("NonResidentLogin error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Non-Resident Verify OTP (Step 2: Complete login)
+// ----------------------------------------------------------------------
+const NonResidentVerifyOTP = async (req, res) => {
+  try {
+    const { session_id, otp } = req.body;
+
+    console.log("Non-Resident OTP verification for session:", session_id);
+
+    if (!session_id || !otp) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Session ID and OTP are required"
+      });
+    }
+
+    // 1️⃣ Find user by session_id with role 'nonresident'
+    const userQuery = await pool.query(
+      `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at, contact_value
+       FROM users
+       WHERE session_id = $1 AND user_role = 'nonresident'`,
+      [session_id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        code: 404,
+        message: "Invalid session. Please login again."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Check OTP expiration
+    if (!user.otp_expires_at || new Date() > new Date(user.otp_expires_at)) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "OTP has expired. Please request a new one."
+      });
+    }
+
+    // 3️⃣ Verify OTP
+    if (otp !== user.otp_code) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid OTP. Please try again."
+      });
+    }
+
+    // 4️⃣ Generate auth token
+    const authToken = require('crypto').randomBytes(32).toString('hex');
+
+    // 5️⃣ Clear OTP and update last login
+    await pool.query(
+      `UPDATE users
+       SET otp_code = NULL, otp_expires_at = NULL, auth_token = $1, last_login_at = NOW(), updated_at = NOW()
+       WHERE id = $2`,
+      [authToken, user.id]
+    );
+
+    // 6️⃣ Send welcome email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      try {
+        await sendWelcomeEmail(userEmail, user.full_name || user.username);
+      } catch (emailError) {
+        console.error("Welcome email failed:", emailError);
+      }
+    }
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Login successful",
+      results: {
+        token: authToken,
+        user_role: user.user_role,
+        unique_id: user.unique_id,
+        user: {
+          username: user.username,
+          email: userEmail,
+          full_name: user.full_name
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("NonResidentVerifyOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Non-Resident Resend OTP
+// ----------------------------------------------------------------------
+const NonResidentResendOTP = async (req, res) => {
+  try {
+    const { session_id } = req.body;
+
+    if (!session_id) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Session ID is required"
+      });
+    }
+
+    // 1️⃣ Find user by session_id with role 'nonresident'
+    const userQuery = await pool.query(
+      `SELECT id, email, contact_value, username FROM users WHERE session_id = $1 AND user_role = 'nonresident'`,
+      [session_id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        code: 404,
+        message: "Invalid session. Please login again."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Generate new OTP
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 3️⃣ Update OTP in database
+    await pool.query(
+      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+      [otp, expiresAt, user.id]
+    );
+
+    // 4️⃣ Send OTP via email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      console.log("Resending Non-Resident OTP to:", userEmail);
+      try {
+        await sendEmailOTP(userEmail, otp);
+      } catch (emailError) {
+        console.error("OTP email failed:", emailError);
+      }
+    }
+
+    console.log("Resent OTP for", user.username, ":", otp);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "OTP resent successfully",
+      results: {
+        otpDev: otp // For development only
+      }
+    });
+
+  } catch (err) {
+    console.error("NonResidentResendOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Resident Login with Username/Password + OTP (Step 1: Verify credentials & Send OTP)
+// ----------------------------------------------------------------------
+const ResidentLogin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    console.log("Resident Login attempt for username:", username);
+
+    if (!username || !password) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Username and password are required"
+      });
+    }
+
+    // 1️⃣ Find user by username with role 'resident'
+    const userQuery = await pool.query(
+      `SELECT id, unique_id, username, password, email, user_role, full_name, is_active, contact_value
+       FROM users
+       WHERE username = $1 AND user_role = 'resident'`,
+      [username]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid credentials. Please check your username and password."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Check if user is active
+    if (user.is_active === false) {
+      return res.status(403).json({
+        status: false,
+        code: 403,
+        message: "Account is deactivated. Please contact administrator."
+      });
+    }
+
+    // 3️⃣ Verify password (plain text comparison)
+    if (password !== user.password) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid credentials. Please check your username and password."
+      });
+    }
+
+    // 4️⃣ Generate OTP and session
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const sessionId = require('crypto').randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 5️⃣ Store OTP and session in database
+    await pool.query(
+      `UPDATE users
+       SET otp_code = $1, otp_expires_at = $2, session_id = $3, updated_at = NOW()
+       WHERE id = $4`,
+      [otp, expiresAt, sessionId, user.id]
+    );
+
+    // 6️⃣ Send OTP via email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      console.log("Sending Resident Login OTP to:", userEmail);
+      try {
+        await sendEmailOTP(userEmail, otp);
+      } catch (emailError) {
+        console.error("OTP email failed:", emailError);
+        // Continue even if email fails - OTP is stored in DB
+      }
+    }
+
+    // 7️⃣ Return session info
+    const maskedEmail = userEmail ? userEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+
+    console.log("OTP for", username, ":", otp);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "OTP sent successfully. Please verify to complete login.",
+      results: {
+        session_id: sessionId,
+        unique_id: user.unique_id,
+        email: maskedEmail,
+        user_role: user.user_role,
+        otpDev: otp // For development only - remove in production
+      }
+    });
+
+  } catch (err) {
+    console.error("ResidentLogin error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Resident Verify OTP (Step 2: Complete login)
+// ----------------------------------------------------------------------
+const ResidentVerifyOTP = async (req, res) => {
+  try {
+    const { session_id, otp } = req.body;
+
+    console.log("Resident OTP verification for session:", session_id);
+
+    if (!session_id || !otp) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Session ID and OTP are required"
+      });
+    }
+
+    // 1️⃣ Find user by session_id with role 'resident'
+    const userQuery = await pool.query(
+      `SELECT id, unique_id, username, email, user_role, full_name, otp_code, otp_expires_at, contact_value
+       FROM users
+       WHERE session_id = $1 AND user_role = 'resident'`,
+      [session_id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        code: 404,
+        message: "Invalid session. Please login again."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Check OTP expiration
+    if (!user.otp_expires_at || new Date() > new Date(user.otp_expires_at)) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "OTP has expired. Please request a new one."
+      });
+    }
+
+    // 3️⃣ Verify OTP
+    if (otp !== user.otp_code) {
+      return res.status(401).json({
+        status: false,
+        code: 401,
+        message: "Invalid OTP. Please try again."
+      });
+    }
+
+    // 4️⃣ Generate auth token
+    const authToken = require('crypto').randomBytes(32).toString('hex');
+
+    // 5️⃣ Clear OTP and update last login
+    await pool.query(
+      `UPDATE users
+       SET otp_code = NULL, otp_expires_at = NULL, auth_token = $1, last_login_at = NOW(), updated_at = NOW()
+       WHERE id = $2`,
+      [authToken, user.id]
+    );
+
+    // 6️⃣ Send welcome email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      try {
+        await sendWelcomeEmail(userEmail, user.full_name || user.username);
+      } catch (emailError) {
+        console.error("Welcome email failed:", emailError);
+      }
+    }
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "Login successful",
+      results: {
+        token: authToken,
+        user_role: user.user_role,
+        unique_id: user.unique_id,
+        user: {
+          username: user.username,
+          email: userEmail,
+          full_name: user.full_name
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("ResidentVerifyOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Resident Resend OTP
+// ----------------------------------------------------------------------
+const ResidentResendOTP = async (req, res) => {
+  try {
+    const { session_id } = req.body;
+
+    if (!session_id) {
+      return res.status(400).json({
+        status: false,
+        code: 400,
+        message: "Session ID is required"
+      });
+    }
+
+    // 1️⃣ Find user by session_id with role 'resident'
+    const userQuery = await pool.query(
+      `SELECT id, email, contact_value, username FROM users WHERE session_id = $1 AND user_role = 'resident'`,
+      [session_id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        code: 404,
+        message: "Invalid session. Please login again."
+      });
+    }
+
+    const user = userQuery.rows[0];
+
+    // 2️⃣ Generate new OTP
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // 3️⃣ Update OTP in database
+    await pool.query(
+      `UPDATE users SET otp_code = $1, otp_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+      [otp, expiresAt, user.id]
+    );
+
+    // 4️⃣ Send OTP via email
+    const userEmail = user.email || user.contact_value;
+    if (userEmail) {
+      console.log("Resending Resident OTP to:", userEmail);
+      try {
+        await sendEmailOTP(userEmail, otp);
+      } catch (emailError) {
+        console.error("OTP email failed:", emailError);
+      }
+    }
+
+    console.log("Resent OTP for", user.username, ":", otp);
+
+    return res.status(200).json({
+      status: true,
+      code: 200,
+      message: "OTP resent successfully",
+      results: {
+        otpDev: otp // For development only - remove in production
+      }
+    });
+
+  } catch (err) {
+    console.error("ResidentResendOTP error:", err);
+    return res.status(500).json({
+      status: false,
+      code: 500,
+      message: err.message
+    });
+  }
+};
+
 module.exports = {
     Register,
     VerifyOTP,
@@ -1458,5 +2015,11 @@ module.exports = {
     UpdateSalesData,
     UpdateAgentDetails,
     UpdateBusinessDetails,
-    VerifyAgentTIN
+    VerifyAgentTIN,
+    ResidentLogin,
+    ResidentVerifyOTP,
+    ResidentResendOTP,
+    NonResidentLogin,
+    NonResidentVerifyOTP,
+    NonResidentResendOTP
 };
