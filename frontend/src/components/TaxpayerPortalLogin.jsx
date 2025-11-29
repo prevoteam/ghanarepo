@@ -26,7 +26,7 @@ const TaxpayerPortalLogin = ({ onSelectLoginType }) => {
                 </svg>
               </div>
               <h3 className="card-title">Resident Login</h3>
-              <p className="card-description">TIN or Ghana Card ID holders.</p>
+              <p className="card-description">Login with your username and password.</p>
             </div>
 
             {/* Non-Resident Login Card */}

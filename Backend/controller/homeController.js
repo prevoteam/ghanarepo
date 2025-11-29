@@ -79,6 +79,36 @@ module.exports = ({ config }) => {
     return homeService.SendNonResidentLoginOTP(req, res, next);
   });
 
+  // Resident Login with Username/Password + OTP
+  router.post('/resident-login', (req, res, next) => {
+    return homeService.ResidentLogin(req, res, next);
+  });
+
+  // Resident Verify OTP
+  router.post('/resident-verify-otp', (req, res, next) => {
+    return homeService.ResidentVerifyOTP(req, res, next);
+  });
+
+  // Resident Resend OTP
+  router.post('/resident-resend-otp', (req, res, next) => {
+    return homeService.ResidentResendOTP(req, res, next);
+  });
+
+  // Non-Resident Login with Username/Password + OTP
+  router.post('/nonresident-login', (req, res, next) => {
+    return homeService.NonResidentLogin(req, res, next);
+  });
+
+  // Non-Resident Verify OTP
+  router.post('/nonresident-verify-otp', (req, res, next) => {
+    return homeService.NonResidentVerifyOTP(req, res, next);
+  });
+
+  // Non-Resident Resend OTP
+  router.post('/nonresident-resend-otp', (req, res, next) => {
+    return homeService.NonResidentResendOTP(req, res, next);
+  });
+
   // Market Declaration (Step 5)
   router.post('/UpdateMarketDeclaration', (req, res, next) => {
     return homeService.UpdateMarketDeclaration(req, res, next);
