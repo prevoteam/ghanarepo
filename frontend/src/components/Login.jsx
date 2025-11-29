@@ -169,7 +169,7 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
       {/* Login Form */}
       <div className="login-content">
         <div className="login-card">
-          <h1 className="login-title">Non Merchant Login</h1>
+          <h1 className="login-title">Non Resident Login</h1>
           <p className="login-subtitle">Enter your credentials to access your dashboard</p>
 
           {error && (
