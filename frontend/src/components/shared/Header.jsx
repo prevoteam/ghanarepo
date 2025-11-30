@@ -137,7 +137,7 @@ const Header = ({
           target="_blank"
           rel="noopener noreferrer"
         >
-          Rise With Protean
+          API Connect
         </a>
         </div>
       </nav>
