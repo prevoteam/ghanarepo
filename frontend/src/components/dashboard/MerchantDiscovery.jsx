@@ -45,7 +45,7 @@ const MerchantDiscovery = () => {
       // Add header
       doc.setFontSize(18);
       doc.setTextColor(31, 58, 131); // GRA blue color
-      doc.text('Ghana Unified e-commerce Registration Portal', 14, 15);
+      doc.text('Ghana Unified e-Commerce Registration Portal', 14, 15);
 
       doc.setFontSize(14);
       doc.setTextColor(0, 0, 0);
