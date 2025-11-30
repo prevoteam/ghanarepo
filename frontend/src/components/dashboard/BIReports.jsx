@@ -26,7 +26,7 @@ const BIReports = () => {
 
   const sectorData = [
     { sector: 'Streaming (45%)', value: 'GHS 64.1M', color: '#2D3B8F' },
-    { sector: 'E-Commerce (30%)', value: 'GHS 42.7M', color: '#4052B5' },
+    { sector: 'e-commerce (30%)', value: 'GHS 42.7M', color: '#4052B5' },
     { sector: 'SaaS/Cloud (25%)', value: 'GHS 35.6M', color: '#6B7CB5' },
   ];
 
