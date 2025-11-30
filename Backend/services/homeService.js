@@ -117,7 +117,7 @@ const sendEmailOTP = async (email, otp) => {
   htmlTemplate = htmlTemplate.replace("{{OTP_CODE}}", otp);
 
   await transporter.sendMail({
-    from: `"e-commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
+    from: `"e-Commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
     to: email,
     subject: "Your OTP Code",
     html: htmlTemplate,
@@ -169,9 +169,9 @@ const sendWelcomeEmail = async (email, userName) => {
     htmlTemplate = htmlTemplate.replace("{{PORTAL_URL}}", process.env.FRONT_SITE_URL || "#");
 
     await transporter.sendMail({
-      from: `"e-commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
+      from: `"e-Commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
       to: email,
-      subject: "Welcome to e-commerce Portal - Login Successful",
+      subject: "Welcome to e-Commerce Portal - Login Successful",
       html: htmlTemplate,
     });
 

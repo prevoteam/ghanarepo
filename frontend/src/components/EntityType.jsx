@@ -31,7 +31,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
   const serviceTypes = [
     { value: '', label: 'Select Service Type' },
     { value: 'digital_services', label: 'Digital Services' },
-    { value: 'e_commerce', label: 'e-commerce' },
+    { value: 'e_commerce', label: 'e-Commerce' },
     { value: 'software', label: 'Software/SaaS' },
     { value: 'streaming', label: 'Streaming Services' },
     { value: 'online_advertising', label: 'Online Advertising' },

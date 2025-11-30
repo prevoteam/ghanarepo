@@ -37,12 +37,12 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     setTimeout(() => {
       const staticResponse = {
         "URL": url,
-        "Website": "e-commerce Development Company in Ghana | Ghana Com...",
+        "Website": "e-Commerce Development Company in Ghana | Ghana Com...",
         "Domain": url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0],
         "Sector": "E-commerce",
         "Address": "Not Found",
         "Headquarters": "Not Found",
-        "About": "About Us - Sample e-commerce website description. This is a placeholder for the actual website information that would be fetched from the API.",
+        "About": "About Us - Sample e-Commerce website description. This is a placeholder for the actual website information that would be fetched from the API.",
         "Emails": "contact@example.com",
         "Phones": "None"
       };
@@ -67,12 +67,12 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>e-commerce Discovery Results</h2>
+          <h2>e-Commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-loading">
           <div className="loading-spinner"></div>
-          <p>Discovering e-commerce sites...</p>
+          <p>Discovering e-Commerce sites...</p>
         </div>
       </div>
     );
@@ -82,7 +82,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>e-commerce Discovery Results</h2>
+          <h2>e-Commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-error">
@@ -101,11 +101,11 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>e-commerce Discovery Results</h2>
+          <h2>e-Commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-empty">
-          <p>No e-commerce sites discovered.</p>
+          <p>No e-Commerce sites discovered.</p>
         </div>
       </div>
     );
@@ -118,7 +118,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
   return (
     <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
       <div className="discovery-header">
-        <h2>e-commerce Discovery Results</h2>
+        <h2>e-Commerce Discovery Results</h2>
         <div className="discovery-header-actions">
           <span className="results-count">{data.length} sites found</span>
           <BackButton />

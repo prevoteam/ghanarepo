@@ -93,7 +93,7 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
 
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Official e-commerce TIN Credential', 15, 30);
+      doc.text('Official e-Commerce TIN Credential', 15, 30);
 
       // Reset text color for body
       doc.setTextColor(0, 0, 0);
@@ -241,7 +241,7 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
                   <div className="header-content">
                     <div className="gra-text">
                       <h3>Ghana Revenue Authority</h3>
-                      <p>Official e-commerce TIN Credential</p>
+                      <p>Official e-Commerce TIN Credential</p>
                     </div>
                   </div>
                   <div className="gold-accent"></div>
