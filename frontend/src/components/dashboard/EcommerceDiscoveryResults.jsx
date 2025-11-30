@@ -37,7 +37,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     setTimeout(() => {
       const staticResponse = {
         "URL": url,
-        "Website": "E-Commerce Development Company in Ghana | Ghana Com...",
+        "Website": "e-commerce Development Company in Ghana | Ghana Com...",
         "Domain": url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0],
         "Sector": "E-commerce",
         "Address": "Not Found",
@@ -67,7 +67,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>E-Commerce Discovery Results</h2>
+          <h2>e-commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-loading">
@@ -82,7 +82,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>E-Commerce Discovery Results</h2>
+          <h2>e-commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-error">
@@ -101,7 +101,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
     return (
       <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
         <div className="discovery-header">
-          <h2>E-Commerce Discovery Results</h2>
+          <h2>e-commerce Discovery Results</h2>
           <BackButton />
         </div>
         <div className="discovery-empty">
@@ -118,7 +118,7 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
   return (
     <div className={`ecommerce-discovery-results ${isInline ? 'inline-mode' : ''}`}>
       <div className="discovery-header">
-        <h2>E-Commerce Discovery Results</h2>
+        <h2>e-commerce Discovery Results</h2>
         <div className="discovery-header-actions">
           <span className="results-count">{data.length} sites found</span>
           <BackButton />

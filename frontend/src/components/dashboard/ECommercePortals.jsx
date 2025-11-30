@@ -71,7 +71,7 @@ const ECommercePortals = () => {
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
           </div>
-          <h2 className="empty-state-title">E-Commerce Portal Discovery</h2>
+          <h2 className="empty-state-title">e-commerce Portal Discovery</h2>
           <p className="empty-state-description">
             Initiate a scan to identify non-resident e-commerce<br/>
             platforms operating within the jurisdiction based on web<br/>
