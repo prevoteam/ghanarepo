@@ -89,7 +89,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
     return (
       <ConfigDashboard
         onLogout={handleLogout}
-        userRole={normalizedRole}
+        userRole={normalizedRole}   
       />
     );
   }
