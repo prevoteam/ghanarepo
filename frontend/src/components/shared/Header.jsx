@@ -42,7 +42,7 @@ const Header = ({
             <div className="logo-text">
               <div className="gra-text">Ghana Unified e-Commerce Compliance Portal</div>
               <div className="gra-subtext">GHANA REVENUE AUTHORITY</div>
-            </div>
+            </div>  
           </div>
             </div>
             <div className='col-xl-3 col-lg-4 col-md-6 col-sm-6 col-6'>
