@@ -29,6 +29,7 @@ function App() {
   const [loginType, setLoginType] = useState('resident')
   const [pspCredentials, setPspCredentials] = useState(null)
   const [resetHomeCounter, setResetHomeCounter] = useState(0)
+  const [isDashboardMode, setIsDashboardMode] = useState(false)
 
   // Views that should NOT have centralized Header/Footer (they have their own)
   const dashboardViews = ['dashboard', 'residentDashboard', 'nonResidentDashboard', 'monitoringDashboard', 'configDashboard', 'adminDashboard']
@@ -98,12 +99,19 @@ function App() {
     setUserRole('resident')
     setLoginType('resident')
     setCurrentView('home')
+    setIsDashboardMode(false)
 
     sessionStorage.clear()
+    // Clear merchant session data
     localStorage.removeItem('loggedInUserId')
     localStorage.removeItem('currentView')
     localStorage.removeItem('userRole')
     localStorage.removeItem('loginType')
+    // Clear GRA session data
+    localStorage.removeItem('gra_session_id')
+    localStorage.removeItem('gra_unique_id')
+    localStorage.removeItem('gra_user_role')
+    localStorage.removeItem('gra_token')
   }
 
   // Navigation handlers
@@ -111,6 +119,7 @@ function App() {
     setCurrentView('home')
     setPspCredentials(null)
     setResetHomeCounter(prev => prev + 1)
+    setIsDashboardMode(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -155,7 +164,7 @@ function App() {
   }
 
   // Check if current view should show Header/Footer
-  const shouldShowHeaderFooter = !dashboardViews.includes(currentView)
+  const shouldShowHeaderFooter = !dashboardViews.includes(currentView) && !isDashboardMode
 
   // Render content based on current view
   const renderContent = () => {
@@ -276,6 +285,7 @@ function App() {
             onGoToGuidelines={handleGoToGuidelines}
             onGoToFAQ={handleGoToFAQ}
             onGoToPSP={handleGoToPSP}
+            onDashboardStateChange={setIsDashboardMode}
           />
         )
     }

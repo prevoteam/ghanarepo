@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './RegisterNow.css';
 import GRAAdminLogin from './GRAAdminLogin';
 import MonitoringDashboard from './MonitoringDashboard';
@@ -12,6 +12,28 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
+  // Restore GRA session on page load
+  useEffect(() => {
+    const savedToken = localStorage.getItem('gra_token');
+    const savedRole = localStorage.getItem('gra_user_role');
+
+    if (savedToken && savedRole) {
+      setUserRole(savedRole);
+
+      // Route to appropriate dashboard based on saved role
+      if (savedRole === 'admin') {
+        setShowAdminDashboard(true);
+        if (onDashboardStateChange) onDashboardStateChange(true);
+      } else if (savedRole === 'monitoring') {
+        setShowMonitoringDashboard(true);
+        if (onDashboardStateChange) onDashboardStateChange(true);
+      } else if (savedRole === 'gra_maker' || savedRole === 'gra_checker') {
+        setShowConfigDashboard(true);
+        if (onDashboardStateChange) onDashboardStateChange(true);
+      }
+    }
+  }, [onDashboardStateChange]);
+
   const handleNonResidentClick = () => {
     if (onNonResidentLoginClick) {
       onNonResidentLoginClick();
@@ -21,7 +43,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   const handleGRALoginSuccess = (data) => {
     console.log('GRA Admin Login successful:', data);
 
-    const role = data.userRole || sessionStorage.getItem('gra_user_role');
+    const role = data.userRole || localStorage.getItem('gra_user_role');
 
     setShowGRAAdminLogin(false);
     setUserRole(role);
@@ -54,16 +76,24 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   };
 
   const handleLogout = () => {
-    // Clear all session data
-    sessionStorage.removeItem('gra_session_id');
-    sessionStorage.removeItem('gra_user_role');
-    sessionStorage.removeItem('gra_token');
+    // Clear all session data from localStorage
+    localStorage.removeItem('gra_session_id');
+    localStorage.removeItem('gra_unique_id');
+    localStorage.removeItem('gra_user_role');
+    localStorage.removeItem('gra_token');
+    localStorage.removeItem('loggedInUserId');
+    localStorage.removeItem('currentView');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('loginType');
 
     setShowMonitoringDashboard(false);
     setShowConfigDashboard(false);
     setShowAdminDashboard(false);
     setShowGRAAdminLogin(false);
     setUserRole(null);
+
+    // Notify parent to show header/footer again
+    if (onDashboardStateChange) onDashboardStateChange(false);
   };
 
   // GRA Admin Portal flow
