@@ -52,9 +52,9 @@ const GRAAdminLogin = ({ onBack, onLoginSuccess }) => {
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        sessionStorage.setItem('gra_session_id', data.results.session_id);
-        sessionStorage.setItem('gra_unique_id', data.results.unique_id || '');
-        sessionStorage.setItem('gra_user_role', data.results.user_role);
+        localStorage.setItem('gra_session_id', data.results.session_id);
+        localStorage.setItem('gra_unique_id', data.results.unique_id || '');
+        localStorage.setItem('gra_user_role', data.results.user_role);
         setUserRole(data.results.user_role);
         setUserEmail(data.results.email || '');
         setShowOTPModal(true);
@@ -72,7 +72,7 @@ const GRAAdminLogin = ({ onBack, onLoginSuccess }) => {
   const handleOTPVerified = (data) => {
     setShowOTPModal(false);
 
-    const role = sessionStorage.getItem('gra_user_role');
+    const role = localStorage.getItem('gra_user_role');
 
     // Pass role info to parent for routing
     onLoginSuccess({

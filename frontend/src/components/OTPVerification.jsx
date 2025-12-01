@@ -105,7 +105,7 @@ const OTPVerification = ({ email, mobileNumber, onVerified, onClose }) => {
     }
 
     try {
-      const uniqueId = sessionStorage.getItem('unique_id');
+      const uniqueId = localStorage.getItem('unique_id');
 
       if (!uniqueId) {
         setError('Session expired. Please try again.');

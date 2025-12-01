@@ -453,7 +453,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
         body: JSON.stringify({
           rate_id: parseInt(rateId, 10),
           new_rate: parseFloat(editValue),
-          submitted_by: sessionStorage.getItem('gra_unique_id') || 'maker'
+          submitted_by: localStorage.getItem('gra_unique_id') || 'maker'
         })
       });
 
@@ -489,7 +489,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
         body: JSON.stringify({
           rate_id: parseInt(rateId, 10),
           action: 'approve',
-          approved_by: sessionStorage.getItem('gra_unique_id') || 'checker'
+          approved_by: localStorage.getItem('gra_unique_id') || 'checker'
         })
       });
 
@@ -518,7 +518,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
         body: JSON.stringify({
           rate_id: parseInt(rateId, 10),
           action: 'reject',
-          approved_by: sessionStorage.getItem('gra_unique_id') || 'checker'
+          approved_by: localStorage.getItem('gra_unique_id') || 'checker'
         })
       });
 

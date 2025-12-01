@@ -73,8 +73,8 @@ const GRAAdminOTP = ({ email, onVerified, onClose }) => {
     if (!canResend) return;
 
     try {
-      const sessionId = sessionStorage.getItem('gra_session_id');
-      const uniqueId = sessionStorage.getItem('gra_unique_id');
+      const sessionId = localStorage.getItem('gra_session_id');
+      const uniqueId = localStorage.getItem('gra_unique_id');
       await fetch(`${ADMIN_API_BASE_URL}/gra-admin-resend-otp`, {
         method: 'POST',
         headers: {
@@ -103,8 +103,8 @@ const GRAAdminOTP = ({ email, onVerified, onClose }) => {
     setIsVerifying(true);
 
     try {
-      const sessionId = sessionStorage.getItem('gra_session_id');
-      const uniqueId = sessionStorage.getItem('gra_unique_id');
+      const sessionId = localStorage.getItem('gra_session_id');
+      const uniqueId = localStorage.getItem('gra_unique_id');
 
       const response = await fetch(`${ADMIN_API_BASE_URL}/gra-admin-verify-otp`, {
         method: 'POST',
@@ -121,7 +121,7 @@ const GRAAdminOTP = ({ email, onVerified, onClose }) => {
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        sessionStorage.setItem('gra_token', data.results.token);
+        localStorage.setItem('gra_token', data.results.token);
         onVerified(data);
       } else {
         setError(data.message || 'Invalid OTP');

@@ -101,7 +101,7 @@ const MonitoringOTP = ({ email, onVerified, onClose }) => {
     setIsVerifying(true);
 
     try {
-      const sessionId = sessionStorage.getItem('monitoring_session_id');
+      const sessionId = localStorage.getItem('monitoring_session_id');
 
       const response = await fetch(`${ADMIN_API_BASE_URL}/verify-otp`, {
         method: 'POST',
@@ -117,7 +117,7 @@ const MonitoringOTP = ({ email, onVerified, onClose }) => {
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        sessionStorage.setItem('monitoring_token', data.results.token);
+        localStorage.setItem('monitoring_token', data.results.token);
         onVerified(data);
       } else {
         setError(data.message || 'Invalid OTP');
@@ -127,7 +127,7 @@ const MonitoringOTP = ({ email, onVerified, onClose }) => {
     } catch (error) {
       console.error('Error verifying OTP:', error);
       // For demo purposes, proceed
-      sessionStorage.setItem('monitoring_token', 'demo_token');
+      localStorage.setItem('monitoring_token', 'demo_token');
       onVerified({ status: true, results: { token: 'demo_token' } });
     } finally {
       setIsVerifying(false);

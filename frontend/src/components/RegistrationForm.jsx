@@ -23,9 +23,9 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
   });
   const { loading, error, execute, clearError } = useApi();
 
-  // Helper function to get unique_id from session storage
+  // Helper function to get unique_id from local storage
   const getStoredUniqueId = () => {
-    return sessionStorage.getItem('unique_id');
+    return localStorage.getItem('unique_id');
   };
 
   // Updated steps to match screenshots - 8 steps total

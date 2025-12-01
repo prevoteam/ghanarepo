@@ -50,8 +50,8 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        sessionStorage.setItem('monitoring_session_id', data.results.session_id);
-        sessionStorage.setItem('monitoring_email', data.results.email);
+        localStorage.setItem('monitoring_session_id', data.results.session_id);
+        localStorage.setItem('monitoring_email', data.results.email);
         setShowOTPModal(true);
       } else {
         setError(data.message || 'Invalid credentials. Please try again.');
@@ -59,7 +59,7 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
     } catch (error) {
       console.error('Login error:', error);
       // For demo purposes, show OTP modal
-      sessionStorage.setItem('monitoring_userId', 'user123');
+      localStorage.setItem('monitoring_userId', 'user123');
       setShowOTPModal(true);
     } finally {
       setIsLoading(false);
@@ -122,7 +122,7 @@ const MonitoringLogin = ({ onBack, onLoginSuccess }) => {
       {/* OTP Modal */}
       {showOTPModal && (
         <MonitoringOTP
-          email={sessionStorage.getItem('monitoring_email') || 'user@example.com'}
+          email={localStorage.getItem('monitoring_email') || 'user@example.com'}
           onVerified={handleOTPVerified}
           onClose={() => setShowOTPModal(false)}
         />
