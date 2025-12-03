@@ -31,31 +31,28 @@ const MonitoringDashboard = ({ onLogout }) => {
     setDiscoveryLoading(true);
     setDiscoveryError(null);
 
-    // Static data for now - TODO: Enable API call later
-    // const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
-    const staticSites = [
-      "https://ghanacommerce.com",
-      "https://www.jumia.com.gh",
-      "https://ghanamallonline.com",
-      "https://www.aftership.com",
-      "https://www.f6s.com",
-      "https://www.noxmall.com",
-      "https://www.tospinomall.com.gh",
-      "https://www.trade.gov",
-      "https://emmarnitechs.com",
-      "https://smaizshop.com"
-    ];
+    try {
+      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
 
-    // Simulate loading delay
-    setTimeout(() => {
-      const formattedData = staticSites.map((url, index) => ({
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Format the data - API returns array of URLs
+      const formattedData = (Array.isArray(data) ? data : data.sites || data.urls || []).map((url, index) => ({
         id: index + 1,
-        url: url
+        url: typeof url === 'string' ? url : url.url || url
       }));
 
       setDiscoveryData(formattedData);
+    } catch (err) {
+      console.error('Error fetching e-commerce sites:', err);
+      setDiscoveryError(err.message || 'Failed to fetch e-commerce sites');
+    } finally {
       setDiscoveryLoading(false);
-    }, 500);
+    }
   };
 
   const handleCloseDiscovery = () => {

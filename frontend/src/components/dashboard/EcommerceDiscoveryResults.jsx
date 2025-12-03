@@ -29,30 +29,39 @@ const EcommerceDiscoveryResults = ({ data, loading, error, onClose, isInline = f
   const handleFetchData = async (url) => {
     setFetchingUrl(url);
 
-    // Static data for now - TODO: Enable API call later
-    // const response = await fetch(`http://127.0.0.1:8000/api/result-json?url=${encodeURIComponent(url)}`);
-    // const data = await response.json();
+    try {
+      const apiBaseUrl = import.meta.env.VITE_GHANA_SITES_API_URL;
+      const response = await fetch(`${apiBaseUrl}/result-json?url=${encodeURIComponent(url)}`);
 
-    // Simulate API delay and return static data
-    setTimeout(() => {
-      const staticResponse = {
-        "URL": url,
-        "Website": "e-Commerce Development Company in Ghana | Ghana Com...",
-        "Domain": url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0],
-        "Sector": "E-commerce",
-        "Address": "Not Found",
-        "Headquarters": "Not Found",
-        "About": "About Us - Sample e-Commerce website description. This is a placeholder for the actual website information that would be fetched from the API.",
-        "Emails": "contact@example.com",
-        "Phones": "None"
-      };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
 
       setSiteDetails(prev => ({
         ...prev,
-        [url]: staticResponse
+        [url]: data
       }));
+    } catch (err) {
+      console.error('Error fetching site details:', err);
+      setSiteDetails(prev => ({
+        ...prev,
+        [url]: {
+          "URL": url,
+          "Website": "Error fetching data",
+          "Domain": url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0],
+          "Sector": "Unknown",
+          "Address": "Not Found",
+          "Headquarters": "Not Found",
+          "About": "Failed to fetch website information. Please try again.",
+          "Emails": "Not Found",
+          "Phones": "Not Found"
+        }
+      }));
+    } finally {
       setFetchingUrl(null);
-    }, 800);
+    }
   };
 
   const handleCloseDetails = (url) => {
