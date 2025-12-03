@@ -5,7 +5,7 @@ const ADMIN_API_BASE_URL = `${BASE_URL}/admin/monitoring`;
 const ADMIN_USERS_API_BASE_URL = `${BASE_URL}/admin`;
 const QR_CODE_API_URL = import.meta.env.VITE_QR_CODE_API_URL || 'https://api.qrserver.com/v1/create-qr-code';
 const PAYMENT_PORTAL_URL = import.meta.env.VITE_PAYMENT_PORTAL_URL || 'https://pay.gra.gov.gh';
-const GHANA_SITES_API_URL = import.meta.env.VITE_GHANA_SITES_API_URL || 'http://127.0.0.1:8000/api';
+const GHANA_SITES_API_URL = import.meta.env.VITE_GHANA_SITES_API_URL || 'https://gra-demo.proteantech.in/python/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
