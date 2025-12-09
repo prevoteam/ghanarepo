@@ -3,7 +3,6 @@ import './MarketDeclaration.css';
 import StepBar from './StepBar';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
-import { Header, Footer } from './shared';
 
 const MarketDeclaration = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, onLoginRedirect }) => {
   const [sellsDigitalServices, setSellsDigitalServices] = useState(false);
@@ -44,18 +43,7 @@ const MarketDeclaration = ({ onNext, onBack, currentStep, uniqueId, onRegisterNo
   };
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="market-main">
         <div className="market-circles">
@@ -129,8 +117,6 @@ const MarketDeclaration = ({ onNext, onBack, currentStep, uniqueId, onRegisterNo
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

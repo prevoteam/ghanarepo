@@ -1806,6 +1806,64 @@ const MarkAllNotificationsRead = async (req, res) => {
     }
 };
 
+// -------------------------
+// Get PSP Transactions (for PSP Ingestion Status page)
+// -------------------------
+const GetPSPTransactions = async (req, res) => {
+    try {
+        const { page = 1, limit = 200 } = req.query;
+
+        console.log("GetPSPTransactions params:", { page, limit });
+
+        // Get total count
+        const countResult = await pool.query(
+            `SELECT COUNT(*) as total FROM psp_transactions`
+        );
+        const total = parseInt(countResult.rows[0].total);
+
+        // Get all columns except 'id' from psp_transactions table
+        // First, let's get the column names
+        const columnsResult = await pool.query(`
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'psp_transactions'
+            AND column_name != 'id'
+            ORDER BY ordinal_position
+        `);
+
+        const columns = columnsResult.rows.map(row => row.column_name);
+        const columnList = columns.length > 0 ? columns.join(', ') : '*';
+
+        // Query for transactions with pagination
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        const query = `
+            SELECT ${columnList}
+            FROM psp_transactions
+            ORDER BY id DESC
+            LIMIT $1 OFFSET $2
+        `;
+
+        const result = await pool.query(query, [parseInt(limit), offset]);
+
+        return res.status(200).json(
+            success(true, 200, "PSP transactions fetched successfully", {
+                transactions: result.rows,
+                total: total,
+                pagination: {
+                    total,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    totalPages: Math.ceil(total / parseInt(limit))
+                }
+            })
+        );
+
+    } catch (err) {
+        console.error("GetPSPTransactions error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
 module.exports = {
     MonitoringLogin,
     MonitoringVerifyOTP,
@@ -1830,5 +1888,6 @@ module.exports = {
     ExportVATEligibilityPDF,
     GetNotifications,
     MarkNotificationRead,
-    MarkAllNotificationsRead
+    MarkAllNotificationsRead,
+    GetPSPTransactions
 };

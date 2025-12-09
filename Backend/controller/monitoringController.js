@@ -118,5 +118,10 @@ module.exports = ({ config }) => {
         return monitoringService.MarkAllNotificationsRead(req, res, next);
     });
 
+    // GET /v1/admin/monitoring/psp-transactions - Get PSP transactions for PSP Ingestion Status page
+    router.get('/psp-transactions', (req, res, next) => {
+        return monitoringService.GetPSPTransactions(req, res, next);
+    });
+
     return router;
 };

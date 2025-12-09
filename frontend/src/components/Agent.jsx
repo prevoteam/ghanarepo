@@ -3,7 +3,6 @@ import './Agent.css';
 import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
-import { Header, Footer } from './shared';
 
 const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [loading, setLoading] = useState(false);
@@ -128,18 +127,7 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
   };
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="agent-main">
         <div className="agent-circles">
@@ -284,8 +272,6 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

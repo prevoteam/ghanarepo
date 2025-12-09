@@ -5,7 +5,6 @@ import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
-import { Header, Footer } from './shared';
 
 const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirect, currentStep, steps }) => {
   const [credentialData, setCredentialData] = useState(null);
@@ -183,18 +182,7 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
   };
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="complete-main">
         <div className="complete-circles">
@@ -301,8 +289,6 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

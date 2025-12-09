@@ -3,7 +3,6 @@ import './EntityType.css';
 import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
-import { Header, Footer } from './shared';
 
 const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [loading, setLoading] = useState(false);
@@ -95,18 +94,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
   };
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="entity-main">
         <div className="entity-circles">
@@ -209,8 +197,6 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import './VATObligations.css';
 import StepBar from './StepBar';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
-import { Header, Footer } from './shared';
 
 const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, onLoginRedirect, isReviewStep = false }) => {
   const [vatData, setVatData] = useState(null);
@@ -36,18 +35,7 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
   // Review Step (Step 7)
   if (isReviewStep) {
     return (
-      <div className="register-container">
-        <Header
-          onLogoClick={onRegisterNow}
-          activeNav=""
-          onAboutUsClick={() => {}}
-          onContactUsClick={() => {}}
-          onGuidelinesClick={() => {}}
-          onFAQClick={() => {}}
-          onPSPClick={() => {}}
-          showPSPNav={false}
-        />
-
+      <div className="registration-form-content">
         <main className="vat-main">
           <div className="vat-circles">
             <div className="vat-circle vat-circle-1"></div>
@@ -166,26 +154,13 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
             </div>
           </div>
         </main>
-
-        <Footer />
       </div>
     );
   }
 
   // Eligibility Step (Step 6)
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       <main className="vat-main">
         <div className="vat-circles">
           <div className="vat-circle vat-circle-1"></div>
@@ -269,8 +244,6 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

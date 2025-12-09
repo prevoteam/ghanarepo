@@ -3,7 +3,6 @@ import './Identity.css';
 import StepBar from './StepBar';
 import { getUniqueId } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
-import { Header, Footer } from './shared';
 
 const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [passportFile, setPassportFile] = useState(null);
@@ -217,18 +216,7 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
   };
 
   return (
-    <div className="register-container">
-      <Header
-        onLogoClick={onRegisterNow}
-        activeNav=""
-        onAboutUsClick={() => {}}
-        onContactUsClick={() => {}}
-        onGuidelinesClick={() => {}}
-        onFAQClick={() => {}}
-        onPSPClick={() => {}}
-        showPSPNav={false}
-      />
-
+    <div className="registration-form-content">
       {/* Main Content */}
       <main className="identity-main">
         <div className="identity-circles">
@@ -411,8 +399,6 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
