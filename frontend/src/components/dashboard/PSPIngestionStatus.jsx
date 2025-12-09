@@ -9,14 +9,17 @@ const PSPIngestionStatus = () => {
   const [transactionError, setTransactionError] = useState(null);
   const [showTransactionResults, setShowTransactionResults] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const handleViewTransactions = async () => {
     setShowTransactionResults(true);
     setTransactionLoading(true);
     setTransactionError(null);
+    setCurrentOffset(0);
 
     try {
-      const response = await fetch(`${BASE_URL}/admin/monitoring/psp-transactions?limit=200`);
+      const response = await fetch(`${BASE_URL}/admin/monitoring/psp-transactions?limit=200&offset=0`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -27,6 +30,7 @@ const PSPIngestionStatus = () => {
       if (data.status && data.code === 200) {
         setTransactionData(data.results.transactions || []);
         setTotalRecords(data.results.total || data.results.transactions?.length || 0);
+        setCurrentOffset(200);
       } else {
         throw new Error(data.message || 'Failed to fetch transactions');
       }
@@ -38,10 +42,38 @@ const PSPIngestionStatus = () => {
     }
   };
 
+  const handleStartNewIngestion = async () => {
+    setLoadingMore(true);
+
+    try {
+      const response = await fetch(`${BASE_URL}/admin/monitoring/psp-transactions?limit=200&offset=0`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status && data.code === 200) {
+        setTransactionData(data.results.transactions || []);
+        setTotalRecords(data.results.total || data.results.transactions?.length || 0);
+        setCurrentOffset(200);
+      } else {
+        throw new Error(data.message || 'Failed to fetch transactions');
+      }
+    } catch (err) {
+      console.error('Error refreshing PSP transactions:', err);
+      setTransactionError(err.message || 'Failed to refresh PSP transactions');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const handleCloseTransactions = () => {
     setShowTransactionResults(false);
     setTransactionData(null);
     setTransactionError(null);
+    setCurrentOffset(0);
   };
 
   // Show transactions grid when active
@@ -55,6 +87,8 @@ const PSPIngestionStatus = () => {
           onClose={handleCloseTransactions}
           isInline={true}
           totalRecords={totalRecords}
+          onStartNewIngestion={handleStartNewIngestion}
+          loadingMore={loadingMore}
         />
       </div>
     );

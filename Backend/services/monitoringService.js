@@ -1811,9 +1811,9 @@ const MarkAllNotificationsRead = async (req, res) => {
 // -------------------------
 const GetPSPTransactions = async (req, res) => {
     try {
-        const { page = 1, limit = 200 } = req.query;
+        const { limit = 200, offset = 0 } = req.query;
 
-        console.log("GetPSPTransactions params:", { page, limit });
+        console.log("GetPSPTransactions params:", { limit, offset });
 
         // Get total count
         const countResult = await pool.query(
@@ -1835,7 +1835,6 @@ const GetPSPTransactions = async (req, res) => {
         const columnList = columns.length > 0 ? columns.join(', ') : '*';
 
         // Query for transactions with pagination
-        const offset = (parseInt(page) - 1) * parseInt(limit);
         const query = `
             SELECT ${columnList}
             FROM psp_transactions
@@ -1843,7 +1842,7 @@ const GetPSPTransactions = async (req, res) => {
             LIMIT $1 OFFSET $2
         `;
 
-        const result = await pool.query(query, [parseInt(limit), offset]);
+        const result = await pool.query(query, [parseInt(limit), parseInt(offset)]);
 
         return res.status(200).json(
             success(true, 200, "PSP transactions fetched successfully", {
@@ -1851,9 +1850,9 @@ const GetPSPTransactions = async (req, res) => {
                 total: total,
                 pagination: {
                     total,
-                    page: parseInt(page),
+                    offset: parseInt(offset),
                     limit: parseInt(limit),
-                    totalPages: Math.ceil(total / parseInt(limit))
+                    hasMore: parseInt(offset) + parseInt(limit) < total
                 }
             })
         );

@@ -1,9 +1,36 @@
 import { useState } from 'react';
 import './PSPTransactionsGrid.css';
 
-const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0 }) => {
+const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0, onStartNewIngestion, loadingMore = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  const StartNewIngestionButton = () => (
+    <button
+      className="start-ingestion-btn"
+      onClick={onStartNewIngestion}
+      disabled={loadingMore}
+    >
+      {loadingMore ? (
+        <>
+          <svg className="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+          </svg>
+          <span>Refreshing...</span>
+        </>
+      ) : (
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M23 4v6h-6"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          <span>Start New Ingestion</span>
+        </>
+      )}
+    </button>
+  );
 
   const BackButton = () => (
     <button className={isInline ? "back-btn" : "close-btn"} onClick={onClose}>
@@ -140,6 +167,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
         <h2>PSP Ingestion Status</h2>
         <div className="transactions-header-actions">
           <span className="results-count">{totalRecords || data.length} records found</span>
+          {onStartNewIngestion && <StartNewIngestionButton />}
           <BackButton />
         </div>
       </div>
