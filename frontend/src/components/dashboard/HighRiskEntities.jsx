@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { jsPDF } from 'jspdf';
 import './DashboardPages.css';
 import { QR_CODE_API_URL, PAYMENT_PORTAL_URL } from '../../utils/api';
+import { usePSPData } from '../../context/PSPDataContext';
 
 const HighRiskEntities = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -9,41 +10,78 @@ const HighRiskEntities = () => {
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [actionedMerchants, setActionedMerchants] = useState(new Set());
 
-  const tableData = [
-    {
-      id: 1,
-      merchantName: 'CourseHero Global',
-      email: 'compliance@coursehero.com',
-      sourcePSP: 'Stripe',
-      transactionValue: 'GH₵450,000.00',
-      transactionValueNum: 450000,
-      estVATApplicable: 'GH₵85,000.00',
-      riskScore: 'High',
-      tin: 'P00123456'
-    },
-    {
-      id: 2,
-      merchantName: 'StreamFlix Inc',
-      email: 'tax@streamflix.com',
-      sourcePSP: 'PayPal',
-      transactionValue: 'GH₵1,250,000.00',
-      transactionValueNum: 1250000,
-      estVATApplicable: 'GH₵230,000.00',
-      riskScore: 'High',
-      tin: 'P00234567'
-    },
-    {
-      id: 3,
-      merchantName: 'GamingPlus',
-      email: 'legal@gamingplus.net',
-      sourcePSP: 'Stripe',
-      transactionValue: 'GH₵670,000.00',
-      transactionValueNum: 670000,
-      estVATApplicable: 'GH₵125,000.00',
-      riskScore: 'High',
-      tin: 'P00345678'
-    },
-  ];
+  const {
+    transactionData,
+    totalRecords,
+    currentOffset,
+    loading,
+    isDataLoaded,
+    loadInitialData
+  } = usePSPData();
+
+  // Auto-load data on mount if not already loaded
+  useEffect(() => {
+    if (!isDataLoaded && !loading) {
+      loadInitialData();
+    }
+  }, [isDataLoaded, loading, loadInitialData]);
+
+  // Calculate risk score based on TIN (registered) and transaction value
+  const calculateRiskScore = (row) => {
+    const hasTIN = row.merchant_tin && row.merchant_tin.trim() !== '';
+    const transactionValue = parseFloat(row.amount_ghs) || 0;
+
+    if (hasTIN) {
+      // Registered (Yes)
+      if (transactionValue > 100000) {
+        return { score: 3, level: 'Medium', registered: 'Yes' };
+      } else if (transactionValue > 50000) {
+        return { score: 1, level: 'Low', registered: 'Yes' };
+      } else {
+        return { score: 0, level: 'Low', registered: 'Yes' };
+      }
+    } else {
+      // Not Registered (No)
+      if (transactionValue > 100000) {
+        return { score: 5, level: 'High', registered: 'No' };
+      } else if (transactionValue > 50000) {
+        return { score: 4, level: 'High', registered: 'No' };
+      } else {
+        return { score: 3, level: 'Medium', registered: 'No' };
+      }
+    }
+  };
+
+  // Filter only HIGH risk entities
+  const highRiskData = useMemo(() => {
+    return transactionData.filter(row => {
+      const riskData = calculateRiskScore(row);
+      return riskData.level === 'High';
+    }).map((row, index) => {
+      const transactionValue = parseFloat(row.amount_ghs) || 0;
+      const vatApplicable = transactionValue * 0.15;
+      return {
+        id: row.id || index,
+        merchantName: row.merchant_name || '-',
+        email: row.merchant_email || '-',
+        sourcePSP: row.psp_provider || '-',
+        transactionValue: `GH₵${transactionValue.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        transactionValueNum: transactionValue,
+        estVATApplicable: `GH₵${vatApplicable.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        riskScore: 'High',
+        tin: row.merchant_tin || 'Not Registered'
+      };
+    });
+  }, [transactionData]);
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return num.toLocaleString();
+    }
+    return num?.toString() || '0';
+  };
 
   const handleInitiateAction = (merchant) => {
     setSelectedMerchant(merchant);
@@ -83,6 +121,18 @@ const HighRiskEntities = () => {
     return `GH₵${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  // Show loading state
+  if (loading && !isDataLoaded) {
+    return (
+      <div className="page-content">
+        <div className="merchant-statistics-loading">
+          <div className="loader-spinner"></div>
+          <p>Loading high risk entities...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-content">
         <div className="table-header-new row align-items-center">
@@ -90,11 +140,14 @@ const HighRiskEntities = () => {
             <div className="table-title-section">
             <h2 className="table-title text-dark">High Risk Entities</h2>
             <p className="table-subtitle text-muted">Entities flagged with high risk scores requiring immediate attention.</p>
+            <span className="records-info-badge">
+              Showing {highRiskData.length} high risk of {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)} loaded | Total: {formatNumber(totalRecords)}
+            </span>
           </div>
-          </div> 
+          </div>
          <div className='col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12'>
           <div className="table-actions d-flex justify-content-end">
-          
+
             <button className="action-btn-outline">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
@@ -107,30 +160,30 @@ const HighRiskEntities = () => {
 
       <div className="table-card">
         <div className="table-container">
+          {highRiskData.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              No high risk entities found in the current dataset.
+            </div>
+          ) : (
           <table className="data-table">
             <thead>
               <tr>
-                <th>MERCHANT NAME</th>
-                <th>SOURCE PSP</th>
-                <th>TRANSACTION VALUE</th>
-                <th>EST. VAT APPLICABLE</th>
-                <th>RISK SCORE</th>
-                <th>ACTION</th>
+                <th>Sr No.</th>
+                <th>Merchant Name</th>
+                <th>Source PSP</th>
+                <th>Transaction Value</th>
+                <th>Est. VAT Applicable</th>
+                <th>Risk Score</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {tableData.map((row, index) => (
+              {highRiskData.map((row, index) => (
                 <tr key={row.id}>
+                  <td>{String(index + 1).padStart(2, '0')}</td>
                   <td>
                     <div className="merchant-cell">
-                      <span className="merchant-name-link">
-                        {row.merchantName}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                          <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                      </span>
+                      <a href="#" className="merchant-name">{row.merchantName}</a>
                       <span className="merchant-email">{row.email}</span>
                     </div>
                   </td>
@@ -138,7 +191,7 @@ const HighRiskEntities = () => {
                     <span className="psp-badge">{row.sourcePSP}</span>
                   </td>
                   <td>{row.transactionValue}</td>
-                  <td className="vat-applicable">{row.estVATApplicable}</td>
+                  <td>{row.estVATApplicable}</td>
                   <td>
                     <span className="risk-badge high">
                       {row.riskScore}
@@ -157,11 +210,7 @@ const HighRiskEntities = () => {
                         className="initiate-action-btn"
                         onClick={() => handleInitiateAction(row)}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M22 2L11 13"/>
-                          <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-                        </svg>
-                        Initiate Action
+                        Initiate
                       </button>
                     )}
                   </td>
@@ -169,6 +218,7 @@ const HighRiskEntities = () => {
               ))}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 

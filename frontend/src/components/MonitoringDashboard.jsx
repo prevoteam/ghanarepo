@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './MonitoringDashboard.css';
+import { PSPDataProvider } from '../context/PSPDataContext';
 import PSPIngestionStatus from './dashboard/PSPIngestionStatus';
 import MerchantDiscovery from './dashboard/MerchantDiscovery';
 import MerchantStatistics from './dashboard/MerchantStatistics';
@@ -167,6 +168,7 @@ const MonitoringDashboard = ({ onLogout }) => {
   };
 
   return (
+    <PSPDataProvider>
     <div className="dashboard-container">
         <div className="dashboard-wrapper">
           {/* Sidebar */}
@@ -241,6 +243,7 @@ const MonitoringDashboard = ({ onLogout }) => {
         </main>
         </div>
       </div>
+    </PSPDataProvider>
   );
 };
 

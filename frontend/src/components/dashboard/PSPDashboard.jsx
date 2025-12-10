@@ -1,39 +1,134 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './PSPDashboard.css';
-import { BASE_URL } from '../../utils/api';
 
-const PSPDashboard = ({ onViewTransactions }) => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const PSPDashboard = ({ transactionData = [], totalRecords = 0, currentOffset = 200, onViewTransactions, onLoadMore, hasMore, loadingMore }) => {
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  const fetchDashboardStats = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/admin/monitoring/psp-dashboard-stats`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status && data.code === 200) {
-        setStats(data.results);
-      } else {
-        throw new Error(data.message || 'Failed to fetch dashboard stats');
-      }
-    } catch (err) {
-      console.error('Error fetching PSP dashboard stats:', err);
-      setError(err.message || 'Failed to fetch dashboard statistics');
-    } finally {
-      setLoading(false);
+  // Calculate stats from loaded transaction data
+  const stats = useMemo(() => {
+    if (!transactionData || transactionData.length === 0) {
+      return null;
     }
-  };
+
+    const data = transactionData;
+
+    // 1. Total PSPs Reporting (unique psp_provider count)
+    const uniquePsps = [...new Set(data.map(t => t.psp_provider).filter(Boolean))];
+    const activePsps = uniquePsps.length;
+    const totalExpectedPsps = 40;
+
+    // 2. Records Ingested (loaded count)
+    const recordsIngested = data.length;
+
+    // 3. Transactions Reported (with status SUCCESS)
+    const transactionsReported = data.filter(t => t.status === 'SUCCESS').length;
+
+    // 4. Cross-Border Value (sum of amount_ghs for cross-border transactions)
+    const crossBorderTransactions = data.filter(t =>
+      t.merchant_country !== 'GH' || t.buyer_country !== 'GH'
+    );
+    const crossBorderValue = crossBorderTransactions.reduce((sum, t) => {
+      const amount = parseFloat(t.amount_ghs) || 0;
+      return sum + amount;
+    }, 0);
+
+    // 5. Unique Foreign Merchants (merchants not from GH)
+    const foreignMerchants = [...new Set(
+      data.filter(t => t.merchant_country && t.merchant_country !== 'GH')
+        .map(t => t.sender_account)
+        .filter(Boolean)
+    )];
+    const uniqueForeignMerchants = foreignMerchants.length;
+
+    // 6. Potential Non-Resident Sellers (foreign merchants without TIN)
+    const nonResidentSellers = [...new Set(
+      data.filter(t =>
+        t.merchant_country &&
+        t.merchant_country !== 'GH' &&
+        (!t.merchant_tin || t.merchant_tin === '')
+      ).map(t => t.sender_account)
+        .filter(Boolean)
+    )];
+    const potentialNonResident = nonResidentSellers.length;
+
+    // 7. High-Risk Merchants (merchants with high transaction amounts > 10000)
+    const highRiskMerchantIds = [...new Set(
+      data.filter(t => parseFloat(t.amount_ghs) > 10000)
+        .map(t => t.sender_account)
+        .filter(Boolean)
+    )];
+    const highRiskMerchants = highRiskMerchantIds.length;
+
+    // 8. Ghanaian Buyers (unique buyer IDs from GH)
+    const ghBuyers = [...new Set(
+      data.filter(t => t.buyer_country === 'GH')
+        .map(t => t.receiver_account)
+        .filter(Boolean)
+    )];
+    const ghanaianBuyers = ghBuyers.length;
+
+    // 9. Ingestion Volume Trend (Last 7 Days) - group by date
+    const trendMap = {};
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+
+    data.forEach(t => {
+      if (t.timestamp) {
+        const date = new Date(t.timestamp);
+        if (date >= sevenDaysAgo) {
+          const dateKey = date.toISOString().split('T')[0];
+          const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+          if (!trendMap[dateKey]) {
+            trendMap[dateKey] = { day: dayName, date: dateKey, count: 0 };
+          }
+          trendMap[dateKey].count++;
+        }
+      }
+    });
+
+    const ingestionTrend = Object.values(trendMap).sort((a, b) =>
+      new Date(a.date) - new Date(b.date)
+    );
+
+    // 10. Top PSP Sources
+    const pspCounts = {};
+    data.forEach(t => {
+      if (t.psp_provider) {
+        pspCounts[t.psp_provider] = (pspCounts[t.psp_provider] || 0) + 1;
+      }
+    });
+
+    const topPspSources = Object.entries(pspCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: Math.round((count / data.length) * 1000) / 10
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4);
+
+    // Calculate USD equivalent (assuming 1 USD = 12 GHS)
+    const usdEquivalent = crossBorderValue / 12;
+
+    return {
+      totalPspsReporting: {
+        active: activePsps,
+        total: totalExpectedPsps
+      },
+      recordsIngested: recordsIngested,
+      transactionsReported: transactionsReported,
+      crossBorderValue: {
+        ghs: crossBorderValue,
+        usd: usdEquivalent
+      },
+      uniqueForeignMerchants: uniqueForeignMerchants,
+      potentialNonResident: potentialNonResident,
+      highRiskMerchants: highRiskMerchants,
+      ghanaianBuyers: ghanaianBuyers,
+      ingestionTrend: ingestionTrend,
+      topPspSources: topPspSources
+    };
+  }, [transactionData]);
 
   const formatNumber = (num) => {
     if (num >= 1000000) {
@@ -48,31 +143,26 @@ const PSPDashboard = ({ onViewTransactions }) => {
     if (amount >= 1000000) {
       return `${currency} ${(amount / 1000000).toFixed(1)}M`;
     }
-    return `${currency} ${amount?.toLocaleString() || '0'}`;
+    return `${currency} ${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0'}`;
   };
 
-  if (loading) {
+  // Show empty state if no data
+  if (!transactionData || transactionData.length === 0) {
     return (
       <div className="psp-dashboard">
-        <div className="dashboard-loading">
-          <div className="loader-spinner"></div>
-          <p>Loading dashboard statistics...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="psp-dashboard">
-        <div className="dashboard-error">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        <div className="dashboard-empty">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
           </svg>
-          <p>Error loading dashboard: {error}</p>
-          <button onClick={fetchDashboardStats} className="retry-btn">Retry</button>
+          <h3>No Transaction Data Loaded</h3>
+          <p>Load transaction data to view dashboard statistics</p>
+          {onViewTransactions && (
+            <button className="load-data-btn" onClick={onViewTransactions}>
+              Load Transactions
+            </button>
+          )}
         </div>
       </div>
     );
@@ -85,6 +175,13 @@ const PSPDashboard = ({ onViewTransactions }) => {
 
   return (
     <div className="psp-dashboard">
+      {/* Records Info */}
+      <div className="dashboard-records-info">
+        <span className="records-count">
+          Showing {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)} of {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
+        </span>
+      </div>
+
       {/* Top Row Stats Cards */}
       <div className="stats-row">
         <div className="stat-card">
@@ -98,7 +195,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
           <div className="stat-content">
             <span className="stat-label">Total PSPs Reporting</span>
             <span className="stat-value">{stats?.totalPspsReporting?.active || 0}/{stats?.totalPspsReporting?.total || 40}</span>
-            <span className="stat-subtitle">Today / This Month</span>
+            <span className="stat-subtitle">In current batch</span>
             <div className="stat-progress">
               <div
                 className="stat-progress-bar blue"
@@ -118,11 +215,11 @@ const PSPDashboard = ({ onViewTransactions }) => {
             </svg>
           </div>
           <div className="stat-content">
-            <span className="stat-label">Records Ingested</span>
+            <span className="stat-label">Current Batch</span>
             <span className="stat-value">{formatNumber(stats?.recordsIngested || 0)}</span>
-            <span className="stat-subtitle">+12% vs last week</span>
+            <span className="stat-subtitle">Records {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)}</span>
             <div className="stat-progress">
-              <div className="stat-progress-bar purple" style={{ width: '70%' }}></div>
+              <div className="stat-progress-bar purple" style={{ width: `${totalRecords > 0 ? (currentOffset / totalRecords) * 100 : 0}%` }}></div>
             </div>
           </div>
         </div>
@@ -138,7 +235,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
             <span className="stat-value">{formatNumber(stats?.transactionsReported || 0)}</span>
             <span className="stat-subtitle">Processed successfully</span>
             <div className="stat-progress">
-              <div className="stat-progress-bar green" style={{ width: '85%' }}></div>
+              <div className="stat-progress-bar green" style={{ width: `${stats?.recordsIngested > 0 ? (stats?.transactionsReported / stats?.recordsIngested) * 100 : 0}%` }}></div>
             </div>
           </div>
         </div>
@@ -154,7 +251,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
           <div className="stat-content">
             <span className="stat-label">Cross-Border Value</span>
             <span className="stat-value">{formatCurrency(stats?.crossBorderValue?.ghs || 0)}</span>
-            <span className="stat-subtitle">(${formatNumber(stats?.crossBorderValue?.usd || 0)} USD Equiv)</span>
+            <span className="stat-subtitle">(${formatNumber(Math.round(stats?.crossBorderValue?.usd || 0))} USD Equiv)</span>
             <div className="stat-progress">
               <div className="stat-progress-bar orange" style={{ width: '90%' }}></div>
             </div>
@@ -175,7 +272,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
           <div className="stat-content">
             <span className="stat-label">Unique Foreign Merchants</span>
             <span className="stat-value">{formatNumber(stats?.uniqueForeignMerchants || 0)}</span>
-            <span className="stat-subtitle">Identified in data streams</span>
+            <span className="stat-subtitle">In current batch</span>
             <div className="stat-progress">
               <div className="stat-progress-bar purple" style={{ width: '65%' }}></div>
             </div>
@@ -214,7 +311,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
             <span className="stat-value">{formatNumber(stats?.highRiskMerchants || 0)}</span>
             <span className="stat-subtitle">Flagged for review</span>
             <div className="stat-progress">
-              <div className="stat-progress-bar red" style={{ width: '30%' }}></div>
+              <div className="stat-progress-bar red" style={{ width: `${stats?.recordsIngested > 0 ? Math.min((stats?.highRiskMerchants / stats?.recordsIngested) * 100 * 10, 100) : 0}%` }}></div>
             </div>
           </div>
         </div>
@@ -243,9 +340,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
         <div className="chart-card">
           <div className="chart-header">
             <h3>Ingestion Volume Trend (Last 7 Days)</h3>
-            {onViewTransactions && (
-              <button className="view-report-btn" onClick={onViewTransactions}>View Transactions</button>
-            )}
+            <span className="chart-subtitle">Based on records {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)}</span>
           </div>
           <div className="chart-container">
             <div className="chart-y-axis">
@@ -260,7 +355,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
                     <div
                       className="bar"
                       style={{
-                        height: `${(item.count / maxTrendValue) * 100}%`,
+                        height: `${maxTrendValue > 0 ? (item.count / maxTrendValue) * 100 : 0}%`,
                         backgroundColor: index >= 5 ? '#2D3B8F' : '#6B7BE8'
                       }}
                     >
@@ -270,7 +365,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
                   </div>
                 ))
               ) : (
-                <div className="no-data">No trend data available</div>
+                <div className="no-data">No trend data in current batch</div>
               )}
             </div>
           </div>
@@ -296,7 +391,7 @@ const PSPDashboard = ({ onViewTransactions }) => {
                 </div>
               ))
             ) : (
-              <div className="no-data">No PSP source data available</div>
+              <div className="no-data">No PSP source data in current batch</div>
             )}
           </div>
         </div>
