@@ -1863,6 +1863,132 @@ const GetPSPTransactions = async (req, res) => {
     }
 };
 
+const GetPSPDashboardStats = async (req, res) => {
+    try {
+        // 1. Total PSPs Reporting (unique psp_provider count / total expected)
+        const pspCountResult = await pool.query(`
+            SELECT COUNT(DISTINCT psp_provider) as active_psps FROM psp_transactions
+        `);
+        const activePsps = parseInt(pspCountResult.rows[0].active_psps) || 0;
+        const totalExpectedPsps = 40; // This could be from a config table
+
+        // 2. Records Ingested (total count)
+        const recordsResult = await pool.query(`
+            SELECT COUNT(*) as total FROM psp_transactions
+        `);
+        const recordsIngested = parseInt(recordsResult.rows[0].total) || 0;
+
+        // 3. Transactions Reported (with status SUCCESS)
+        const transactionsResult = await pool.query(`
+            SELECT COUNT(*) as total FROM psp_transactions WHERE status = 'SUCCESS'
+        `);
+        const transactionsReported = parseInt(transactionsResult.rows[0].total) || 0;
+
+        // 4. Cross-Border Value (sum of amount_ghs for cross-border transactions)
+        const crossBorderValueResult = await pool.query(`
+            SELECT COALESCE(SUM(CAST(amount_ghs AS DECIMAL(15,2))), 0) as total
+            FROM psp_transactions
+            WHERE merchant_country != 'GH' OR buyer_country != 'GH'
+        `);
+        const crossBorderValue = parseFloat(crossBorderValueResult.rows[0].total) || 0;
+
+        // 5. Unique Foreign Merchants (merchants not from GH)
+        const foreignMerchantsResult = await pool.query(`
+            SELECT COUNT(DISTINCT sender_account) as total
+            FROM psp_transactions
+            WHERE merchant_country != 'GH'
+        `);
+        const uniqueForeignMerchants = parseInt(foreignMerchantsResult.rows[0].total) || 0;
+
+        // 6. Potential Non-Resident Sellers (foreign merchants without TIN)
+        const nonResidentResult = await pool.query(`
+            SELECT COUNT(DISTINCT sender_account) as total
+            FROM psp_transactions
+            WHERE merchant_country != 'GH'
+            AND (merchant_tin IS NULL OR merchant_tin = '')
+        `);
+        const potentialNonResident = parseInt(nonResidentResult.rows[0].total) || 0;
+
+        // 7. High-Risk Merchants (merchants with high transaction amounts or frequency)
+        const highRiskResult = await pool.query(`
+            SELECT COUNT(DISTINCT sender_account) as total
+            FROM psp_transactions
+            WHERE CAST(amount_ghs AS DECIMAL(15,2)) > 10000
+        `);
+        const highRiskMerchants = parseInt(highRiskResult.rows[0].total) || 0;
+
+        // 8. Ghanaian Buyers (unique buyer IDs from GH)
+        const ghanaianBuyersResult = await pool.query(`
+            SELECT COUNT(DISTINCT receiver_account) as total
+            FROM psp_transactions
+            WHERE buyer_country = 'GH'
+        `);
+        const ghanaianBuyers = parseInt(ghanaianBuyersResult.rows[0].total) || 0;
+
+        // 9. Ingestion Volume Trend (Last 7 Days)
+        const trendResult = await pool.query(`
+            SELECT
+                TO_CHAR(timestamp::date, 'Dy') as day_name,
+                timestamp::date as date,
+                COUNT(*) as count
+            FROM psp_transactions
+            WHERE timestamp::date >= CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY timestamp::date, TO_CHAR(timestamp::date, 'Dy')
+            ORDER BY timestamp::date
+        `);
+        const ingestionTrend = trendResult.rows.map(row => ({
+            day: row.day_name,
+            date: row.date,
+            count: parseInt(row.count)
+        }));
+
+        // 10. Top PSP Sources
+        const pspSourcesResult = await pool.query(`
+            SELECT
+                psp_provider,
+                COUNT(*) as count,
+                ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM psp_transactions)), 1) as percentage
+            FROM psp_transactions
+            GROUP BY psp_provider
+            ORDER BY count DESC
+            LIMIT 4
+        `);
+        const topPspSources = pspSourcesResult.rows.map(row => ({
+            name: row.psp_provider,
+            count: parseInt(row.count),
+            percentage: parseFloat(row.percentage)
+        }));
+
+        // Calculate USD equivalent (assuming 1 USD = 12 GHS)
+        const usdEquivalent = crossBorderValue / 12;
+
+        return res.status(200).json(
+            success(true, 200, "PSP Dashboard stats fetched successfully", {
+                totalPspsReporting: {
+                    active: activePsps,
+                    total: totalExpectedPsps
+                },
+                recordsIngested: recordsIngested,
+                transactionsReported: transactionsReported,
+                crossBorderValue: {
+                    ghs: crossBorderValue,
+                    usd: usdEquivalent
+                },
+                uniqueForeignMerchants: uniqueForeignMerchants,
+                potentialNonResident: potentialNonResident,
+                highRiskMerchants: highRiskMerchants,
+                ghanaianBuyers: ghanaianBuyers,
+                ingestionTrend: ingestionTrend,
+                topPspSources: topPspSources
+            })
+        );
+
+    } catch (err) {
+        console.error("GetPSPDashboardStats error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
 module.exports = {
     MonitoringLogin,
     MonitoringVerifyOTP,
@@ -1888,5 +2014,6 @@ module.exports = {
     GetNotifications,
     MarkNotificationRead,
     MarkAllNotificationsRead,
-    GetPSPTransactions
+    GetPSPTransactions,
+    GetPSPDashboardStats
 };

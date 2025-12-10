@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './PSPTransactionsGrid.css';
 
-const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0, onStartNewIngestion, loadingMore = false }) => {
+const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0, onStartNewIngestion, loadingMore = false, onLoadMore, hasMore = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -27,6 +27,31 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
           </svg>
           <span>Start New Ingestion</span>
+        </>
+      )}
+    </button>
+  );
+
+  const LoadMoreButton = () => (
+    <button
+      className="load-more-btn"
+      onClick={onLoadMore}
+      disabled={loadingMore}
+    >
+      {loadingMore ? (
+        <>
+          <svg className="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+          </svg>
+          <span>Loading...</span>
+        </>
+      ) : (
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <span>Load More (Next 200)</span>
         </>
       )}
     </button>
@@ -166,7 +191,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
       <div className="transactions-header">
         <h2>PSP Ingestion Status</h2>
         <div className="transactions-header-actions">
-          <span className="results-count">{totalRecords || data.length} records found</span>
+          <span className="results-count">Total Records: {totalRecords.toLocaleString()}</span>
           {onStartNewIngestion && <StartNewIngestionButton />}
           <BackButton />
         </div>
@@ -197,8 +222,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="transactions-pagination">
+      <div className="transactions-pagination">
           <button
             className="pagination-btn"
             disabled={currentPage === 1}
@@ -214,7 +238,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             Previous
           </button>
           <span className="pagination-info">
-            Page {currentPage} of {totalPages} ({startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length})
+            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length} loaded | Total: {totalRecords.toLocaleString()})
           </span>
           <button
             className="pagination-btn"
@@ -230,8 +254,10 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
           >
             Last
           </button>
+          {hasMore && onLoadMore && (
+            <LoadMoreButton />
+          )}
         </div>
-      )}
     </div>
   );
 };
