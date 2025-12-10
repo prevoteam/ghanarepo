@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './PSPTransactionsGrid.css';
 
-const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0, onStartNewIngestion, loadingMore = false, onLoadMore, hasMore = false }) => {
+const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, totalRecords = 0, currentOffset = 0, onStartNewIngestion, loadingMore = false, onLoadMore, hasMore = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -238,7 +238,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             Previous
           </button>
           <span className="pagination-info">
-            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length} loaded | Total: {totalRecords.toLocaleString()})
+            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {(currentOffset - data.length + 1)}-{currentOffset} loaded | Total: {totalRecords.toLocaleString()})
           </span>
           <button
             className="pagination-btn"
