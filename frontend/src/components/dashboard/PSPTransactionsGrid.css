@@ -364,6 +364,40 @@
   }
 }
 
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2D3B8F;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.1s;
+  margin-left: 12px;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: #1e2a6e;
+  transform: translateY(-1px);
+}
+
+.load-more-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.load-more-btn svg {
+  stroke: #fff;
+}
+
+.load-more-btn span {
+  color: #fff;
+}
+
 .close-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;

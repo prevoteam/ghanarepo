@@ -123,5 +123,10 @@ module.exports = ({ config }) => {
         return monitoringService.GetPSPTransactions(req, res, next);
     });
 
+    // GET /v1/admin/monitoring/psp-dashboard-stats - Get PSP dashboard statistics
+    router.get('/psp-dashboard-stats', (req, res, next) => {
+        return monitoringService.GetPSPDashboardStats(req, res, next);
+    });
+
     return router;
 };
