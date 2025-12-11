@@ -50,13 +50,13 @@ const PSPDashboard = ({ transactionData = [], totalRecords = 0, currentOffset = 
     )];
     const potentialNonResident = nonResidentSellers.length;
 
-    // 7. High-Risk Merchants (merchants with high transaction amounts > 10000)
-    const highRiskMerchantIds = [...new Set(
-      data.filter(t => parseFloat(t.amount_ghs) > 10000)
-        .map(t => t.sender_account)
-        .filter(Boolean)
-    )];
-    const highRiskMerchants = highRiskMerchantIds.length;
+    // 7. High-Risk Entities (No TIN + amount > 50000) - matches HighRiskEntities page logic
+    const highRiskMerchants = data.filter(t => {
+      const hasTIN = t.merchant_tin && t.merchant_tin.trim() !== '';
+      const transactionValue = parseFloat(t.amount_ghs) || 0;
+      // High Risk = Not registered (no TIN) AND amount > 50000
+      return !hasTIN && transactionValue > 50000;
+    }).length;
 
     // 8. Ghanaian Buyers (unique buyer IDs from GH)
     const ghBuyers = [...new Set(

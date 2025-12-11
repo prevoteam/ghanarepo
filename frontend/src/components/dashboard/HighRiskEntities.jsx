@@ -9,14 +9,19 @@ const HighRiskEntities = () => {
   const [popupState, setPopupState] = useState('initial'); // 'initial' or 'completed'
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [actionedMerchants, setActionedMerchants] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const {
     transactionData,
     totalRecords,
     currentOffset,
     loading,
+    loadingMore,
     isDataLoaded,
-    loadInitialData
+    hasMore,
+    loadInitialData,
+    loadNextBatch
   } = usePSPData();
 
   // Auto-load data on mount if not already loaded
@@ -73,6 +78,11 @@ const HighRiskEntities = () => {
       };
     });
   }, [transactionData]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(highRiskData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = highRiskData.slice(startIndex, startIndex + itemsPerPage);
 
   const formatNumber = (num) => {
     if (num >= 1000000) {
@@ -141,7 +151,7 @@ const HighRiskEntities = () => {
             <h2 className="table-title text-dark">High Risk Entities</h2>
             <p className="table-subtitle text-muted">Entities flagged with high risk scores requiring immediate attention.</p>
             <span className="records-info-badge">
-              Showing {highRiskData.length} high risk of {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)} loaded | Total: {formatNumber(totalRecords)}
+              Showing {highRiskData.length} high risk of {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
             </span>
           </div>
           </div>
@@ -178,9 +188,9 @@ const HighRiskEntities = () => {
               </tr>
             </thead>
             <tbody>
-              {highRiskData.map((row, index) => (
+              {paginatedData.map((row, index) => (
                 <tr key={row.id}>
-                  <td>{String(index + 1).padStart(2, '0')}</td>
+                  <td>{String(startIndex + index + 1).padStart(2, '0')}</td>
                   <td>
                     <div className="merchant-cell">
                       <a href="#" className="merchant-name">{row.merchantName}</a>
@@ -220,6 +230,39 @@ const HighRiskEntities = () => {
           </table>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {highRiskData.length > 0 && (
+          <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '20px', borderTop: '1px solid #e5e7eb', background: '#f8fafc' }}>
+            <button
+              className="pagination-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(1)}
+              style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: currentPage === 1 ? '#e2e8f0' : '#2D3B8F', color: currentPage === 1 ? '#94a3b8' : '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' }}
+            >
+              First
+            </button>
+            <button
+              className="pagination-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+              style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: currentPage === 1 ? '#e2e8f0' : '#2D3B8F', color: currentPage === 1 ? '#94a3b8' : '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' }}
+            >
+              Previous
+            </button>
+            <span className="pagination-info" style={{ padding: '8px 20px', color: '#1e293b', fontSize: '14px', fontWeight: '500', background: '#fff', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+              Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, highRiskData.length)} of {highRiskData.length} high risk)
+            </span>
+            <button
+              className="pagination-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+              style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: currentPage === totalPages ? '#e2e8f0' : '#2D3B8F', color: currentPage === totalPages ? '#94a3b8' : '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' }}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Compliance Action Popup */}

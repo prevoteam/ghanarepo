@@ -128,5 +128,10 @@ module.exports = ({ config }) => {
         return monitoringService.GetPSPDashboardStats(req, res, next);
     });
 
+    // POST /v1/admin/monitoring/ensure-high-entities - Ensure 10+ high entities per 200 records
+    router.post('/ensure-high-entities', (req, res, next) => {
+        return monitoringService.EnsureHighEntitiesDistribution(req, res, next);
+    });
+
     return router;
 };
