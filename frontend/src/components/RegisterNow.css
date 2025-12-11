@@ -483,7 +483,7 @@ body {
 /* Hero Section - Old */
 .hero-section {
   /* background-image: linear-gradient(135deg, #2D3B8F 0%, #4052B5 100%); */
-  background-image: url('../assets/background-landing.png');
+  background-image: url('../assets/homepage.png');
   background-size: cover;
   background-repeat: no-repeat;
   color: white;
@@ -495,13 +495,14 @@ body {
 /* NEW Hero Section */
 .hero-section-new {
   position: relative;
-  background-image: url('../assets/hero-bg.png');
+  /* background-image: url('../assets/hero-bg.png'); */
+    background-image: url('../assets/homepage.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 400px;
   padding: 3rem 0;
-  margin-bottom: 3rem;
+  /* margin-bottom: 3rem; */
 }
 
 .hero-overlay {
@@ -530,13 +531,17 @@ body {
 
 .hero-title-new {
   font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 56px;
   margin-bottom: 1.5rem;
 }
 
 .hero-title-new .text-yellow {
-  color: #FCD34D;
+     color: #1E3A8A;
+    background-color: #E9B401;
+    line-height: 10px;
+    padding: 0px 7px;
+    border-radius: 8px;  
 }
 
 .hero-description {
@@ -567,7 +572,22 @@ body {
   background: white;
   color: #2D3B8F;
 }
+.btn-white{
+    background: white;
+  color: #2D3B8F;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
+.btn-white:hover {
+   background: transparent;
+  border: 1px solid white;
+  color: white;
+}
 /* Portal Card */
 .portal-card {
   background: #ECEEF4;
@@ -579,7 +599,7 @@ body {
   overflow: hidden;
 }
 
-.portal-header {
+.portal-header-home {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -587,10 +607,10 @@ body {
   background: transparent;
   color: #1E3A8A;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 20px;
 }
 
-.portal-header svg {
+.portal-header-home svg {
   stroke: #1E3A8A;
 }
 
@@ -619,10 +639,10 @@ body {
 }
 
 .portal-option-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   background: #E8EDFC;
-  border-radius: 50%;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -647,22 +667,23 @@ body {
   color: #64748B;
 }
 
-.portal-footer {
-  padding: 1rem 1.25rem 1.5rem;
+.portal-footer-home {
+  padding: 0.2rem 1.25rem 1.5rem;
   text-align: center;
   font-size: 0.85rem;
 }
 
-.portal-footer span {
+.portal-footer-home span {
   color: #64748B;
   display: block;
   margin-bottom: 0.35rem;
   font-size: 0.8rem;
 }
 
-.portal-footer a {
+
+.portal-footer-home a {
   color: #1E3A8A;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: underline;
   display: block;
   font-size: 0.85rem;

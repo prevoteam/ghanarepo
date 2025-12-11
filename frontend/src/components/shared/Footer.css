@@ -1,7 +1,7 @@
 /* Shared Footer Styles */
 .shared-footer {
-  background-color: #1E3A8A;
-  color: white;
+  background-color: #E8EBF3;
+  color: #1E3B8A;
 }
 
 .shared-footer .footer-content {
@@ -22,9 +22,17 @@
   opacity: 0.8;
 }
 
+.footer-copyright {
+  color: #1E3B8A;
+  font-size: 0.85rem;
+}
+
+.color-yellow{
+  color: #F59E0B;
+}
 .shared-footer .assistant-button {
   background: #F59E0B;
-    color: #1f2937;
+    color: #ffffff;
     border: none;
     padding: 0.875rem 1.75rem;
     border-radius: 50px;
@@ -36,11 +44,14 @@
     cursor: pointer;
     transition: all 0.3s;
     font-family: inherit;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
 }
 
 .shared-footer .assistant-button:hover {
   background: rgba(255, 255, 255, 0.25);
+  color: #F59E0B;
+  border: 1px solid #F59E0B;
+  
 }
 
 /* Responsive */
