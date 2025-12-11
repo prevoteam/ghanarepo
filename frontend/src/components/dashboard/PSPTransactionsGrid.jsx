@@ -191,7 +191,6 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
       <div className="transactions-header">
         <h2>PSP Ingestion Status</h2>
         <div className="transactions-header-actions">
-          <span className="results-count">Total Records: {totalRecords.toLocaleString()}</span>
           {onStartNewIngestion && <StartNewIngestionButton />}
           <BackButton />
         </div>
@@ -238,7 +237,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             Previous
           </button>
           <span className="pagination-info">
-            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length.toLocaleString()} loaded | Total: {totalRecords.toLocaleString()})
+            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length.toLocaleString()} loaded)
           </span>
           <button
             className="pagination-btn"

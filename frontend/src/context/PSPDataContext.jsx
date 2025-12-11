@@ -71,8 +71,8 @@ export const PSPDataProvider = ({ children }) => {
       const data = await response.json();
 
       if (data.status && data.code === 200) {
-        // Append new records to existing data
-        setTransactionData(prev => [...prev, ...(data.results.transactions || [])]);
+        // Prepend new records to existing data (new records appear first)
+        setTransactionData(prev => [...(data.results.transactions || []), ...prev]);
         setCurrentOffset(prev => prev + 200);
         setHasMore(data.results.pagination?.hasMore || false);
       } else {

@@ -1840,7 +1840,7 @@ const GetPSPTransactions = async (req, res) => {
         const columns = columnsResult.rows.map(row => row.column_name);
         const columnList = columns.length > 0 ? columns.join(', ') : '*';
 
-        // Query for transactions with pagination
+        // Query for transactions with pagination (newest records first)
         const query = `
             SELECT ${columnList}
             FROM psp_transactions
