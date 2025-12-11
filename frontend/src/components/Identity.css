@@ -601,6 +601,17 @@
   }
 }
 
+/* Analyzing Loader */
+.identity-analyzing-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: #2D3B8F;
+  font-weight: 500;
+}
+
 /* Extracted Information Section */
 .identity-extracted-info {
   background: #FFFFFF;
@@ -638,10 +649,33 @@
   color: #10B981;
 }
 
-.identity-extracted-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.identity-extracted-content {
+  display: flex;
   gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.identity-selfie-preview {
+  flex-shrink: 0;
+  width: 120px;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 3px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.identity-selfie-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.identity-extracted-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
 }
 
 .identity-extracted-item {

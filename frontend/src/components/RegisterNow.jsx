@@ -136,178 +136,97 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   return (
     <div className='register-container'>
       {/* Hero Section */}
-      <section className="hero-section">
-     
-        <div className="container">
-          <h1 className="hero-title">Your Single Gateway for Compliant Online Business in Ghana</h1>
-          <p className="hero-subtitle mb-0">
-            Register • Verify • Update • Stay Tax Compliant
-          </p>
-        </div>
-      </section>
+      <section className="hero-section-new">
+        <div className="hero-overlay"></div>
+        <div className="container hero-content-wrapper">
+          {/* Left Content */}
+          <div className="hero-left">
+            <h1 className="hero-title-new">
+              Streamlining<br/>
+              <span className="text-yellow">Compliance</span><br/>
+              for the Digital<br/>
+              Economy
+            </h1>
+            <p className="hero-description">
+              Welcome to Ghana's official unified platform<br/>
+              for E-Commerce registration, VAT filing, and<br/>
+              automated compliance monitoring.
+            </p>
+            <div className="hero-buttons">
+              <button className="btn-outline-white">View Guidelines</button>
+              <button className="btn-outline-white">Learn More</button>
+            </div>
+          </div>
 
-      {/* Cards Section */}
-     <div className="container my-5">
-      <div className="row g-4">
-
-        {/* GRA Officer */}
-        <div className="col-md-4" onClick={() => setShowGRAAdminLogin(true)}>
-          <div
-            className="py-4 h-100 role-card"
-            style={{
-              background: "#ffffff",
-              border: "1px solid #E5E7EB",
-              borderRadius: "18px",
-              position: "relative",
-              transition: "background 0.3s ease"
-            }}
-          >
-            {/* Icon box exactly like image */}
-            <div
-              style={{
-                background: "#1F3A83",
-                width: "58px",
-                height: "40px",
-                borderRadius: "0px 8px 8px 0px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "16px"
-              }}
-              
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                <path d="M9 12l2 2 4-4"/>
+          {/* Right Portal Card */}
+          <div className="portal-card">
+            <div className="portal-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
+              <span>Secure Portal Access</span>
             </div>
 
-           <div className='px-4'>
-             <h5 className="fw-semibold mb-2">GRA Officer</h5>
-            <p className="text-muted mb-0">
-              Authorized personnel access for system monitoring, configuration,
-              and compliance management.
-            </p>
-           </div>
-          </div>
-        </div>
+            <div className="portal-options">
+              {/* Resident Merchant */}
+              <div className="portal-option" onClick={onLoginClick}>
+                <div className="portal-option-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </div>
+                <div className="portal-option-text">
+                  <span className="portal-option-title">Resident Merchant</span>
+                  <span className="portal-option-desc">Local entities with TIN/Ghana Card</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </div>
 
-        {/* Resident Merchant */}
-        <div className="col-md-4" onClick={onLoginClick}>
-         <div
-            className="py-4 h-100 role-card"
-            style={{
-              background: "#ffffff",
-              border: "1px solid #E5E7EB",
-              borderRadius: "18px",
-              transition: "background 0.3s ease"
-            }}
-          >
-            <div
-              style={{
-                background: "#1F3A83",
-              width: "58px",
-                height: "40px",
-                borderRadius: "0px 8px 8px 0px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "16px"
-              }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-            </div>
-   <div className='px-4'>
-            <h5 className="fw-semibold mb-2">Resident Merchant</h5>
-            <p className="text-muted mb-0">
-              Login to verify and comply VAT obligations for business in Ghana.
-            </p>
-            </div>
-          </div>
-        </div>
+              {/* Non-Resident Merchant */}
+              <div className="portal-option" onClick={handleNonResidentClick}>
+                <div className="portal-option-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                </div>
+                <div className="portal-option-text">
+                  <span className="portal-option-title">Non-Resident Merchant</span>
+                  <span className="portal-option-desc">International digital service providers</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </div>
 
-        {/* Non-Resident Merchant */}
-        <div className="col-md-4" onClick={handleNonResidentClick}>
-         <div
-            className="py-4 h-100 role-card"
-            style={{
-              background: "#ffffff",
-              border: "1px solid #E5E7EB",
-              borderRadius: "18px",
-              transition: "background 0.3s ease"
-            }}
-          >
-            <div
-              style={{
-                background: "#1F3A83",
-               width: "58px",
-                height: "40px",
-                borderRadius: "0px 8px 8px 0px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "16px"
-              }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M2 12h20"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
+              {/* GRA Officer */}
+              <div className="portal-option" onClick={() => setShowGRAAdminLogin(true)}>
+                <div className="portal-option-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                  </svg>
+                </div>
+                <div className="portal-option-text">
+                  <span className="portal-option-title">GRA Officer</span>
+                  <span className="portal-option-desc">Admin & Compliance monitoring</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </div>
             </div>
-   <div className='px-4'>
-            <h5 className="fw-semibold mb-2">Non-Resident Merchant</h5>
-            <p className="text-muted mb-0">
-              Registration portal for international entities supplying digital
-              services or goods to customers in Ghana.
-            </p>
+
+            <div className="portal-footer">
+              <span>New to the platform?</span>
+              <a href="#" onClick={(e) => { e.preventDefault(); handleNonResidentClick(); }}>CREATE AN ACCOUNT</a>
             </div>
           </div>
-        </div>
-
-      </div>
-    </div>
-
-
-      {/* Latest News Section */}
- 
-      <section className='container mb-5' >
-          <div className="news-section">
-        <h2 className="news-title">Latest News</h2>
-
-        <div className="news-item d-flex align-items-center">
-          <div className="news-image">
-            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&h=200&fit=crop" alt="Tax filing" />
-            {/* <div className="news-badge">TAX</div> */}
-          </div>
-          <div className="news-content">
-            <span className="news-tag">PRESS RELEASE</span>
-            <h3 className="news-heading">GRA launches new digital portal for seamless tax filing</h3>
-            <p className="news-description">
-              The Commissioner-General today unveiled the new integrated tax application system designed to simplify compliance...
-            </p>
-            <button className="news-link">Read More</button>
-          </div>
-        </div>
-        <div className='border-bottom-1px'></div>
-
-        <div className="news-item d-flex align-items-center mt-3">
-          <div className="news-image">
-            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" alt="Digital portal" />
-            <div className="news-badge">TAX</div>
-          </div>
-          <div className="news-content">
-            <div className="news-tag">PRESS RELEASE</div>
-            <h3 className="news-heading">GRA launches new digital portal for seamless tax filing</h3>
-            <p className="news-description">
-              The Commissioner-General today unveiled the new integrated tax application system designed to simplify compliance...
-            </p>
-            <button className="news-link">Read More</button>
-          </div>
-        </div>
         </div>
       </section>
 

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import './Identity.css';
 import StepBar from './StepBar';
-import { getUniqueId } from '../utils/sessionManager';
+import { getUniqueId, setPassportData } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
 
 const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
@@ -36,7 +36,7 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
     e.preventDefault();
   };
 
-  const validateAndSetFile = (file, type) => {
+  const validateAndSetFile = async (file, type) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'video/mp4'];
     const maxSize = 50 * 1024 * 1024; // 50MB
 
@@ -53,9 +53,51 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
     if (type === 'passport') {
       setPassportFile(file);
       simulateUpload(setPassportProgress);
+      // Call OCR API to extract passport data
+      await extractPassportData(file);
     } else {
       setSelfieFile(file);
       simulateUpload(setSelfieProgress);
+    }
+  };
+
+  // Extract passport data using OCR API
+  const extractPassportData = async (file) => {
+    setAnalyzing(true);
+    setExtractedData(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('https://gra-demo.proteantech.in/ocr/extract', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const passportInfo = {
+          country: result.data.country || 'N/A',
+          passportNumber: result.data.passport_number || 'N/A',
+          fullName: result.data.full_name || 'N/A',
+          dateOfBirth: result.data.date_of_birth || 'N/A',
+          sex: result.data.sex || 'N/A'
+        };
+        setExtractedData(passportInfo);
+        // Store passport data in localStorage for later steps
+        setPassportData(passportInfo);
+        setIsVerified(true);
+      } else {
+        console.error('OCR extraction failed:', result.message);
+        setExtractedData(null);
+      }
+    } catch (error) {
+      console.error('Error extracting passport data:', error);
+      setExtractedData(null);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -79,69 +121,6 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
     } else {
       setSelfieFile(null);
       setSelfieProgress(0);
-    }
-  };
-
-  const handleAnalyzeDocument = async () => {
-    if (!passportFile) {
-      alert('Please upload a passport first');
-      return;
-    }
-
-    setAnalyzing(true);
-
-    try {
-      const uniqueId = getUniqueId();
-
-      // Create form data with passport file
-      const formData = new FormData();
-      formData.append('document', passportFile);
-      formData.append('uniqueId', uniqueId);
-      formData.append('analyze', 'true');
-
-      // Call API to analyze passport
-      const response = await fetch(`${API_BASE_URL}/analyzePassport`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (data.status && data.code === 200 && data.data) {
-        // Use extracted data from API
-        setExtractedData({
-          fullName: data.data.fullName || data.data.name || 'N/A',
-          nationality: data.data.nationality || data.data.country || 'N/A',
-          dateOfBirth: data.data.dateOfBirth || data.data.dob || 'N/A'
-        });
-        setIsVerified(true);
-      } else {
-        // Fallback to simulated data if API doesn't return expected format
-        // In production, you might want to show an error instead
-        setTimeout(() => {
-          setExtractedData({
-            fullName: 'Jane A. Doe',
-            nationality: 'United Kingdom',
-            dateOfBirth: '1985-04-23'
-          });
-          setIsVerified(true);
-        }, 1500);
-      }
-    } catch (error) {
-      console.error('Error analyzing passport:', error);
-      // Fallback to simulated data for demo purposes
-      setTimeout(() => {
-        setExtractedData({
-          fullName: 'Jane A. Doe',
-          nationality: 'United Kingdom',
-          dateOfBirth: '1985-04-23'
-        });
-        setIsVerified(true);
-      }, 1500);
-    } finally {
-      setTimeout(() => {
-        setAnalyzing(false);
-      }, 1500);
     }
   };
 
@@ -315,40 +294,24 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
               </div>
             </div>
 
-            {/* Analyze Document Button - Show when both files uploaded but not yet analyzed */}
-            {passportFile && selfieFile && !isVerified && (
-              <div className="identity-analyze-section">
-                <button
-                  className="identity-btn-analyze"
-                  onClick={handleAnalyzeDocument}
-                  disabled={analyzing}
-                >
-                  {analyzing ? (
-                    <>
-                      <svg className="identity-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
-                        <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
-                      </svg>
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="M21 21l-4.35-4.35"/>
-                      </svg>
-                      Analyze Document
-                    </>
-                  )}
-                </button>
+
+            {/* Extracted Information - Show after passport upload and OCR */}
+            {analyzing && (
+              <div className="identity-extracted-info">
+                <div className="identity-analyzing-loader">
+                  <svg className="identity-spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+                  </svg>
+                  <span>Extracting passport details...</span>
+                </div>
               </div>
             )}
 
-            {/* Extracted Information - Show after analysis */}
-            {extractedData && isVerified && (
+            {extractedData && isVerified && !analyzing && (
               <div className="identity-extracted-info">
                 <div className="identity-extracted-header">
-                  <h3 className="identity-extracted-title">Extracted Information</h3>
+                  <h3 className="identity-extracted-title">Passport Details</h3>
                   <span className="identity-verified-badge">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
                       <polyline points="20 6 9 17 4 12"/>
@@ -358,16 +321,24 @@ const Identity = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedir
                 </div>
                 <div className="identity-extracted-grid">
                   <div className="identity-extracted-item">
+                    <span className="identity-extracted-label">Country</span>
+                    <span className="identity-extracted-value">{extractedData.country}</span>
+                  </div>
+                  <div className="identity-extracted-item">
+                    <span className="identity-extracted-label">Passport Number</span>
+                    <span className="identity-extracted-value">{extractedData.passportNumber}</span>
+                  </div>
+                  <div className="identity-extracted-item">
                     <span className="identity-extracted-label">Full Name</span>
                     <span className="identity-extracted-value">{extractedData.fullName}</span>
                   </div>
                   <div className="identity-extracted-item">
-                    <span className="identity-extracted-label">Nationality</span>
-                    <span className="identity-extracted-value">{extractedData.nationality}</span>
-                  </div>
-                  <div className="identity-extracted-item">
                     <span className="identity-extracted-label">Date of Birth</span>
                     <span className="identity-extracted-value">{extractedData.dateOfBirth}</span>
+                  </div>
+                  <div className="identity-extracted-item">
+                    <span className="identity-extracted-label">Sex</span>
+                    <span className="identity-extracted-value">{extractedData.sex}</span>
                   </div>
                 </div>
               </div>
