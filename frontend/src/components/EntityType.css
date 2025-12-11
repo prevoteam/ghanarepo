@@ -309,6 +309,13 @@
   gap: 0.5rem;
 }
 
+.entity-autofill-hint {
+  font-size: 0.75rem;
+  color: #2D3B8F;
+  font-style: italic;
+  margin-top: -0.25rem;
+}
+
 .entity-form-label {
   font-size: 0.95rem;
   font-weight: 600;

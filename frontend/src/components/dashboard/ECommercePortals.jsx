@@ -15,7 +15,7 @@ const ECommercePortals = () => {
     setDiscoveryError(null);
 
     try {
-      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
+      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-accounts`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -23,10 +23,18 @@ const ECommercePortals = () => {
 
       const data = await response.json();
 
-      // Format the data - API returns array of URLs
-      const formattedData = (Array.isArray(data) ? data : data.sites || data.urls || []).map((url, index) => ({
+      // Format the data - API returns { success: true, accounts: [...] }
+      const accounts = data.accounts || [];
+      const formattedData = accounts.map((account, index) => ({
         id: index + 1,
-        url: typeof url === 'string' ? url : url.url || url
+        companyName: account['Company Name'] || 'N/A',
+        category: account['Category'] || 'N/A',
+        description: account['Description'] || 'N/A',
+        location: account['Location'] || 'N/A',
+        email: account['Email'] || 'N/A',
+        phone: account['Phone'] || 'N/A',
+        verified: account['Verified'] || false,
+        followers: account['Followers'] || 0
       }));
 
       setDiscoveryData(formattedData);

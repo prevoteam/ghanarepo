@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './EntityType.css';
 import StepBar from './StepBar';
-import { getUniqueId } from '../utils/sessionManager';
+import { getUniqueId, getPassportData } from '../utils/sessionManager';
 import { API_BASE_URL } from '../utils/api';
 
 const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    fullName: '',
     tradingName: '',
     country: '',
     serviceType: '',
@@ -15,6 +16,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
 
   const countries = [
     { value: '', label: 'Select Country' },
+    { value: 'GH', label: 'Ghana' },
     { value: 'US', label: 'United States' },
     { value: 'UK', label: 'United Kingdom' },
     { value: 'IN', label: 'India' },
@@ -24,8 +26,56 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
     { value: 'JP', label: 'Japan' },
     { value: 'CA', label: 'Canada' },
     { value: 'AU', label: 'Australia' },
+    { value: 'NG', label: 'Nigeria' },
+    { value: 'ZA', label: 'South Africa' },
+    { value: 'KE', label: 'Kenya' },
     { value: 'OTHER', label: 'Other' }
   ];
+
+  // Map passport country names to country codes
+  const mapCountryToCode = (countryName) => {
+    if (!countryName) return '';
+    const lowerCountry = countryName.toLowerCase();
+
+    const countryMap = {
+      'ghana': 'GH',
+      'republic of ghana': 'GH',
+      'united states': 'US',
+      'usa': 'US',
+      'united kingdom': 'UK',
+      'uk': 'UK',
+      'great britain': 'UK',
+      'india': 'IN',
+      'germany': 'DE',
+      'france': 'FR',
+      'china': 'CN',
+      'japan': 'JP',
+      'canada': 'CA',
+      'australia': 'AU',
+      'nigeria': 'NG',
+      'south africa': 'ZA',
+      'kenya': 'KE'
+    };
+
+    for (const [key, value] of Object.entries(countryMap)) {
+      if (lowerCountry.includes(key)) {
+        return value;
+      }
+    }
+    return 'OTHER';
+  };
+
+  // Auto-fill fullName and country from passport data on mount
+  useEffect(() => {
+    const passportData = getPassportData();
+    if (passportData) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: passportData.fullName || prev.fullName,
+        country: mapCountryToCode(passportData.country) || prev.country
+      }));
+    }
+  }, []);
 
   const serviceTypes = [
     { value: '', label: 'Select Service Type' },
@@ -48,7 +98,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
   };
 
   const handleNext = async () => {
-    if (!formData.tradingName || !formData.country || !formData.serviceType) {
+    if (!formData.fullName || !formData.tradingName || !formData.country || !formData.serviceType) {
       alert('Please fill all required fields');
       return;
     }
@@ -70,6 +120,7 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
         },
         body: JSON.stringify({
           unique_id: uniqueId,
+          full_name: formData.fullName,
           trading_name: formData.tradingName,
           country: formData.country,
           service_type: formData.serviceType,
@@ -115,6 +166,24 @@ const EntityType = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRed
             {/* Business Details Form */}
             <div className="entity-form">
               <div className="entity-form-grid">
+                <div className="entity-form-field">
+                  <label className="entity-form-label">
+                    Full Name <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    className="entity-form-input"
+                    placeholder="Enter your full name"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    style={{ backgroundColor: formData.fullName ? '#f0f9ff' : 'white' }}
+                  />
+                  {formData.fullName && (
+                    <span className="entity-autofill-hint">Auto-filled from passport</span>
+                  )}
+                </div>
+
                 <div className="entity-form-field">
                   <label className="entity-form-label">
                     Trading Name <span className="required">*</span>

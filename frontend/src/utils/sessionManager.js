@@ -65,6 +65,23 @@ export const setCurrentStep = (step) => {
 };
 
 /**
+ * Store passport data from OCR extraction
+ * @param {object} passportData - The extracted passport data
+ */
+export const setPassportData = (passportData) => {
+  localStorage.setItem('passport_data', JSON.stringify(passportData));
+};
+
+/**
+ * Get passport data from local storage
+ * @returns {object|null} The passport data or null if not found
+ */
+export const getPassportData = () => {
+  const data = localStorage.getItem('passport_data');
+  return data ? JSON.parse(data) : null;
+};
+
+/**
  * Clear all registration session data
  */
 export const clearSession = () => {
@@ -72,6 +89,7 @@ export const clearSession = () => {
   localStorage.removeItem('contact');
   localStorage.removeItem('is_verified');
   localStorage.removeItem('current_step');
+  localStorage.removeItem('passport_data');
 };
 
 /**

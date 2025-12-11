@@ -155,8 +155,59 @@
   text-decoration: underline;
 }
 
-.status-badge {
+/* Company Cell */
+.company-cell {
+  min-width: 200px;
+}
+
+.company-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.company-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.company-desc {
+  font-size: 12px;
+  color: #6b7280;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Category Badge */
+.category-badge {
   display: inline-block;
+  padding: 4px 10px;
+  background: #e0e7ff;
+  color: #3730a3;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Email Cell */
+.email-cell a {
+  color: #2D3B8F;
+  font-size: 13px;
+}
+
+/* Followers Cell */
+.followers-cell {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -180,8 +231,13 @@
 }
 
 .status-badge.verified {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.unverified {
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .discovery-pagination {
