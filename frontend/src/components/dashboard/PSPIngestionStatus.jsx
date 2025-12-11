@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './DashboardPages.css';
 import PSPTransactionsGrid from './PSPTransactionsGrid';
 import PSPDashboard from './PSPDashboard';
@@ -20,6 +20,13 @@ const PSPIngestionStatus = () => {
     loadNextBatch,
     refreshData
   } = usePSPData();
+
+  // Auto-load first 200 records when component mounts
+  useEffect(() => {
+    if (!isDataLoaded && !loading) {
+      loadInitialData();
+    }
+  }, [isDataLoaded, loading, loadInitialData]);
 
   const handleViewTransactions = () => {
     setShowTransactionGrid(true);
