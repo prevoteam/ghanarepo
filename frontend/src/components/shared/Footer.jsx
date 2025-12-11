@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="shared-footer container-fluid">
       <div className="footer-content container py-2">
         <div className="footer-text">Integrity. Fairness. Service</div>
-        <div className="footer-copyright">© 2025 Ghana Revenue Authority. All rights reserved.</div>
+        <div className="footer-copyright">© 2025 <span className='color-yellow'>Ghana Revenue Authority</span>. All rights reserved.</div>
         <button
           className="assistant-button"
           onClick={() => window.open('https://gra-demo.proteantech.in/chat/', '_blank')}

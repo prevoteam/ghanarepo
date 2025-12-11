@@ -134,10 +134,10 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   }
 
   return (
-    <div className='register-container'>
+    <div className='register-container '>
       {/* Hero Section */}
       <section className="hero-section-new">
-        <div className="hero-overlay"></div>
+        {/* <div className="hero-overlay"></div> */}
         <div className="container hero-content-wrapper">
           {/* Left Content */}
           <div className="hero-left">
@@ -153,14 +153,14 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               automated compliance monitoring.
             </p>
             <div className="hero-buttons">
-              <button className="btn-outline-white">View Guidelines</button>
-              <button className="btn-outline-white">Learn More</button>
+              <button className="btn-white btn">View Guidelines</button>
+              <button className="btn-outline-white btn">Learn More</button>
             </div>
           </div>
 
           {/* Right Portal Card */}
           <div className="portal-card">
-            <div className="portal-header">
+            <div className="portal-header-home">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -172,7 +172,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               {/* Resident Merchant */}
               <div className="portal-option" onClick={onLoginClick}>
                 <div className="portal-option-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
@@ -189,7 +189,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               {/* Non-Resident Merchant */}
               <div className="portal-option" onClick={handleNonResidentClick}>
                 <div className="portal-option-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M2 12h20"/>
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -207,7 +207,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               {/* GRA Officer */}
               <div className="portal-option" onClick={() => setShowGRAAdminLogin(true)}>
                 <div className="portal-option-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D3B8F" strokeWidth="2">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     <path d="M9 12l2 2 4-4"/>
                   </svg>
@@ -222,7 +222,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               </div>
             </div>
 
-            <div className="portal-footer">
+            <div className="portal-footer-home">
               <span>New to the platform?</span>
               <a href="#" onClick={(e) => { e.preventDefault(); handleNonResidentClick(); }}>CREATE AN ACCOUNT</a>
             </div>
