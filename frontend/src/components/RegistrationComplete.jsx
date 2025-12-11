@@ -36,27 +36,43 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
   const generateQRCode = async () => {
     try {
       if (credentialData) {
-        const qrData = JSON.stringify({
-          tin: credentialData.tin || 'GHA21984335',
-          credential_id: credentialData.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91',
-          subject_name: credentialData.subject_name || 'Student',
-          issue_date: credentialData.issue_date || new Date().toISOString()
-        });
+        console.log('Generating QR code for:', credentialData);
 
-        const url = await QRCode.toDataURL(qrData, {
-          width: 140,
-          margin: 1,
+        // Just encode the TIN number - simple and easy to scan
+        const tin = credentialData.tin || 'GHA21984335';
+
+        console.log('QR code data (TIN):', tin);
+
+        const url = await QRCode.toDataURL(tin, {
+          width: 256,
+          margin: 2,
           color: {
             dark: '#000000',
             light: '#FFFFFF'
-          }
+          },
+          errorCorrectionLevel: 'H' // High error correction for better scanning
         });
 
+        console.log('QR code generated successfully');
         setQrCodeUrl(url);
       }
     } catch (err) {
       console.error('Error generating QR code:', err);
     }
+  };
+
+  const handleDownloadQR = () => {
+    if (!qrCodeUrl) {
+      alert('QR code is not ready yet. Please wait.');
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.download = `GRA_QR_${credentialData?.tin || 'credential'}.png`;
+    link.href = qrCodeUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const formatDate = (dateString) => {
@@ -70,6 +86,10 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
 
   const handleDownloadPDF = async () => {
     try {
+      console.log('Starting PDF generation...');
+      console.log('Credential data:', credentialData);
+      console.log('QR code URL available:', !!qrCodeUrl);
+
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -156,7 +176,7 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
         doc.addImage(qrCodeUrl, 'PNG', 155, 80, 40, 40);
         doc.setFontSize(9);
         doc.setTextColor(107, 114, 128);
-        doc.text('Scan to verify', 175, 125, { align: 'center' });
+        doc.text('Scan to see TIN', 175, 125, { align: 'center' });
       }
 
       // Add footer
@@ -174,10 +194,13 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
 
       // Save the PDF
       const fileName = `GRA_TIN_Credential_${credentialData?.tin || 'GHA21984335'}.pdf`;
+      console.log('Saving PDF as:', fileName);
       doc.save(fileName);
+      console.log('PDF saved successfully');
     } catch (err) {
       console.error('Error generating PDF:', err);
-      alert('Error generating PDF. Please try again.');
+      console.error('Error details:', err.message, err.stack);
+      alert('Error generating PDF: ' + err.message + '. Please check the console for details.');
     }
   };
 
@@ -263,14 +286,32 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
                   </div>
 
                   <div className="credential-right">
-                    <div className="qr-code">
+                    <div className="qr-code" onClick={handleDownloadQR} style={{ cursor: qrCodeUrl ? 'pointer' : 'default' }}>
                       {qrCodeUrl ? (
                         <img src={qrCodeUrl} alt="QR Code" width="140" height="140" />
                       ) : (
                         <div className="qr-loading">Generating QR...</div>
                       )}
                     </div>
-                    <p className="qr-label">Scan to download</p>
+                    <p className="qr-label">Scan to see TIN</p>
+                    {qrCodeUrl && (
+                      <button
+                        className="btn-download-qr"
+                        onClick={handleDownloadQR}
+                        style={{
+                          marginTop: '8px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Download QR
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

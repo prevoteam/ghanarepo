@@ -25,7 +25,13 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 const Register = async (req, res) => {
   try {
     const { contact, method, password } = req.body;
-    console.log("Received:", contact, method, password ? "[password provided]" : "[no password]");
+    // Detailed logging for debugging
+    console.log("Register - Received request body:", {
+      contact,
+      method,
+      passwordProvided: password ? true : false,
+      passwordLength: password ? password.length : 0
+    });
 
     if (!contact || !method) {
       return res
@@ -42,6 +48,10 @@ const Register = async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+    // Store password value (use null only if explicitly undefined/null, keep empty string if provided)
+    const passwordValue = password !== undefined && password !== null ? password : null;
+    console.log("Register - Password value to save:", passwordValue ? "[password set]" : "[no password]");
+
     // 1️⃣ Check if user exists
     const checkUser = await pool.query(
       "SELECT id, unique_id FROM users WHERE contact_value = $1",
@@ -53,6 +63,7 @@ const Register = async (req, res) => {
     if (checkUser.rows.length > 0) {
       // user exists
       uniqueId = checkUser.rows[0].unique_id;
+      console.log("Register - Updating existing user:", uniqueId);
 
       // 2️⃣ Update existing user OTP and password if provided
       await pool.query(
@@ -64,19 +75,22 @@ const Register = async (req, res) => {
               updated_at = NOW()
           WHERE contact_value = $4
         `,
-        [otp, expiresAt, password || null, contact]
+        [otp, expiresAt, passwordValue, contact]
       );
+      console.log("Register - User updated with password:", passwordValue ? "YES" : "NO");
     } else {
       // 3️⃣ Insert new user with new UUID - explicitly set user_role to 'resident'
+      console.log("Register - Creating new user");
       const insertUser = await pool.query(
         `
           INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password, user_role)
           VALUES ($1, $2, $3, $4, $5, 'resident')
           RETURNING unique_id
         `,
-        [method, contact, otp, expiresAt, password || null]
+        [method, contact, otp, expiresAt, passwordValue]
       );
       uniqueId = insertUser.rows[0].unique_id;
+      console.log("Register - New user created:", uniqueId, "with password:", passwordValue ? "YES" : "NO");
     }
 
     // 4️⃣ Send OTP via Email or SMS
@@ -1267,7 +1281,7 @@ const CompleteRegistration = async (req, res) => {
       }
     };
 
-    // Update user with complete registration
+    // Update user with complete registration - also set username = tin for login
     await pool.query(
       `UPDATE users
        SET agent_tin = $1,
@@ -1276,6 +1290,7 @@ const CompleteRegistration = async (req, res) => {
            issue_date = $4,
            credential_id = $5,
            verifiable_credential = $6,
+           username = $1,
            registration_completed = TRUE,
            updated_at = NOW()
        WHERE unique_id = $7`,
