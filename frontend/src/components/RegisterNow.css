@@ -537,12 +537,23 @@ body {
 }
 
 .hero-title-new .text-yellow {
-     color: #1E3A8A;
+     /* color: #1E3A8A;
     background-color: #E9B401;
-    line-height: 10px;
-    padding: 0px 7px;
+    line-height: 10px; */
+    padding: 0px 12px;
     border-radius: 8px;  
+
+  display: inline-block;
+  color: #1E3A8A;   
+  background-image: url('../assets/heading.png'); /* your image path */
+  background-size: 100% 100%;  /* Fit perfectly */
+  background-repeat: no-repeat;
 }
+
+
+
+
+
 
 .hero-description {
   font-size: 1rem;
