@@ -238,7 +238,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             Previous
           </button>
           <span className="pagination-info">
-            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {(currentOffset - data.length + 1)}-{currentOffset} loaded | Total: {totalRecords.toLocaleString()})
+            Page {currentPage} of {totalPages} (Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, data.length)} of {data.length.toLocaleString()} loaded | Total: {totalRecords.toLocaleString()})
           </span>
           <button
             className="pagination-btn"

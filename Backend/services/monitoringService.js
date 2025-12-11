@@ -528,12 +528,13 @@ const GetMerchantDiscoveryStats = async (req, res) => {
 // -------------------------
 const GetMerchantStatistics = async (req, res) => {
     try {
-        const { risk_score, page = 1, limit = 100 } = req.query;
+        const { risk_score, page = 1, limit = 100, high_risk } = req.query;
 
-        console.log("GetMerchantStatistics params:", { risk_score, page, limit });
+        console.log("GetMerchantStatistics params:", { risk_score, page, limit, high_risk });
 
         let query = `SELECT id, transaction_id, timestamp, sender_account, receiver_account,
-                     psp_provider, trans_type, amount_ghs, e_levy_applied, e_levy_amount, status
+                     psp_provider, trans_type, amount_ghs, e_levy_applied, e_levy_amount, status,
+                     merchant_name, merchant_email, merchant_phone, merchant_country, merchant_tin
                      FROM psp_transactions WHERE 1=1`;
         const params = [];
         let paramIndex = 1;
@@ -543,6 +544,11 @@ const GetMerchantStatistics = async (req, res) => {
             query += ` AND status = $${paramIndex}`;
             params.push(risk_score);
             paramIndex++;
+        }
+
+        // Filter by high_risk (amount_ghs > 100000) if requested
+        if (high_risk === 'true' || high_risk === '1') {
+            query += ` AND CAST(NULLIF(amount_ghs, '') AS DECIMAL(15,2)) > 100000`;
         }
 
         // Get total count for pagination
@@ -1909,11 +1915,12 @@ const GetPSPDashboardStats = async (req, res) => {
         `);
         const potentialNonResident = parseInt(nonResidentResult.rows[0].total) || 0;
 
-        // 7. High-Risk Merchants (merchants with high transaction amounts or frequency)
+        // 7. High-Risk Merchants (not registered + amount > 50000)
         const highRiskResult = await pool.query(`
-            SELECT COUNT(DISTINCT sender_account) as total
+            SELECT COUNT(*) as total
             FROM psp_transactions
-            WHERE CAST(amount_ghs AS DECIMAL(15,2)) > 10000
+            WHERE (merchant_tin IS NULL OR merchant_tin = '')
+            AND CAST(amount_ghs AS DECIMAL(15,2)) > 50000
         `);
         const highRiskMerchants = parseInt(highRiskResult.rows[0].total) || 0;
 
@@ -1989,6 +1996,111 @@ const GetPSPDashboardStats = async (req, res) => {
     }
 };
 
+/**
+ * Ensures every 200 records in psp_transactions has at least 10+ high entities
+ * High entity = amount_ghs > 100000
+ */
+const EnsureHighEntitiesDistribution = async (req, res) => {
+    try {
+        const HIGH_ENTITY_THRESHOLD = 100000;
+        const BATCH_SIZE = 200;
+        const MIN_HIGH_ENTITIES_PER_BATCH = 10;
+
+        console.log('Starting high entities distribution check...');
+
+        // Get total count of records
+        const countResult = await pool.query('SELECT COUNT(*) as total FROM psp_transactions');
+        const totalRecords = parseInt(countResult.rows[0].total);
+
+        if (totalRecords === 0) {
+            return res.status(200).json(
+                success(true, 200, "No records to process", { updated: 0 })
+            );
+        }
+
+        // Get all record IDs ordered by ID
+        const allRecordsResult = await pool.query(`
+            SELECT id, amount_ghs
+            FROM psp_transactions
+            ORDER BY id ASC
+        `);
+        const allRecords = allRecordsResult.rows;
+
+        let totalUpdated = 0;
+        let batchesProcessed = 0;
+        const numberOfBatches = Math.ceil(totalRecords / BATCH_SIZE);
+
+        // Process each batch of 200 records
+        for (let batchIndex = 0; batchIndex < numberOfBatches; batchIndex++) {
+            const startIdx = batchIndex * BATCH_SIZE;
+            const endIdx = Math.min(startIdx + BATCH_SIZE, totalRecords);
+            const batchRecords = allRecords.slice(startIdx, endIdx);
+
+            // Count high entities in this batch
+            const highEntitiesInBatch = batchRecords.filter(
+                record => parseFloat(record.amount_ghs) > HIGH_ENTITY_THRESHOLD
+            );
+            const currentHighCount = highEntitiesInBatch.length;
+
+            // If not enough high entities, update some records
+            if (currentHighCount < MIN_HIGH_ENTITIES_PER_BATCH) {
+                const neededHighEntities = MIN_HIGH_ENTITIES_PER_BATCH - currentHighCount;
+
+                // Get records that are NOT already high entities
+                const lowEntities = batchRecords.filter(
+                    record => parseFloat(record.amount_ghs) <= HIGH_ENTITY_THRESHOLD
+                );
+
+                // Randomly select records to upgrade
+                const shuffled = [...lowEntities].sort(() => Math.random() - 0.5);
+                const recordsToUpdate = shuffled.slice(0, neededHighEntities);
+
+                for (const record of recordsToUpdate) {
+                    // Generate a random high amount between 100001 and 500000
+                    const newAmount = (Math.random() * (500000 - 100001) + 100001).toFixed(2);
+
+                    await pool.query(`
+                        UPDATE psp_transactions
+                        SET amount_ghs = $1,
+                            e_levy_amount = $2
+                        WHERE id = $3
+                    `, [newAmount, (newAmount * 0.01).toFixed(2), record.id]);
+
+                    totalUpdated++;
+                }
+            }
+
+            batchesProcessed++;
+        }
+
+        // Get verification stats
+        const totalHighEntities = await pool.query(`
+            SELECT COUNT(*) as count
+            FROM psp_transactions
+            WHERE CAST(amount_ghs AS DECIMAL(15,2)) > $1
+        `, [HIGH_ENTITY_THRESHOLD]);
+
+        console.log(`Distribution check completed. Updated ${totalUpdated} records.`);
+
+        return res.status(200).json(
+            success(true, 200, "High entities distribution ensured", {
+                totalRecords: totalRecords,
+                batchesProcessed: batchesProcessed,
+                recordsUpdated: totalUpdated,
+                totalHighEntities: parseInt(totalHighEntities.rows[0].count),
+                highEntityPercentage: ((totalHighEntities.rows[0].count / totalRecords) * 100).toFixed(2) + '%',
+                threshold: HIGH_ENTITY_THRESHOLD,
+                batchSize: BATCH_SIZE,
+                minHighEntitiesPerBatch: MIN_HIGH_ENTITIES_PER_BATCH
+            })
+        );
+
+    } catch (err) {
+        console.error("EnsureHighEntitiesDistribution error:", err);
+        return res.status(500).json(success(false, 500, err.message, null));
+    }
+};
+
 module.exports = {
     MonitoringLogin,
     MonitoringVerifyOTP,
@@ -2015,5 +2127,6 @@ module.exports = {
     MarkNotificationRead,
     MarkAllNotificationsRead,
     GetPSPTransactions,
-    GetPSPDashboardStats
+    GetPSPDashboardStats,
+    EnsureHighEntitiesDistribution
 };
