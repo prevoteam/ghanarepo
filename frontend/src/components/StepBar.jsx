@@ -15,28 +15,34 @@ const StepBar = ({ currentStep }) => {
   return (
     <div className="progress-container">
       <div className="progress-steps">
-        {steps.map((step, index) => (
-          <div key={step.number} className="progress-step-wrapper">
-            <div className="progress-step-info">
-              <div className="progress-step-label">Step {step.number} of 8</div>
-              <div
-                className={`progress-circle ${currentStep === step.number ? 'active' : ''} ${currentStep > step.number ? 'completed' : ''}`}
-              >
-                {currentStep > step.number ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                ) : (
-                  <span></span>
-                )}
+        {steps.map((step, index) => {
+          // Step 8 should show completed when we're on step 8 (registration complete)
+          const isCompleted = currentStep > step.number || (currentStep === 8 && step.number === 8);
+          const isActive = currentStep === step.number && step.number !== 8;
+
+          return (
+            <div key={step.number} className="progress-step-wrapper">
+              <div className="progress-step-info">
+                <div className="progress-step-label">Step {step.number} of 8</div>
+                <div
+                  className={`progress-circle ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                >
+                  {isCompleted ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  ) : (
+                    <span></span>
+                  )}
+                </div>
+                <div className="progress-step-name">{step.label}</div>
               </div>
-              <div className="progress-step-name">{step.label}</div>
+              {index < steps.length - 1 && (
+                <div className={`progress-line ${currentStep > step.number ? 'completed' : ''}`}></div>
+              )}
             </div>
-            {index < steps.length - 1 && (
-              <div className={`progress-line ${currentStep > step.number ? 'completed' : ''}`}></div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

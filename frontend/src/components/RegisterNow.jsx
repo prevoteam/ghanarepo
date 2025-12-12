@@ -149,7 +149,7 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
             </h1>
             <p className="hero-description">
               Welcome to Ghana's official unified platform<br/>
-              for E-Commerce registration, VAT filing, and<br/>
+              for e-Commerce registration, VAT filing, and<br/>
               automated compliance monitoring.
             </p>
             <div className="hero-buttons">
@@ -222,10 +222,6 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
               </div>
             </div>
 
-            <div className="portal-footer-home">
-              <span>New to the platform?</span>
-              <a href="#" onClick={(e) => { e.preventDefault(); handleNonResidentClick(); }}>CREATE AN ACCOUNT</a>
-            </div>
           </div>
         </div>
       </section>

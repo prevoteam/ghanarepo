@@ -148,7 +148,7 @@ const MonitoringDashboard = ({ onLogout }) => {
       case 'merchant-statistics': return 'Merchant Discovery';
       case 'vat-eligibility': return 'VAT Eligibility';
       case 'high-risk': return 'High risk entities';
-      case 'ecommerce': return 'E-commerce portals';
+      case 'ecommerce': return 'e-Commerce portals';
       case 'bi-reports': return 'BI & Reports';
       default: return 'Dashboard';
     }

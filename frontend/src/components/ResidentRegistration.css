@@ -180,7 +180,7 @@
 
 .btn-next {
   padding: 12px 48px;
-  background: #7C93D5;
+  background: #2D3B8F;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -189,17 +189,21 @@
   cursor: pointer;
   transition: all 0.3s;
   font-family: inherit;
+  opacity: 1;
 }
 
 .btn-next:hover:not(:disabled) {
-  background: #6B82C4;
+  background: #1e2a6e;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 147, 213, 0.3);
+  box-shadow: 0 4px 12px rgba(45, 59, 143, 0.4);
 }
 
 .btn-next:disabled {
-  opacity: 0.6;
+  background: #7C93D5;
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Business Form Fields */
@@ -452,9 +456,21 @@
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
+/* Ensure completion buttons have full opacity when enabled */
+.btn-download-certificate:not(:disabled),
+.btn-go-dashboard:not(:disabled) {
+  opacity: 1;
+}
+
+.btn-download-certificate:disabled,
+.btn-go-dashboard:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* OTP Modal Adjustments for Resident Registration */
 .resident-otp-modal {
-  max-width: 420px;
+  max-width: 500px;
 }
 
 /* Responsive */

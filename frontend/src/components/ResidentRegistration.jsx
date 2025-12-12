@@ -3,6 +3,8 @@ import './ResidentRegistration.css';
 import './RegistrationForm.css';
 import { registrationApi, QR_CODE_API_URL, GHANA_SITES_API_URL } from '../utils/api';
 import { useApi } from '../utils/useApi';
+import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
 
 const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -174,8 +176,9 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
     // Call Register API
     const result = await execute(registrationApi.register, formData.email, 'email', formData.password);
 
-    if (result && result.status !== false) {
-      const uid = result.results?.unique_id || result.data?.unique_id || result.unique_id;
+    if (result && result.success) {
+      const responseData = result.data;
+      const uid = responseData?.results?.unique_id || responseData?.unique_id;
       setUniqueId(uid);
       setShowOTPModal(true);
       setTimer(300);
@@ -184,8 +187,9 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
       setTimeout(() => setSuccessMessage(''), 3000);
 
       // For development
-      if (result.results?.otpDev || result.otpDev) {
-        console.log('Development OTP:', result.results?.otpDev || result.otpDev);
+      const otpDev = responseData?.results?.otpDev || responseData?.otpDev;
+      if (otpDev) {
+        console.log('Development OTP:', otpDev);
       }
     }
   };
@@ -201,7 +205,7 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
 
     const result = await execute(registrationApi.verifyOTP, uniqueId, otpValue);
 
-    if (result && result.status !== false) {
+    if (result && result.success) {
       if (timerInterval) {
         clearInterval(timerInterval);
         setTimerInterval(null);
@@ -210,6 +214,7 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
       setSuccessMessage('Email verified successfully!');
       setTimeout(() => {
         setShowOTPModal(false);
+        clearError(); // Clear any errors before moving to next step
         setCurrentStep(2); // Go to Identity step
       }, 1000);
     } else {
@@ -227,13 +232,15 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
 
     const result = await execute(registrationApi.resendOTP, formData.email);
 
-    if (result && result.status !== false) {
+    if (result && result.success) {
+      const responseData = result.data;
       startTimer();
       setSuccessMessage('OTP resent successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
 
-      if (result.results?.otpDev || result.otpDev) {
-        console.log('Development OTP (Resent):', result.results?.otpDev || result.otpDev);
+      const otpDev = responseData?.results?.otpDev || responseData?.otpDev;
+      if (otpDev) {
+        console.log('Development OTP (Resent):', otpDev);
       }
 
       const firstInput = document.getElementById('resident-reg-otp-0');
@@ -326,21 +333,105 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
       businessData.website
     );
 
-    if (result && result.status !== false) {
-      const tin = result.results?.tin || result.tin;
-      const username = result.results?.username || result.username;
+    if (result && result.success) {
+      const responseData = result.data;
+      const tin = responseData?.results?.tin || responseData?.tin;
+      const username = responseData?.results?.username || responseData?.username;
+      console.log('Registration complete - TIN:', tin, 'Username:', username); // Debug log
       setGeneratedTIN(tin);
       setGeneratedUsername(username);
+      clearError(); // Clear any errors before showing completion
       setCurrentStep(5);
     }
   };
 
-  // Auto login after registration - use email as userID
-  const handleAutoLogin = () => {
-    // Login directly using uniqueId and role 'resident'
-    // Email is used as the login credential
-    if (onGoToDashboard && uniqueId) {
-      onGoToDashboard(uniqueId, 'resident');
+  // Redirect to sign-in page after registration
+  const handleGoToLogin = () => {
+    console.log('Login to Dashboard clicked, onLoginRedirect:', typeof onLoginRedirect);
+    if (onLoginRedirect) {
+      onLoginRedirect();
+    } else {
+      console.warn('onLoginRedirect prop is not provided');
+      // Fallback - try to navigate using window location if prop is missing
+      alert('Redirecting to login page...');
+    }
+  };
+
+  // Download Certificate as PDF
+  const handleDownloadCertificate = async () => {
+    if (!generatedTIN) {
+      alert('TIN is not available. Please wait for registration to complete or try again.');
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+
+      // Add header
+      doc.setFillColor(26, 115, 232);
+      doc.rect(0, 0, 210, 40, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ghana Revenue Authority', 105, 18, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text('e-Commerce Registration Certificate', 105, 30, { align: 'center' });
+
+      // Reset text color
+      doc.setTextColor(0, 0, 0);
+
+      // Add certificate content
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registration Certificate', 105, 60, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('This is to certify that', 105, 75, { align: 'center' });
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      const fullName = formData.fullName || `${identityData.firstName} ${identityData.lastName}`;
+      doc.text(fullName, 105, 90, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('has been successfully registered on the e-Commerce Portal.', 105, 105, { align: 'center' });
+
+      // Add details box
+      doc.setDrawColor(200, 200, 200);
+      doc.setFillColor(248, 249, 250);
+      doc.roundedRect(30, 120, 150, 70, 3, 3, 'FD');
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registration Details:', 40, 135);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(`TIN: ${generatedTIN}`, 40, 150);
+      doc.text(`Email: ${formData.email}`, 40, 162);
+      doc.text(`Trading Name: ${businessData.tradingName}`, 40, 174);
+      doc.text(`Registration Date: ${new Date().toLocaleDateString()}`, 40, 186);
+
+      // Generate QR Code
+      const qrCodeDataUrl = await QRCode.toDataURL(generatedTIN, { width: 100, margin: 1 });
+      doc.addImage(qrCodeDataUrl, 'PNG', 80, 200, 50, 50);
+      doc.setFontSize(10);
+      doc.text('Scan to verify', 105, 255, { align: 'center' });
+
+      // Add footer
+      doc.setFontSize(10);
+      doc.setTextColor(128, 128, 128);
+      doc.text('This is an electronically generated certificate.', 105, 275, { align: 'center' });
+      doc.text('Ghana Revenue Authority - e-Commerce Portal', 105, 282, { align: 'center' });
+
+      // Save the PDF
+      doc.save(`TIN_Certificate_${generatedTIN}.pdf`);
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+      alert('Failed to generate certificate. Please try again.');
     }
   };
 
@@ -348,28 +439,34 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
   const renderProgressSteps = () => (
     <div className="progress-container">
       <div className="progress-steps resident-progress-steps">
-        {steps.map((step, index) => (
-          <div key={step.number} className="progress-step-wrapper">
-            <div className="progress-step-info">
-              <div className="progress-step-label">Step {step.number} of 5</div>
-              <div
-                className={`progress-circle ${currentStep === step.number ? 'active' : ''} ${currentStep > step.number ? 'completed' : ''}`}
-              >
-                {currentStep > step.number ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                ) : (
-                  <span></span>
-                )}
+        {steps.map((step, index) => {
+          // Step 5 should show completed when we're on step 5 (registration complete)
+          const isCompleted = currentStep > step.number || (currentStep === 5 && step.number === 5);
+          const isActive = currentStep === step.number && step.number !== 5;
+
+          return (
+            <div key={step.number} className="progress-step-wrapper">
+              <div className="progress-step-info">
+                <div className="progress-step-label">Step {step.number} of 5</div>
+                <div
+                  className={`progress-circle ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                >
+                  {isCompleted ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  ) : (
+                    <span></span>
+                  )}
+                </div>
+                <div className="progress-step-name">{step.label}</div>
               </div>
-              <div className="progress-step-name">{step.label}</div>
+              {index < steps.length - 1 && (
+                <div className={`progress-line ${currentStep > step.number ? 'completed' : ''}`}></div>
+              )}
             </div>
-            {index < steps.length - 1 && (
-              <div className={`progress-line ${currentStep > step.number ? 'completed' : ''}`}></div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -835,7 +932,7 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
                     onChange={handleBusinessChange}
                   >
                     <option value="Digital Services (General)">Digital Services (General)</option>
-                    <option value="E-commerce">E-commerce</option>
+                    <option value="e-Commerce">e-Commerce</option>
                     <option value="Software & SaaS">Software & SaaS</option>
                     <option value="Digital Marketing">Digital Marketing</option>
                     <option value="Online Education">Online Education</option>
@@ -920,33 +1017,56 @@ const ResidentRegistration = ({ onBack, onLoginRedirect, onGoToDashboard }) => {
             {/* TIN Card */}
             <div className="tin-card">
               <h3 className="tin-card-title">Your New TIN</h3>
-              <p className="tin-number">{generatedTIN}</p>
+              {generatedTIN ? (
+                <>
+                  <p className="tin-number" style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    color: '#1a73e8',
+                    letterSpacing: '2px',
+                    margin: '15px 0'
+                  }}>{generatedTIN}</p>
 
-              {/* QR Code */}
-              <div className="qr-code-container">
-                <img
-                  src={`${QR_CODE_API_URL}?data=${encodeURIComponent(generatedTIN)}&size=150x150`}
-                  alt="QR Code"
-                  className="qr-code"
-                />
-                <p className="qr-label">Scan to download</p>
-              </div>
+                  {/* QR Code */}
+                  <div className="qr-code-container">
+                    <img
+                      src={`${QR_CODE_API_URL}?data=${encodeURIComponent(generatedTIN)}&size=150x150`}
+                      alt="QR Code"
+                      className="qr-code"
+                    />
+                    <p className="qr-label">Scan to download</p>
+                  </div>
+                </>
+              ) : (
+                <p style={{ color: '#dc3545', fontSize: '14px', margin: '15px 0' }}>
+                  TIN generation failed. Please contact support.
+                </p>
+              )}
             </div>
 
             {/* Login Info */}
             <div className="login-info-card">
-              <h4>Your Login Credentials</h4>
-              <p><strong>User ID (Email):</strong> {formData.email}</p>
-              <p><strong>TIN:</strong> {generatedTIN}</p>
-              <p className="note">Use your email and password to login to the portal.</p>
+              <h4 style={{ color: '#1a73e8', marginBottom: '15px' }}>Your Login Credentials</h4>
+              <p style={{ marginBottom: '10px' }}><strong>User ID (Email):</strong> {formData.email}</p>
+              <p style={{ marginBottom: '10px' }}>
+                <strong>TIN:</strong>{' '}
+                <span style={{
+                  color: '#1a73e8',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}>{generatedTIN || 'N/A'}</span>
+              </p>
+              <p className="note" style={{ color: '#666', fontSize: '13px', marginTop: '15px' }}>
+                Use your email and password to login to the portal.
+              </p>
             </div>
 
             {/* Action Buttons */}
             <div className="completion-buttons">
-              <button className="btn-download-certificate">
+              <button type="button" className="btn-download-certificate" onClick={handleDownloadCertificate}>
                 Download Certificate
               </button>
-              <button className="btn-go-dashboard" onClick={handleAutoLogin}>
+              <button type="button" className="btn-go-dashboard" onClick={handleGoToLogin}>
                 Login to Dashboard
               </button>
             </div>

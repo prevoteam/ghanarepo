@@ -8,7 +8,7 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
   const [totalSales, setTotalSales] = useState(50000);
   const [businessName, setBusinessName] = useState('Kwame General Trading');
   const [dashboardData, setDashboardData] = useState({
-    tin: 'P008041788',
+    tin: 'TIN008041788',
     vat_id: 'VP008041788',
     compliance_status: 'ON TRACK',
     total_sales: '50,000.00',
@@ -87,7 +87,7 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
         if (response && response.results) {
           const data = response.results;
           setDashboardData({
-            tin: data.user?.tin || 'P008041788',
+            tin: data.user?.tin || 'TIN008041788',
             vat_id: data.user?.vat_id || 'VP008041788',
             compliance_status: data.user?.compliance_status || 'ON TRACK',
             total_sales: data.sales?.total_sales || '50,000.00',

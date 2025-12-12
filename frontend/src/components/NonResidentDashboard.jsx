@@ -5,7 +5,7 @@ import { Header, Footer } from './shared';
 const NonResidentDashboard = ({ uniqueId, onLogout }) => {
   const [dashboardData] = useState({
     companyName: 'Global Digital Services',
-    vatRegNo: 'P0098765432',
+    vatRegNo: 'TIN0098765432',
     filingFrequency: 'Monthly',
     nextFilingDue: '15th Dec 2023',
     status: 'Active',

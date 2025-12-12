@@ -133,7 +133,7 @@ const Header = ({
         )}
         <a
           className="nav-item"
-          href="https://risewithprotean.io/"
+          href="https://ai.studio/apps/drive/1uF7OJ0XUNseox5CYzs0NgL2afVE0jExD?fullscreenApplet=true"
           target="_blank"
           rel="noopener noreferrer"
         >
