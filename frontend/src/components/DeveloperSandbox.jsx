@@ -116,7 +116,7 @@ const DeveloperSandbox = ({ credentials, onGoHome, onGoToDeveloperPortal }) => {
             <button className="btn-secondary" onClick={onGoHome}>
               Return Home
             </button>
-            <button className="btn-primary" onClick={onGoToDeveloperPortal}>
+            <button className="btn-primary" onClick={() => window.open('https://ai.studio/apps/drive/1uF7OJ0XUNseox5CYzs0NgL2afVE0jExD?fullscreenApplet=true', '_blank')}>
               Go to Developer Portal
             </button>
           </div>

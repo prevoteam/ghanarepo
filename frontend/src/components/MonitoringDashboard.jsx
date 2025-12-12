@@ -33,7 +33,7 @@ const MonitoringDashboard = ({ onLogout }) => {
     setDiscoveryError(null);
 
     try {
-      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-accounts`);
+      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
