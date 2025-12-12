@@ -137,7 +137,7 @@ const HighRiskEntities = () => {
       <div className="page-content">
         <div className="merchant-statistics-loading">
           <div className="loader-spinner"></div>
-          <p>Loading high risk entities...</p>
+          <p>Loading high risk merchants...</p>
         </div>
       </div>
     );
@@ -148,8 +148,8 @@ const HighRiskEntities = () => {
         <div className="table-header-new row align-items-center">
           <div className='col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12'>
             <div className="table-title-section">
-            <h2 className="table-title text-dark">High Risk Entities</h2>
-            <p className="table-subtitle text-muted">Entities flagged with high risk scores requiring immediate attention.</p>
+            <h2 className="table-title text-dark">High Risk Merchants</h2>
+            <p className="table-subtitle text-muted">Merchants flagged with high risk scores requiring immediate attention.</p>
             <span className="records-info-badge">
               Showing {highRiskData.length} high risk of {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
             </span>
@@ -172,7 +172,7 @@ const HighRiskEntities = () => {
         <div className="table-container">
           {highRiskData.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              No high risk entities found in the current dataset.
+              No high risk merchants found in the current dataset.
             </div>
           ) : (
           <table className="data-table">

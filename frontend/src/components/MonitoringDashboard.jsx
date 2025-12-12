@@ -75,7 +75,7 @@ const MonitoringDashboard = ({ onLogout }) => {
     { id: 'merchant-discovery', label: 'Merchant Discovery', icon: 'search' },
     { id: 'merchant-statistics', label: 'Merchant Statistics', icon: 'chart' },
     { id: 'vat-eligibility', label: 'VAT Eligibility', icon: 'checkbox' },
-    { id: 'high-risk', label: 'High Risk Entities', icon: 'warning' },
+    { id: 'high-risk', label: 'High Risk Merchants', icon: 'warning' },
     { id: 'ecommerce', label: 'e-Commerce Portals', icon: 'cart' },
     { id: 'bi-reports', label: 'BI & Reports', icon: 'moon' },
   ];
@@ -147,7 +147,7 @@ const MonitoringDashboard = ({ onLogout }) => {
       case 'merchant-discovery': return 'Merchant Discovery';
       case 'merchant-statistics': return 'Merchant Discovery';
       case 'vat-eligibility': return 'VAT Eligibility';
-      case 'high-risk': return 'High risk entities';
+      case 'high-risk': return 'High Risk Merchants';
       case 'ecommerce': return 'e-Commerce portals';
       case 'bi-reports': return 'BI & Reports';
       default: return 'Dashboard';
@@ -182,8 +182,8 @@ const MonitoringDashboard = ({ onLogout }) => {
           {/* Sidebar */}
           <aside className="dashboard-sidebar">
           <div className="sidebar-header">
-            <div className="sidebar-logo">
-               <img src={logo} alt="" />
+            <div className="sidebar-logo" onClick={onLogout} style={{ cursor: 'pointer' }} title="Click to logout">
+               <img src="/assets/logo-small.png" alt="GRA Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
             </div>
             <div className="sidebar-title">
               <span className="sidebar-title-main">Monitoring</span>

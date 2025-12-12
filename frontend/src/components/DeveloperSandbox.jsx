@@ -23,9 +23,9 @@ const DeveloperSandbox = ({ credentials, onGoHome, onGoToDeveloperPortal }) => {
 
         <div className="sandbox-card">
           <div className="success-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
+            <svg className="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle className="success-checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="#10B981" strokeWidth="2"/>
+              <path className="success-checkmark__check" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
           </div>
 

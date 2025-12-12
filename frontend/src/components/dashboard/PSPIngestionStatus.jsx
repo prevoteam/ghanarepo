@@ -49,7 +49,7 @@ const PSPIngestionStatus = () => {
             </svg>
             <h3>No Data Loaded</h3>
             <p>Go to <strong>Merchant Discovery</strong> page to load PSP transaction data.</p>
-            <p className="info-text">Once loaded, the same 200 records will be shared across PSP Ingestion Status, Merchant Statistics, and High Risk Entities pages.</p>
+            <p className="info-text">Once loaded, the same 200 records will be shared across PSP Ingestion Status, Merchant Statistics, and High Risk Merchants pages.</p>
             <button onClick={loadInitialData} className="load-data-btn">
               Load Data Now
             </button>
