@@ -25,7 +25,13 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 const Register = async (req, res) => {
   try {
     const { contact, method, password } = req.body;
-    console.log("Received:", contact, method, password ? "[password provided]" : "[no password]");
+    // Detailed logging for debugging
+    console.log("Register - Received request body:", {
+      contact,
+      method,
+      passwordProvided: password ? true : false,
+      passwordLength: password ? password.length : 0
+    });
 
     if (!contact || !method) {
       return res
@@ -42,17 +48,31 @@ const Register = async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+    // Store password value (use null only if explicitly undefined/null, keep empty string if provided)
+    const passwordValue = password !== undefined && password !== null ? password : null;
+    console.log("Register - Password value to save:", passwordValue ? "[password set]" : "[no password]");
+
     // 1️⃣ Check if user exists
     const checkUser = await pool.query(
-      "SELECT id, unique_id FROM users WHERE contact_value = $1",
+      "SELECT id, unique_id, registration_completed, is_verified FROM users WHERE contact_value = $1",
       [contact]
     );
 
     let uniqueId = null;
 
     if (checkUser.rows.length > 0) {
-      // user exists
-      uniqueId = checkUser.rows[0].unique_id;
+      const existingUser = checkUser.rows[0];
+
+      // Check if user has already completed registration
+      if (existingUser.registration_completed === true) {
+        return res.status(400).json(
+          success(false, 400, "This email is already registered. Please login instead.")
+        );
+      }
+
+      // User exists but hasn't completed registration - allow to continue
+      uniqueId = existingUser.unique_id;
+      console.log("Register - Updating existing user:", uniqueId);
 
       // 2️⃣ Update existing user OTP and password if provided
       await pool.query(
@@ -64,19 +84,22 @@ const Register = async (req, res) => {
               updated_at = NOW()
           WHERE contact_value = $4
         `,
-        [otp, expiresAt, password || null, contact]
+        [otp, expiresAt, passwordValue, contact]
       );
+      console.log("Register - User updated with password:", passwordValue ? "YES" : "NO");
     } else {
       // 3️⃣ Insert new user with new UUID - explicitly set user_role to 'resident'
+      console.log("Register - Creating new user");
       const insertUser = await pool.query(
         `
           INSERT INTO users (contact_method, contact_value, otp_code, otp_expires_at, password, user_role)
           VALUES ($1, $2, $3, $4, $5, 'resident')
           RETURNING unique_id
         `,
-        [method, contact, otp, expiresAt, password || null]
+        [method, contact, otp, expiresAt, passwordValue]
       );
       uniqueId = insertUser.rows[0].unique_id;
+      console.log("Register - New user created:", uniqueId, "with password:", passwordValue ? "YES" : "NO");
     }
 
     // 4️⃣ Send OTP via Email or SMS
@@ -179,6 +202,47 @@ const sendWelcomeEmail = async (email, userName) => {
   } catch (error) {
     console.error("Error sending welcome email:", error);
     // Don't throw error - we don't want to fail login if email fails
+  }
+};
+
+// -------------------------
+// Send TIN Notification Email
+// -------------------------
+const sendTINEmail = async (email, userName, tin, tradingName) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // TLS
+      auth: {
+        user: process.env.EMAIL_CONFIG_EMAIL,
+        pass: process.env.EMAIL_CONFIG_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false  // Fixes self-signed certificate error
+      }
+    });
+
+    let htmlTemplate = fs.readFileSync("./templates/tin_notification_email.html", "utf8");
+
+    // Replace placeholders
+    htmlTemplate = htmlTemplate.replace(/{{USER_NAME}}/g, userName || "Valued Customer");
+    htmlTemplate = htmlTemplate.replace(/{{USER_EMAIL}}/g, email);
+    htmlTemplate = htmlTemplate.replace(/{{TIN_NUMBER}}/g, tin);
+    htmlTemplate = htmlTemplate.replace(/{{TRADING_NAME}}/g, tradingName || "N/A");
+    htmlTemplate = htmlTemplate.replace(/{{PORTAL_URL}}/g, process.env.FRONT_SITE_URL || "#");
+
+    await transporter.sendMail({
+      from: `"e-Commerce Registration Portal" <${process.env.EMAIL_CONFIG_EMAIL}>`,
+      to: email,
+      subject: "Your TIN Registration - e-Commerce Portal",
+      html: htmlTemplate,
+    });
+
+    console.log("TIN Email Sent to:", email);
+  } catch (error) {
+    console.error("Error sending TIN email:", error);
+    throw error; // Re-throw to be caught by caller
   }
 };
 
@@ -513,30 +577,47 @@ const VerifyAgentTIN = async (req, res) => {
       return res.status(400).json(success(false, 400, "TIN is required"));
     }
 
-    // Validate TIN format (Ghana TIN format: starts with P or C followed by numbers)
-    const tinPattern = /^[PC]\d{10}$/;
+    // Validate TIN format (Ghana TIN format: starts with TIN, P, C, or GHA followed by numbers)
+    const tinPattern = /^(TIN|P|C|GHA)\d{8,10}$/;
     if (!tinPattern.test(tin)) {
       return res.status(400).json(
-        success(false, 400, "Invalid TIN format. Expected format: P0000000000 or C0000000000")
+        success(false, 400, "Invalid TIN format. Expected format: TIN0000000000, P0000000000, C0000000000, or GHA00000000")
       );
     }
 
-    // In production, this would call GRA's TIN verification API
-    // For now, simulate verification with a success response
-    const isValid = true;
-    const agentName = "Verified Agent"; // This would come from GRA API
+    // Query the users table to find agent by tin or agent_tin
+    const result = await pool.query(
+      `SELECT full_name, contact_value as email, trading_name,
+              tin, agent_tin, agent_digital_address, agent_email, agent_mobile
+       FROM users
+       WHERE tin = $1 OR agent_tin = $1
+       LIMIT 1`,
+      [tin]
+    );
 
-    if (isValid) {
+    if (result.rows.length > 0) {
+      const agent = result.rows[0];
       return res.status(200).json(
         success(true, 200, "TIN verified successfully", {
           tin,
           verified: true,
-          agent_name: agentName
+          agent_name: agent.full_name || agent.trading_name || "Verified Agent",
+          digital_address: agent.agent_digital_address || "",
+          email: agent.agent_email || agent.email || "",
+          mobile: agent.agent_mobile || ""
         })
       );
     } else {
-      return res.status(400).json(
-        success(false, 400, "TIN verification failed. Please check the TIN and try again.")
+      // TIN not found in database - still allow registration but with manual entry
+      return res.status(200).json(
+        success(true, 200, "TIN format valid. Please enter agent details manually.", {
+          tin,
+          verified: true,
+          agent_name: "",
+          digital_address: "",
+          email: "",
+          mobile: ""
+        })
       );
     }
   } catch (err) {
@@ -1152,9 +1233,13 @@ const CalculateVATObligation = async (req, res) => {
       return res.status(400).json(success(false, 400, "unique_id is required"));
     }
 
-    // Fetch user details
+    // Fetch ALL user details for review step
     const result = await pool.query(
-      `SELECT entity_type, sells_digital_services, annual_sales_volume
+      `SELECT
+        full_name, contact_value as email, trading_name, country, service_type,
+        entity_type, sells_digital_services, annual_sales_volume,
+        agent_tin, agent_full_name as agent_name, agent_email, agent_mobile, agent_digital_address,
+        website
        FROM users
        WHERE unique_id = $1`,
       [unique_id]
@@ -1197,8 +1282,25 @@ const CalculateVATObligation = async (req, res) => {
 
     return res.status(200).json(
       success(true, 200, "VAT obligations calculated successfully", {
+        // Personal Information
+        full_name: user.full_name,
+        email: user.email,
+        mobile: user.agent_mobile || '',
+        // Business Information
+        trading_name: user.trading_name,
+        country: user.country,
+        service_type: user.service_type,
+        website: user.website,
+        // Local Agent
+        agent_name: user.agent_name,
+        agent_tin: user.agent_tin,
+        agent_email: user.agent_email,
+        agent_mobile: user.agent_mobile,
+        agent_digital_address: user.agent_digital_address,
+        // VAT Details
         entity_type: user.entity_type,
         sells_digital_services: user.sells_digital_services,
+        annual_sales_volume: user.annual_sales_volume,
         vat_registration_required,
         compliance_status,
         applicable_vat_rate
@@ -1221,9 +1323,10 @@ const CompleteRegistration = async (req, res) => {
       return res.status(400).json(success(false, 400, "unique_id is required"));
     }
 
-    // Fetch user details
+    // Fetch user details including email and entity type
     const result = await pool.query(
-      `SELECT id, unique_id, full_name, subject_name, agent_tin, vat_id
+      `SELECT id, unique_id, full_name, subject_name, agent_tin, tin, vat_id,
+              contact_value as email, entity_type, trading_name, user_role
        FROM users
        WHERE unique_id = $1`,
       [unique_id]
@@ -1235,14 +1338,18 @@ const CompleteRegistration = async (req, res) => {
 
     const user = result.rows[0];
 
-    // Generate TIN if not exists
-    let tin = user.agent_tin;
+    // Generate TIN if not exists - use different prefix for non-residents
+    let tin = user.tin || user.agent_tin;
     if (!tin) {
-      tin = `GHA${Math.floor(10000000 + Math.random() * 90000000)}`;
+      if (user.entity_type === 'NonResident') {
+        tin = `GHA${Math.floor(10000000 + Math.random() * 90000000)}`;
+      } else {
+        tin = `TIN${Math.floor(100000000 + Math.random() * 900000000)}`;
+      }
     }
 
     // Generate VAT ID
-    const vat_id = `VP${Math.floor(100000000 + Math.random() * 900000000)}`;
+    const vat_id = user.vat_id || `VP${Math.floor(100000000 + Math.random() * 900000000)}`;
 
     // Generate credential ID
     const credential_id = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 12)}`;
@@ -1251,7 +1358,7 @@ const CompleteRegistration = async (req, res) => {
     const issue_date = new Date().toISOString().split('T')[0];
 
     // Subject name
-    const subject_name = user.subject_name || user.full_name || "Registered User";
+    const subject_name = user.subject_name || user.full_name || user.trading_name || "Registered User";
 
     // Create verifiable credential
     const verifiable_credential = {
@@ -1267,15 +1374,21 @@ const CompleteRegistration = async (req, res) => {
       }
     };
 
-    // Update user with complete registration
+    // Determine user role based on entity type
+    const userRole = user.user_role || (user.entity_type === 'NonResident' ? 'nonresident' : 'resident');
+
+    // Update user with complete registration - store TIN in both tin and agent_tin columns
     await pool.query(
       `UPDATE users
-       SET agent_tin = $1,
+       SET tin = $1,
+           agent_tin = $1,
            vat_id = $2,
            subject_name = $3,
            issue_date = $4,
            credential_id = $5,
            verifiable_credential = $6,
+           username = $1,
+           user_role = $8,
            registration_completed = TRUE,
            updated_at = NOW()
        WHERE unique_id = $7`,
@@ -1286,9 +1399,22 @@ const CompleteRegistration = async (req, res) => {
         issue_date,
         credential_id,
         JSON.stringify(verifiable_credential),
-        unique_id
+        unique_id,
+        userRole
       ]
     );
+
+    // Send TIN notification email
+    const email = user.email;
+    if (email) {
+      try {
+        await sendTINEmail(email, subject_name, tin, user.trading_name || '');
+        console.log("TIN notification email sent successfully to:", email);
+      } catch (emailError) {
+        console.error("Failed to send TIN notification email:", emailError);
+        // Don't fail registration if email fails
+      }
+    }
 
     return res.status(200).json(
       success(true, 200, "Registration completed successfully", {
@@ -1297,12 +1423,36 @@ const CompleteRegistration = async (req, res) => {
         subject_name,
         issue_date,
         credential_id,
-        verifiable_credential
+        verifiable_credential,
+        email: email
       })
     );
   } catch (err) {
     console.error("CompleteRegistration error:", err);
-    return res.status(500).json(success(false, 500, err.message));
+
+    // Handle duplicate key errors with friendly messages
+    if (err.code === '23505') { // PostgreSQL unique violation error code
+      if (err.constraint && err.constraint.includes('username')) {
+        return res.status(400).json(
+          success(false, 400, "This account has already been registered. Please login instead.")
+        );
+      }
+      if (err.constraint && err.constraint.includes('tin')) {
+        return res.status(400).json(
+          success(false, 400, "A TIN has already been generated for this account. Please login to view your TIN.")
+        );
+      }
+      if (err.constraint && err.constraint.includes('email') || err.constraint && err.constraint.includes('contact')) {
+        return res.status(400).json(
+          success(false, 400, "This email is already registered. Please login instead.")
+        );
+      }
+      return res.status(400).json(
+        success(false, 400, "This account already exists. Please login instead.")
+      );
+    }
+
+    return res.status(500).json(success(false, 500, "Registration failed. Please try again or contact support."));
   }
 };
 
@@ -1753,13 +1903,14 @@ const ResidentCompleteRegistration = async (req, res) => {
     }
 
     // Generate TIN for resident
-    const tin = `P${Math.floor(100000000 + Math.random() * 900000000)}`;
+    const tin = `TIN${Math.floor(100000000 + Math.random() * 900000000)}`;
 
     // Use full email as username (userID for login)
     const email = checkUser.rows[0].contact_value;
     const username = email || `user_${Date.now()}`;
 
     // Update user with business details and set role as 'resident'
+    // Store TIN in both tin and agent_tin columns
     await pool.query(
       `UPDATE users
        SET full_name = $1,
@@ -1768,6 +1919,7 @@ const ResidentCompleteRegistration = async (req, res) => {
            website = $4,
            user_role = 'resident',
            entity_type = 'DomesticIndividual',
+           tin = $5,
            agent_tin = $5,
            username = $6,
            registration_completed = TRUE,
@@ -1775,6 +1927,15 @@ const ResidentCompleteRegistration = async (req, res) => {
        WHERE unique_id = $7`,
       [full_name, trading_name, sector, website, tin, username, unique_id]
     );
+
+    // Send TIN notification email
+    try {
+      await sendTINEmail(email, full_name, tin, trading_name);
+      console.log("TIN notification email sent successfully to:", email);
+    } catch (emailError) {
+      console.error("Failed to send TIN notification email:", emailError);
+      // Don't fail registration if email fails
+    }
 
     return res.status(200).json(
       success(true, 200, "Registration completed successfully", {
@@ -1786,7 +1947,30 @@ const ResidentCompleteRegistration = async (req, res) => {
     );
   } catch (err) {
     console.error("ResidentCompleteRegistration error:", err);
-    return res.status(500).json(success(false, 500, err.message));
+
+    // Handle duplicate key errors with friendly messages
+    if (err.code === '23505') { // PostgreSQL unique violation error code
+      if (err.constraint && err.constraint.includes('username')) {
+        return res.status(400).json(
+          success(false, 400, "This account has already been registered. Please login instead.")
+        );
+      }
+      if (err.constraint && err.constraint.includes('tin')) {
+        return res.status(400).json(
+          success(false, 400, "A TIN has already been generated for this account. Please login to view your TIN.")
+        );
+      }
+      if (err.constraint && err.constraint.includes('email') || err.constraint && err.constraint.includes('contact')) {
+        return res.status(400).json(
+          success(false, 400, "This email is already registered. Please login instead.")
+        );
+      }
+      return res.status(400).json(
+        success(false, 400, "This account already exists. Please login instead.")
+      );
+    }
+
+    return res.status(500).json(success(false, 500, "Registration failed. Please try again or contact support."));
   }
 };
 

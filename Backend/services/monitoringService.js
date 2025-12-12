@@ -1280,12 +1280,12 @@ const generateTIN = async () => {
     try {
         const result = await pool.query(`SELECT nextval('tin_sequence') as tin_number`);
         const tinNumber = result.rows[0].tin_number;
-        return `P${String(tinNumber).padStart(9, '0')}`;
+        return `TIN${String(tinNumber).padStart(9, '0')}`;
     } catch (error) {
         // Fallback if sequence doesn't exist - generate random TIN
         const timestamp = Date.now();
         const random = Math.floor(Math.random() * 1000);
-        return `P${String(timestamp).slice(-6)}${String(random).padStart(3, '0')}`;
+        return `TIN${String(timestamp).slice(-6)}${String(random).padStart(3, '0')}`;
     }
 };
 

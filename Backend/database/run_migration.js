@@ -55,7 +55,21 @@ async function runMigration() {
 
       // Step 4: Update existing users with default roles
       `UPDATE users SET user_role = 'nonresident' WHERE entity_type = 'NonResident' AND (user_role IS NULL OR user_role = 'resident')`,
-      `UPDATE users SET user_role = 'resident' WHERE entity_type IN ('DomesticIndividual', 'DomesticCompany') AND user_role IS NULL`
+      `UPDATE users SET user_role = 'resident' WHERE entity_type IN ('DomesticIndividual', 'DomesticCompany') AND user_role IS NULL`,
+
+      // Step 5: Add unique constraints on email, tin, agent_tin, username
+      `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_contact_value_key`,
+      `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_tin_key`,
+      `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_agent_tin_key`,
+      `ALTER TABLE users DROP CONSTRAINT IF EXISTS users_username_key`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_contact_value_unique ON users (contact_value) WHERE contact_value IS NOT NULL AND contact_value != ''`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_tin_unique ON users (tin) WHERE tin IS NOT NULL AND tin != ''`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_agent_tin_unique ON users (agent_tin) WHERE agent_tin IS NOT NULL AND agent_tin != ''`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique ON users (username) WHERE username IS NOT NULL AND username != ''`,
+
+      // Step 6: Update existing TINs from P prefix to TIN prefix
+      `UPDATE users SET tin = 'TIN' || SUBSTRING(tin FROM 2) WHERE tin IS NOT NULL AND tin LIKE 'P%' AND LENGTH(tin) > 1`,
+      `UPDATE users SET agent_tin = 'TIN' || SUBSTRING(agent_tin FROM 2) WHERE agent_tin IS NOT NULL AND agent_tin LIKE 'P%' AND LENGTH(agent_tin) > 1`
     ];
 
     console.log(`Running ${statements.length} SQL statements...\n`);

@@ -176,6 +176,7 @@ const RegistrationForm = ({ onBack, onLoginRedirect }) => {
         onRegisterNow={onBack}
         onLoginRedirect={onLoginRedirect}
         isReviewStep={true}
+        onEditStep={(step) => setCurrentStep(step)}
       />
     );
   }

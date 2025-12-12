@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Your TIN Registration - e-Commerce Portal</title>
+</head>
+<body style="margin:0; padding:0; background:#f6f6f6; font-family:Arial, sans-serif;">
+  <table align="center" cellpadding="0" cellspacing="0" width="600" style="background:#ffffff; margin-top:30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+    <tr>
+      <td style="padding:20px; text-align:center; background:#1a73e8; color:#ffffff; border-radius:8px 8px 0 0;">
+        <h2 style="margin:0; font-size:24px;">Registration Successful!</h2>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:30px;">
+        <h3 style="color:#333; font-size:20px; margin-top:0;">Hello {{USER_NAME}}!</h3>
+
+        <p style="font-size:16px; color:#555; line-height:1.6;">
+          Congratulations! Your registration on the <strong>e-Commerce Portal</strong> has been completed successfully.
+          Your Taxpayer Identification Number (TIN) has been generated.
+        </p>
+
+        <div style="margin:30px 0; padding:25px; background:#e8f5e9; border-left:4px solid #4caf50; border-radius:4px; text-align:center;">
+          <p style="font-size:14px; color:#555; margin:0 0 10px 0;">Your TIN Number</p>
+          <p style="font-size:32px; font-weight:bold; color:#2e7d32; margin:0; letter-spacing:3px;">{{TIN_NUMBER}}</p>
+        </div>
+
+        <div style="margin:30px 0; padding:20px; background:#f8f9fa; border-left:4px solid #1a73e8; border-radius:4px;">
+          <p style="font-size:15px; color:#555; margin:0; line-height:1.6;">
+            <strong>Your Account Details:</strong><br/>
+            Name: <strong>{{USER_NAME}}</strong><br/>
+            Trading Name: <strong>{{TRADING_NAME}}</strong><br/>
+            Email: <strong>{{USER_EMAIL}}</strong><br/>
+            TIN: <strong>{{TIN_NUMBER}}</strong>
+          </p>
+        </div>
+
+        <p style="font-size:15px; color:#555; line-height:1.6;">
+          Please keep your TIN safe as you will need it for all tax-related transactions and filings.
+          You can now log in to your account using your email and password.
+        </p>
+
+        <div style="text-align:center; margin:30px 0;">
+          <a href="{{PORTAL_URL}}" style="display:inline-block; padding:12px 30px; background:#1a73e8; color:#ffffff; text-decoration:none; font-size:16px; border-radius:6px; font-weight:bold;">
+            Login to Dashboard
+          </a>
+        </div>
+
+        <p style="font-size:14px; color:#777; line-height:1.6;">
+          If you have any questions or need assistance, feel free to reach out to our support team at any time.
+        </p>
+
+        <p style="margin-top:30px; font-size:15px; color:#555;">
+          Best regards,<br/>
+          <strong>e-Commerce Support Team</strong>
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:20px; text-align:center; color:#888; font-size:12px; background:#f1f1f1; border-radius:0 0 8px 8px;">
+        © 2025 e-Commerce Portal. All rights reserved.<br/>
+        This is an automated message, please do not reply to this email.
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

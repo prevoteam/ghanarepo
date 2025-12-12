@@ -11,7 +11,7 @@ const ResidentDashboard = ({ uniqueId, onLogout }) => {
 
   const [dashboardData] = useState({
     companyName: 'Kwame General Trading',
-    tin: 'P008041788',
+    tin: 'TIN008041788',
     vatId: 'VP008041788',
     complianceStatus: 'ON TRACK',
     currentPeriod: 'Nov',

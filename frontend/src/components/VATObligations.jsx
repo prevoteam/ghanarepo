@@ -4,7 +4,7 @@ import StepBar from './StepBar';
 import { registrationApi } from '../utils/api';
 import { useApi } from '../utils/useApi';
 
-const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, onLoginRedirect, isReviewStep = false }) => {
+const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, onLoginRedirect, isReviewStep = false, onEditStep }) => {
   const [vatData, setVatData] = useState(null);
   const { loading, error, execute } = useApi();
 
@@ -19,7 +19,22 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
     );
 
     if (result.success) {
-      setVatData(result.data.results || result.data.data);
+      const data = result.data.results || result.data.data;
+      // Clean up mobile number - remove duplicate country codes
+      if (data.agent_mobile) {
+        data.agent_mobile = data.agent_mobile.replace(/^\+233\+233/, '+233').replace(/^\+233\+/, '+');
+      }
+      if (data.mobile) {
+        data.mobile = data.mobile.replace(/^\+233\+233/, '+233').replace(/^\+233\+/, '+');
+      }
+      setVatData(data);
+    }
+  };
+
+  // Handle edit button click - navigate to specific step
+  const handleEdit = (stepNumber) => {
+    if (onEditStep) {
+      onEditStep(stepNumber);
     }
   };
 
@@ -63,7 +78,7 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
                 <div className="review-section">
                   <div className="review-section-header">
                     <h3>Personal Information</h3>
-                    <button type="button" className="review-edit-btn">Edit</button>
+                    <button type="button" className="review-edit-btn" onClick={() => handleEdit(2)}>Edit</button>
                   </div>
                   <div className="review-grid">
                     <div className="review-item">
@@ -76,7 +91,7 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
                     </div>
                     <div className="review-item">
                       <label>Mobile</label>
-                      <span>{vatData?.mobile || 'Not provided'}</span>
+                      <span>{vatData?.agent_mobile || vatData?.mobile || 'Not provided'}</span>
                     </div>
                   </div>
                 </div>
@@ -85,7 +100,7 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
                 <div className="review-section">
                   <div className="review-section-header">
                     <h3>Business Information</h3>
-                    <button type="button" className="review-edit-btn">Edit</button>
+                    <button type="button" className="review-edit-btn" onClick={() => handleEdit(3)}>Edit</button>
                   </div>
                   <div className="review-grid">
                     <div className="review-item">
@@ -107,7 +122,7 @@ const VATObligations = ({ onNext, onBack, currentStep, uniqueId, onRegisterNow, 
                 <div className="review-section">
                   <div className="review-section-header">
                     <h3>Local Agent</h3>
-                    <button type="button" className="review-edit-btn">Edit</button>
+                    <button type="button" className="review-edit-btn" onClick={() => handleEdit(4)}>Edit</button>
                   </div>
                   <div className="review-grid">
                     <div className="review-item">

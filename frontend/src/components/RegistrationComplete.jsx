@@ -36,27 +36,43 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
   const generateQRCode = async () => {
     try {
       if (credentialData) {
-        const qrData = JSON.stringify({
-          tin: credentialData.tin || 'GHA21984335',
-          credential_id: credentialData.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91',
-          subject_name: credentialData.subject_name || 'Student',
-          issue_date: credentialData.issue_date || new Date().toISOString()
-        });
+        console.log('Generating QR code for:', credentialData);
 
-        const url = await QRCode.toDataURL(qrData, {
-          width: 140,
-          margin: 1,
+        // Just encode the TIN number - simple and easy to scan
+        const tin = credentialData.tin || 'GHA21984335';
+
+        console.log('QR code data (TIN):', tin);
+
+        const url = await QRCode.toDataURL(tin, {
+          width: 256,
+          margin: 2,
           color: {
             dark: '#000000',
             light: '#FFFFFF'
-          }
+          },
+          errorCorrectionLevel: 'H' // High error correction for better scanning
         });
 
+        console.log('QR code generated successfully');
         setQrCodeUrl(url);
       }
     } catch (err) {
       console.error('Error generating QR code:', err);
     }
+  };
+
+  const handleDownloadQR = () => {
+    if (!qrCodeUrl) {
+      alert('QR code is not ready yet. Please wait.');
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.download = `GRA_QR_${credentialData?.tin || 'credential'}.png`;
+    link.href = qrCodeUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const formatDate = (dateString) => {
@@ -69,115 +85,89 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
   };
 
   const handleDownloadPDF = async () => {
+    if (!credentialData?.tin) {
+      alert('TIN is not available. Please wait for registration to complete.');
+      return;
+    }
+
     try {
+      console.log('Starting PDF generation...');
+      console.log('Credential data:', credentialData);
+
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // Add header background
-      doc.setFillColor(45, 59, 143); // Navy blue #2D3B8F
+      // Add header
+      doc.setFillColor(26, 115, 232);
       doc.rect(0, 0, 210, 40, 'F');
 
-      // Add gold accent
-      doc.setFillColor(245, 158, 11); // Gold #F59E0B
-      doc.rect(180, 0, 30, 40, 'F');
-
-      // Add GRA title
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('Ghana Revenue Authority', 15, 20);
+      doc.text('Ghana Revenue Authority', 105, 18, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text('e-Commerce Registration Certificate', 105, 30, { align: 'center' });
+
+      // Reset text color
+      doc.setTextColor(0, 0, 0);
+
+      // Add certificate content
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registration Certificate', 105, 60, { align: 'center' });
 
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Official e-Commerce TIN Credential', 15, 30);
+      doc.text('This is to certify that', 105, 75, { align: 'center' });
 
-      // Reset text color for body
-      doc.setTextColor(0, 0, 0);
-
-      // Add title
-      doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(16, 185, 129); // Green
-      doc.text('Registration Complete!', 105, 60, { align: 'center' });
-
-      // Add credential information
-      doc.setFontSize(11);
-      doc.setTextColor(107, 114, 128); // Gray
-      doc.setFont('helvetica', 'normal');
-
-      const leftMargin = 20;
-      let yPosition = 80;
-
-      // Subject Name
-      doc.text('Subject Name', leftMargin, yPosition);
       doc.setFontSize(14);
-      doc.setTextColor(26, 32, 44);
       doc.setFont('helvetica', 'bold');
-      doc.text(credentialData?.subject_name || 'Student', leftMargin, yPosition + 7);
+      const fullName = credentialData?.subject_name || 'Registered User';
+      doc.text(fullName, 105, 90, { align: 'center' });
 
-      // TIN
-      yPosition += 25;
-      doc.setFontSize(11);
-      doc.setTextColor(107, 114, 128);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Tax Identification Number (TIN)', leftMargin, yPosition);
-      doc.setFontSize(18);
-      doc.setTextColor(245, 158, 11); // Gold
-      doc.setFont('courier', 'bold');
-      doc.text(credentialData?.tin || 'GHA21984335', leftMargin, yPosition + 10);
+      doc.text('has been successfully registered on the e-Commerce Portal.', 105, 105, { align: 'center' });
 
-      // Date of Issue
-      yPosition += 25;
+      // Add details box
+      doc.setDrawColor(200, 200, 200);
+      doc.setFillColor(248, 249, 250);
+      doc.roundedRect(30, 120, 150, 70, 3, 3, 'FD');
+
       doc.setFontSize(11);
-      doc.setTextColor(107, 114, 128);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Date of Issue', leftMargin, yPosition);
-      doc.setFontSize(14);
-      doc.setTextColor(26, 32, 44);
       doc.setFont('helvetica', 'bold');
-      doc.text(credentialData?.issue_date ? formatDate(credentialData.issue_date) : '20 November 2025', leftMargin, yPosition + 7);
+      doc.text('Registration Details:', 40, 135);
 
-      // Credential ID
-      yPosition += 20;
-      doc.setFontSize(11);
-      doc.setTextColor(107, 114, 128);
       doc.setFont('helvetica', 'normal');
-      doc.text('Credential ID', leftMargin, yPosition);
-      doc.setFontSize(9);
-      doc.setFont('courier', 'normal');
-      const credId = credentialData?.credential_id || 'e8v3ued-cf660caf-8b4a-4864-8f89-892142a0bc91';
-      doc.text(credId, leftMargin, yPosition + 7, { maxWidth: 170 });
+      doc.text(`TIN: ${credentialData?.tin}`, 40, 150);
+      doc.text(`Email: ${credentialData?.email || 'N/A'}`, 40, 162);
+      doc.text(`VAT ID: ${credentialData?.vat_id || 'N/A'}`, 40, 174);
+      doc.text(`Registration Date: ${credentialData?.issue_date ? formatDate(credentialData.issue_date) : new Date().toLocaleDateString()}`, 40, 186);
 
-      // Add QR Code
+      // Generate and add QR Code
       if (qrCodeUrl) {
-        doc.addImage(qrCodeUrl, 'PNG', 155, 80, 40, 40);
-        doc.setFontSize(9);
-        doc.setTextColor(107, 114, 128);
-        doc.text('Scan to verify', 175, 125, { align: 'center' });
+        doc.addImage(qrCodeUrl, 'PNG', 80, 200, 50, 50);
+        doc.setFontSize(10);
+        doc.text('Scan to verify', 105, 255, { align: 'center' });
       }
 
       // Add footer
-      doc.setFillColor(45, 59, 143);
-      doc.rect(0, 270, 210, 27, 'F');
-
-      doc.setTextColor(255, 255, 255);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Integrity. Fairness. Service', 105, 282, { align: 'center' });
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('© 2025 Ghana Revenue Authority. All rights reserved.', 105, 290, { align: 'center' });
+      doc.setTextColor(128, 128, 128);
+      doc.text('This is an electronically generated certificate.', 105, 275, { align: 'center' });
+      doc.text('Ghana Revenue Authority - e-Commerce Portal', 105, 282, { align: 'center' });
 
       // Save the PDF
-      const fileName = `GRA_TIN_Credential_${credentialData?.tin || 'GHA21984335'}.pdf`;
+      const fileName = `TIN_Certificate_${credentialData?.tin}.pdf`;
       doc.save(fileName);
+      console.log('PDF saved successfully');
     } catch (err) {
       console.error('Error generating PDF:', err);
-      alert('Error generating PDF. Please try again.');
+      alert('Error generating PDF: ' + err.message);
     }
   };
 
@@ -263,14 +253,32 @@ const RegistrationComplete = ({ uniqueId, onLogin, onRegisterNow, onLoginRedirec
                   </div>
 
                   <div className="credential-right">
-                    <div className="qr-code">
+                    <div className="qr-code" onClick={handleDownloadQR} style={{ cursor: qrCodeUrl ? 'pointer' : 'default' }}>
                       {qrCodeUrl ? (
                         <img src={qrCodeUrl} alt="QR Code" width="140" height="140" />
                       ) : (
                         <div className="qr-loading">Generating QR...</div>
                       )}
                     </div>
-                    <p className="qr-label">Scan to download</p>
+                    <p className="qr-label">Scan to see TIN</p>
+                    {qrCodeUrl && (
+                      <button
+                        className="btn-download-qr"
+                        onClick={handleDownloadQR}
+                        style={{
+                          marginTop: '8px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Download QR
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

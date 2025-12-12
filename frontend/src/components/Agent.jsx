@@ -95,6 +95,12 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
         return;
       }
 
+      // Clean mobile number - don't add country code if already present
+      let cleanMobile = formData.agentMobile;
+      if (cleanMobile && !cleanMobile.startsWith('+')) {
+        cleanMobile = `${formData.agentCountryCode}${cleanMobile}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/UpdateAgentDetails`, {
         method: 'POST',
         headers: {
@@ -106,7 +112,7 @@ const Agent = ({ onNext, onPrevious, currentStep, onRegisterNow, onLoginRedirect
           agent_full_name: formData.agentFullName,
           agent_digital_address: formData.agentDigitalAddress,
           agent_email: formData.agentEmail,
-          agent_mobile: `${formData.agentCountryCode}${formData.agentMobile}`
+          agent_mobile: cleanMobile
         })
       });
 
