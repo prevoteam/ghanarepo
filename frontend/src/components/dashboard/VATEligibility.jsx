@@ -531,7 +531,7 @@ const VATEligibility = () => {
             <div className="popup-body">
               <div className="popup-merchant-info">
                 <h3 className="popup-merchant-name">{selectedMerchant.merchant_name}</h3>
-                <p className="popup-merchant-type">Unregistered Non-Resident Entity</p>
+                <p className="popup-merchant-type">Unregistered Non-Resident Merchant</p>
               </div>
 
               <div className="proposed-actions">
@@ -626,7 +626,7 @@ const VATEligibility = () => {
             <div className="popup-body">
               <div className="popup-merchant-info">
                 <h3 className="popup-merchant-name">{actionResult?.merchant_name || selectedMerchant?.merchant_name || 'N/A'}</h3>
-                <p className="popup-merchant-type">Unregistered Non-Resident Entity</p>
+                <p className="popup-merchant-type">Unregistered Non-Resident Merchant</p>
               </div>
 
               <div className="action-complete">

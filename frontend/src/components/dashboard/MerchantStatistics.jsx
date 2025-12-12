@@ -300,7 +300,7 @@ const MerchantStatistics = () => {
               {/* Merchant Info */}
               <div className="popup-merchant-info">
                 <h3 className="popup-merchant-name">{selectedMerchant.merchantName}</h3>
-                <p className="popup-merchant-type">{selectedMerchant.tin !== 'Not Registered' ? 'Registered Taxpayer' : 'Unregistered Entity'}</p>
+                <p className="popup-merchant-type">{selectedMerchant.tin !== 'Not Registered' ? 'Registered Taxpayer' : 'Unregistered Merchant'}</p>
               </div>
 
               {popupState === 'initial' ? (

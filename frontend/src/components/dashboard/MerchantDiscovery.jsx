@@ -70,7 +70,7 @@ const MerchantDiscovery = () => {
           <h2>Merchant Discovery</h2>
           <p className="discovery-description">
             Load and browse PSP transaction data. Data is shared across PSP Ingestion Status,
-            Merchant Statistics, and High Risk Entities pages.
+            Merchant Statistics, and High Risk Merchants pages.
           </p>
         </div>
       </div>

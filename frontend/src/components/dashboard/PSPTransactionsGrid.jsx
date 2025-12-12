@@ -143,8 +143,9 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
 
-  // Get column names dynamically from data (excluding 'id')
-  const columns = data.length > 0 ? Object.keys(data[0]).filter(key => key.toLowerCase() !== 'id') : [];
+  // Get column names dynamically from data (excluding 'id', 'sender_account', 'receiver_account')
+  const hiddenColumns = ['id', 'sender_account', 'receiver_account'];
+  const columns = data.length > 0 ? Object.keys(data[0]).filter(key => !hiddenColumns.includes(key.toLowerCase())) : [];
 
   const formatValue = (value, key) => {
     if (value === null || value === undefined) return '-';
