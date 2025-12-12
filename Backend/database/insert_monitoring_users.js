@@ -48,31 +48,49 @@ const insertUsers = async () => {
         console.log('\nInserting monitoring users...\n');
 
         for (const user of users) {
-            const query = `
-                INSERT INTO users (
-                    unique_id, username, password, email, full_name, user_role,
-                    contact_method, contact_value, is_verified, is_active
-                ) VALUES (
-                    gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, TRUE, TRUE
-                ) ON CONFLICT (username) DO UPDATE SET
-                    password = $2,
-                    email = $3,
-                    full_name = $4,
-                    user_role = $5
-                RETURNING id, username, email, user_role;
-            `;
+            // Check if user already exists
+            const checkQuery = `SELECT id, username FROM users WHERE email = $1`;
+            const existing = await pool.query(checkQuery, [user.email]);
 
-            const result = await pool.query(query, [
-                user.username,
-                user.password,
-                user.email,
-                user.full_name,
-                user.user_role,
-                user.contact_method,
-                user.contact_value
-            ]);
-
-            console.log(`✓ User created/updated: ${result.rows[0].username} (${result.rows[0].user_role})`);
+            if (existing.rows.length > 0) {
+                // Update existing user
+                const updateQuery = `
+                    UPDATE users SET
+                        password = $1,
+                        full_name = $2,
+                        user_role = $3
+                    WHERE email = $4
+                    RETURNING id, username, email, user_role;
+                `;
+                const result = await pool.query(updateQuery, [
+                    user.password,
+                    user.full_name,
+                    user.user_role,
+                    user.email
+                ]);
+                console.log(`✓ User updated: ${result.rows[0].username} (${result.rows[0].user_role})`);
+            } else {
+                // Insert new user
+                const insertQuery = `
+                    INSERT INTO users (
+                        unique_id, username, password, email, full_name, user_role,
+                        contact_method, contact_value, is_verified, is_active
+                    ) VALUES (
+                        gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, TRUE, TRUE
+                    )
+                    RETURNING id, username, email, user_role;
+                `;
+                const result = await pool.query(insertQuery, [
+                    user.username,
+                    user.password,
+                    user.email,
+                    user.full_name,
+                    user.user_role,
+                    user.contact_method,
+                    user.contact_value
+                ]);
+                console.log(`✓ User created: ${result.rows[0].username} (${result.rows[0].user_role})`);
+            }
         }
 
         // Verify inserted users
