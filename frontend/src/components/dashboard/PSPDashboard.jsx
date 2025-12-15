@@ -178,7 +178,7 @@ const PSPDashboard = ({ transactionData = [], totalRecords = 0, currentOffset = 
       {/* Records Info */}
       <div className="dashboard-records-info">
         <span className="records-count">
-          Showing {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)} of {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
+          Showing {formatNumber(currentOffset - transactionData.length + 1)}-{formatNumber(currentOffset)} of {formatNumber(transactionData.length)} loaded
         </span>
       </div>
 

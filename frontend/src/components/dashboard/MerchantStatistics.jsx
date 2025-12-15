@@ -139,7 +139,7 @@ const MerchantStatistics = () => {
             <h2 className="table-title text-dark">Merchant Statistics</h2>
             <p className="table-subtitle text-muted">Risk analysis based on TIN registration and transaction value.</p>
             <span className="records-info-badge">
-              Showing {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
+              Showing {formatNumber(transactionData.length)} loaded
             </span>
           </div>
           </div>

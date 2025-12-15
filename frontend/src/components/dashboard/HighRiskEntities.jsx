@@ -151,7 +151,7 @@ const HighRiskEntities = () => {
             <h2 className="table-title text-dark">High Risk Merchants</h2>
             <p className="table-subtitle text-muted">Merchants flagged with high risk scores requiring immediate attention.</p>
             <span className="records-info-badge">
-              Showing {highRiskData.length} high risk of {formatNumber(transactionData.length)} loaded | Total: {formatNumber(totalRecords)}
+              Showing {highRiskData.length} high risk of {formatNumber(transactionData.length)} loaded
             </span>
           </div>
           </div>
