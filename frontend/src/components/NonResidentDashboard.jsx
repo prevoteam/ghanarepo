@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './NonResidentDashboard.css';
 import { Header, Footer } from './shared';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 const NonResidentDashboard = ({ uniqueId, onLogout }) => {
+  const [qrCodeUrl, setQrCodeUrl] = useState(null);
   const [dashboardData] = useState({
     companyName: 'Global Digital Services',
     vatRegNo: 'TIN0098765432',
@@ -47,6 +50,76 @@ const NonResidentDashboard = ({ uniqueId, onLogout }) => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount);
+  };
+
+  // Generate QR Code on mount
+  useEffect(() => {
+    const generateQR = async () => {
+      try {
+        const url = await QRCode.toDataURL(dashboardData.vatRegNo, {
+          width: 150,
+          margin: 1,
+          color: { dark: '#000000', light: '#ffffff' }
+        });
+        setQrCodeUrl(url);
+      } catch (err) {
+        console.error('Error generating QR code:', err);
+      }
+    };
+    generateQR();
+  }, [dashboardData.vatRegNo]);
+
+  const handleDownloadBadge = async () => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [100, 140]
+      });
+
+      // Background
+      doc.setFillColor(45, 59, 143);
+      doc.rect(0, 0, 100, 140, 'F');
+
+      // Header
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Digital Merchant ID', 50, 15, { align: 'center' });
+
+      // QR Code
+      if (qrCodeUrl) {
+        doc.addImage(qrCodeUrl, 'PNG', 25, 25, 50, 50);
+      }
+
+      // Company Name
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(dashboardData.companyName, 50, 90, { align: 'center' });
+
+      // VAT Registration Number
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(dashboardData.vatRegNo, 50, 100, { align: 'center' });
+
+      // Status Badge
+      doc.setFillColor(16, 185, 129);
+      doc.roundedRect(30, 110, 40, 10, 2, 2, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('VERIFIED', 50, 117, { align: 'center' });
+
+      // Footer
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Ghana Revenue Authority', 50, 132, { align: 'center' });
+
+      // Save PDF
+      doc.save(`Digital_Merchant_Badge_${dashboardData.vatRegNo}.pdf`);
+    } catch (error) {
+      console.error('Error downloading badge:', error);
+      alert('Failed to download badge. Please try again.');
+    }
   };
 
   return (
@@ -160,7 +233,7 @@ const NonResidentDashboard = ({ uniqueId, onLogout }) => {
               </div>
               <p className="nrd-merchant-name">{dashboardData.companyName}</p>
               <p className="nrd-merchant-reg">{dashboardData.vatRegNo}</p>
-              <button className="nrd-btn-download">Download Badge</button>
+              <button className="nrd-btn-download" onClick={handleDownloadBadge}>Download Badge</button>
             </div>
           </div>
 

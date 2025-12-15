@@ -259,6 +259,7 @@
 
 .form-group {
   margin-bottom: 24px;
+  text-align: left;
 }
 
 .form-group label {
@@ -267,6 +268,7 @@
   font-weight: 600;
   color: #1a202c;
   margin-bottom: 8px;
+  text-align: left;
 }
 
 .credential-input {

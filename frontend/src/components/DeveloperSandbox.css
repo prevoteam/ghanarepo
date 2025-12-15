@@ -356,16 +356,19 @@
 
 .credential-item {
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .credential-item label {
-  display: block;
   font-size: 0.8rem;
   font-weight: 500;
   color: #6b7280;
-  margin-bottom: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  min-width: 120px;
+  flex-shrink: 0;
 }
 
 .credential-value {
@@ -377,6 +380,7 @@
   border-radius: 10px;
   padding: 0.875rem 1rem;
   transition: all 0.2s ease;
+  flex: 1;
 }
 
 .credential-value:hover {

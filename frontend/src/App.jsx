@@ -73,8 +73,8 @@ function App() {
       targetView = 'monitoringDashboard'
       targetLoginType = 'monitoring'
     } else if (role === 'nonresident') {
-      // Nonresident merchants go to main dashboard
-      targetView = 'dashboard'
+      // Nonresident merchants go to non-resident dashboard
+      targetView = 'nonResidentDashboard'
       targetLoginType = 'nonresident'
     } else if (role === 'resident') {
       // Resident merchants go to main dashboard

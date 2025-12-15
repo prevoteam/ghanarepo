@@ -196,7 +196,10 @@ const MonitoringDashboard = ({ onLogout }) => {
               <button
                 key={item.id}
                 className={`sidebar-nav-item ${activeMenu === item.id ? 'active' : ''}`}
-                onClick={() => setActiveMenu(item.id)}
+                onClick={() => {
+                  setActiveMenu(item.id);
+                  setShowDiscoveryResults(false);
+                }}
               >
                 {getIcon(item.icon)}
                 <span>{item.label}</span>

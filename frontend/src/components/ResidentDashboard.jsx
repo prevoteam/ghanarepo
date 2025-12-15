@@ -9,6 +9,20 @@ const ResidentDashboard = ({ uniqueId, onLogout }) => {
   const [vatRates, setVatRates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Payment flow states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStep, setPaymentStep] = useState(1); // 1: Card, 2: OTP, 3: Success
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+    cardholderName: ''
+  });
+  const [otp, setOtp] = useState('');
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState(0);
+
   const [dashboardData] = useState({
     companyName: 'Kwame General Trading',
     tin: 'TIN008041788',
@@ -132,9 +146,90 @@ const ResidentDashboard = ({ uniqueId, onLogout }) => {
   };
 
   const handlePayNow = () => {
-    // Handle payment logic
-    console.log('Pay Now clicked', { totalPayable: vatCalc.totalPayable });
+    console.log('Pay Now clicked, amount:', vatCalc.totalPayable);
+    // Save the payment amount
+    const amount = vatCalc.totalPayable;
+    setPaymentAmount(amount);
+    // Reset payment form
+    setCardDetails({ cardNumber: '', expiry: '', cvc: '', cardholderName: '' });
+    setOtp('');
+    setPaymentStep(1);
+    setReceiptNumber('');
+    // Close VAT modal and open payment modal
     setShowVatModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
+    setPaymentStep(1);
+    setCardDetails({ cardNumber: '', expiry: '', cvc: '', cardholderName: '' });
+    setOtp('');
+  };
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    return parts.length ? parts.join(' ') : value;
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleCardInputChange = (field, value) => {
+    let formattedValue = value;
+    if (field === 'cardNumber') {
+      formattedValue = formatCardNumber(value);
+    } else if (field === 'expiry') {
+      formattedValue = formatExpiry(value.replace('/', ''));
+    } else if (field === 'cvc') {
+      formattedValue = value.replace(/[^0-9]/g, '').substring(0, 3);
+    }
+    setCardDetails(prev => ({ ...prev, [field]: formattedValue }));
+  };
+
+  const handlePaySecurely = () => {
+    // Validate card details
+    if (!cardDetails.cardNumber || !cardDetails.expiry || !cardDetails.cvc || !cardDetails.cardholderName) {
+      alert('Please fill in all card details');
+      return;
+    }
+    setPaymentProcessing(true);
+    // Simulate API call
+    setTimeout(() => {
+      setPaymentProcessing(false);
+      setPaymentStep(2);
+    }, 1500);
+  };
+
+  const handleConfirmPayment = () => {
+    if (!otp || otp.length < 4) {
+      alert('Please enter a valid OTP');
+      return;
+    }
+    setPaymentProcessing(true);
+    // Simulate payment processing
+    setTimeout(() => {
+      setPaymentProcessing(false);
+      const receipt = 'GH-' + Math.floor(10000 + Math.random() * 90000);
+      setReceiptNumber(receipt);
+      setPaymentStep(3);
+    }, 2000);
+  };
+
+  const handleCancelTransaction = () => {
+    setShowPaymentModal(false);
+    setPaymentStep(1);
   };
 
   return (
@@ -361,6 +456,183 @@ const ResidentDashboard = ({ uniqueId, onLogout }) => {
                 Pay Now
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Secure Payment Modal */}
+      {showPaymentModal && (
+        <div className="rd-modal-overlay" onClick={handleClosePaymentModal}>
+          <div className="rd-payment-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Payment Modal Header */}
+            <div className="rd-payment-header">
+              <div className="rd-payment-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>SECURE PAYMENT</span>
+              </div>
+              <button className="rd-payment-close" onClick={handleClosePaymentModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Step 1: Card Details */}
+            {paymentStep === 1 && (
+              <div className="rd-payment-body">
+                <div className="rd-payment-amount">
+                  <span className="rd-amount-label">TOTAL AMOUNT</span>
+                  <span className="rd-amount-value">GH₵{formatCurrency(paymentAmount)}</span>
+                </div>
+
+                <div className="rd-payment-form">
+                  <div className="rd-form-group">
+                    <label>CARD NUMBER</label>
+                    <div className="rd-input-with-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardDetails.cardNumber}
+                        onChange={(e) => handleCardInputChange('cardNumber', e.target.value)}
+                        maxLength="19"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rd-form-row">
+                    <div className="rd-form-group rd-form-half">
+                      <label>EXPIRY</label>
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        value={cardDetails.expiry}
+                        onChange={(e) => handleCardInputChange('expiry', e.target.value)}
+                        maxLength="5"
+                      />
+                    </div>
+                    <div className="rd-form-group rd-form-half">
+                      <label>CVC</label>
+                      <div className="rd-input-with-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="123"
+                          value={cardDetails.cvc}
+                          onChange={(e) => handleCardInputChange('cvc', e.target.value)}
+                          maxLength="3"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rd-form-group">
+                    <label>CARDHOLDER NAME</label>
+                    <input
+                      type="text"
+                      placeholder="Name on Card"
+                      value={cardDetails.cardholderName}
+                      onChange={(e) => setCardDetails(prev => ({ ...prev, cardholderName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className="rd-btn-pay-secure"
+                  onClick={handlePaySecurely}
+                  disabled={paymentProcessing}
+                >
+                  {paymentProcessing ? 'Processing...' : 'Pay Securely'}
+                </button>
+
+                <div className="rd-payment-methods">
+                  <div className="rd-payment-method-icon"></div>
+                  <div className="rd-payment-method-icon"></div>
+                  <div className="rd-payment-method-icon"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: OTP Authentication */}
+            {paymentStep === 2 && (
+              <div className="rd-payment-body">
+                <div className="rd-payment-amount">
+                  <span className="rd-amount-label">TOTAL AMOUNT</span>
+                  <span className="rd-amount-value">GH₵{formatCurrency(paymentAmount)}</span>
+                </div>
+
+                <div className="rd-otp-section">
+                  <div className="rd-otp-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.5">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                      <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                  </div>
+                  <h3 className="rd-otp-title">Authentication Required</h3>
+                  <p className="rd-otp-subtitle">
+                    Please enter the OTP sent to your mobile number ending in ****89
+                  </p>
+
+                  <input
+                    type="text"
+                    className="rd-otp-input"
+                    placeholder="Enter OTP Code"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').substring(0, 6))}
+                    maxLength="6"
+                  />
+
+                  <button
+                    className="rd-btn-confirm-payment"
+                    onClick={handleConfirmPayment}
+                    disabled={paymentProcessing}
+                  >
+                    {paymentProcessing ? 'Verifying...' : 'Confirm Payment'}
+                  </button>
+
+                  <button className="rd-btn-cancel-transaction" onClick={handleCancelTransaction}>
+                    Cancel Transaction
+                  </button>
+                </div>
+
+                <div className="rd-payment-methods">
+                  <div className="rd-payment-method-icon"></div>
+                  <div className="rd-payment-method-icon"></div>
+                  <div className="rd-payment-method-icon"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Success */}
+            {paymentStep === 3 && (
+              <div className="rd-payment-success">
+                <div className="rd-success-banner">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>
+                    Payment of <strong>GH₵{formatCurrency(paymentAmount)}</strong> processed successfully! Receipt #{receiptNumber}
+                  </span>
+                  <button className="rd-success-close" onClick={handleClosePaymentModal}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
