@@ -8,8 +8,8 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
   const StartNewIngestionButton = () => (
     <button
       className="start-ingestion-btn"
-      onClick={onStartNewIngestion}
-      disabled={loadingMore}
+      onClick={onLoadMore}
+      disabled={loadingMore || !hasMore}
     >
       {loadingMore ? (
         <>
@@ -17,7 +17,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
             <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
             <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
           </svg>
-          <span>Refreshing...</span>
+          <span>Loading...</span>
         </>
       ) : (
         <>
@@ -32,30 +32,6 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
     </button>
   );
 
-  const LoadMoreButton = () => (
-    <button
-      className="load-more-btn"
-      onClick={onLoadMore}
-      disabled={loadingMore}
-    >
-      {loadingMore ? (
-        <>
-          <svg className="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
-            <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
-          </svg>
-          <span>Loading...</span>
-        </>
-      ) : (
-        <>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-          <span>Load More (Next 200)</span>
-        </>
-      )}
-    </button>
-  );
 
   const BackButton = () => (
     <button className={isInline ? "back-btn" : "close-btn"} onClick={onClose}>
@@ -145,7 +121,21 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
 
   // Get column names dynamically from data (excluding 'id', 'sender_account', 'receiver_account')
   const hiddenColumns = ['id', 'sender_account', 'receiver_account'];
-  const columns = data.length > 0 ? Object.keys(data[0]).filter(key => !hiddenColumns.includes(key.toLowerCase())) : [];
+  const allColumns = data.length > 0 ? Object.keys(data[0]).filter(key => !hiddenColumns.includes(key.toLowerCase())) : [];
+
+  // Reorder columns: merchant_name should come before psp_provider
+  const columns = allColumns.length > 0 ? (() => {
+    const reordered = [...allColumns];
+    const merchantNameIndex = reordered.findIndex(col => col.toLowerCase() === 'merchant_name');
+    const pspProviderIndex = reordered.findIndex(col => col.toLowerCase() === 'psp_provider');
+
+    // If both exist and merchant_name is after psp_provider, swap them
+    if (merchantNameIndex > -1 && pspProviderIndex > -1 && merchantNameIndex > pspProviderIndex) {
+      const merchantName = reordered.splice(merchantNameIndex, 1)[0];
+      reordered.splice(pspProviderIndex, 0, merchantName);
+    }
+    return reordered;
+  })() : [];
 
   const formatValue = (value, key) => {
     if (value === null || value === undefined) return '-';
@@ -180,6 +170,10 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
   };
 
   const formatColumnHeader = (key) => {
+    // Rename psp_provider to PSP
+    if (key.toLowerCase() === 'psp_provider') {
+      return 'PSP';
+    }
     return key
       .replace(/_/g, ' ')
       .replace(/([A-Z])/g, ' $1')
@@ -192,7 +186,7 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
       <div className="transactions-header">
         <h2>PSP Ingestion Status</h2>
         <div className="transactions-header-actions">
-          {onStartNewIngestion && <StartNewIngestionButton />}
+          {hasMore && onLoadMore && <StartNewIngestionButton />}
           <BackButton />
         </div>
       </div>
@@ -254,9 +248,6 @@ const PSPTransactionsGrid = ({ data, loading, error, onClose, isInline = false, 
           >
             Last
           </button>
-          {hasMore && onLoadMore && (
-            <LoadMoreButton />
-          )}
         </div>
     </div>
   );
