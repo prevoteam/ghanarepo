@@ -7,6 +7,22 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
   const [showVATModal, setShowVATModal] = useState(false);
   const [totalSales, setTotalSales] = useState(50000);
   const [businessName, setBusinessName] = useState('Kwame General Trading');
+
+  // Payment flow states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+    cardholderName: ''
+  });
+  const [otp, setOtp] = useState('');
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+
   const [dashboardData, setDashboardData] = useState({
     tin: 'TIN008041788',
     vat_id: 'VP008041788',
@@ -77,6 +93,90 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount);
+  };
+
+  // Payment handlers
+  const handlePayNow = () => {
+    setPaymentAmount(vatCalc.totalPayable);
+    setCardDetails({ cardNumber: '', expiry: '', cvc: '', cardholderName: '' });
+    setOtp('');
+    setPaymentStep(1);
+    setReceiptNumber('');
+    setShowVATModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
+    setPaymentStep(1);
+  };
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    return parts.length ? parts.join(' ') : value;
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleCardInputChange = (field, value) => {
+    let formattedValue = value;
+    if (field === 'cardNumber') {
+      formattedValue = formatCardNumber(value);
+    } else if (field === 'expiry') {
+      formattedValue = formatExpiry(value.replace('/', ''));
+    } else if (field === 'cvc') {
+      formattedValue = value.replace(/[^0-9]/g, '').substring(0, 3);
+    }
+    setCardDetails(prev => ({ ...prev, [field]: formattedValue }));
+  };
+
+  const handlePaySecurely = () => {
+    if (!cardDetails.cardNumber || !cardDetails.expiry || !cardDetails.cvc || !cardDetails.cardholderName) {
+      alert('Please fill in all card details');
+      return;
+    }
+    setPaymentProcessing(true);
+    setTimeout(() => {
+      setPaymentProcessing(false);
+      setPaymentStep(2);
+    }, 1500);
+  };
+
+  const handleConfirmPayment = () => {
+    if (!otp || otp.length < 4) {
+      alert('Please enter a valid OTP');
+      return;
+    }
+    setPaymentProcessing(true);
+    setTimeout(() => {
+      setPaymentProcessing(false);
+      const receipt = 'GH-' + Math.floor(10000 + Math.random() * 90000);
+      setReceiptNumber(receipt);
+      // Close modal and show success banner on dashboard
+      setShowPaymentModal(false);
+      setShowSuccessBanner(true);
+      // Auto-hide banner after 10 seconds
+      setTimeout(() => {
+        setShowSuccessBanner(false);
+      }, 10000);
+    }, 2000);
+  };
+
+  const handleCancelTransaction = () => {
+    setShowPaymentModal(false);
+    setPaymentStep(1);
   };
 
   // Fetch dashboard data
@@ -169,6 +269,25 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
             </button>
           </div>
         </div>
+
+        {/* Payment Success Banner */}
+        {showSuccessBanner && (
+          <div className="payment-success-banner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>
+              Payment of <strong>GH₵{formatCurrency(paymentAmount)}</strong> processed successfully! Receipt #{receiptNumber}
+            </span>
+            <button className="banner-close" onClick={() => setShowSuccessBanner(false)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Dashboard Grid */}
         <div className="dashboard-grid">
@@ -325,11 +444,192 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
                 <button className="btn-cancel" onClick={() => setShowVATModal(false)}>
                   Cancel
                 </button>
-                <button className="btn-pay-now">
+                <button className="btn-pay-now" onClick={handlePayNow}>
                   Pay Now
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Secure Payment Modal */}
+      {showPaymentModal && (
+        <div className="modal-overlay" onClick={handleClosePaymentModal}>
+          <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Payment Modal Header */}
+            <div className="payment-header">
+              <div className="payment-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>SECURE PAYMENT</span>
+              </div>
+              <button className="payment-close" onClick={handleClosePaymentModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Step 1: Card Details */}
+            {paymentStep === 1 && (
+              <div className="payment-body">
+                <div className="payment-amount">
+                  <span className="amount-label">TOTAL AMOUNT</span>
+                  <span className="amount-value">GH₵{formatCurrency(paymentAmount)}</span>
+                </div>
+
+                <div className="payment-form">
+                  <div className="form-group">
+                    <label>CARD NUMBER</label>
+                    <div className="input-with-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardDetails.cardNumber}
+                        onChange={(e) => handleCardInputChange('cardNumber', e.target.value)}
+                        maxLength="19"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group form-half">
+                      <label>EXPIRY</label>
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        value={cardDetails.expiry}
+                        onChange={(e) => handleCardInputChange('expiry', e.target.value)}
+                        maxLength="5"
+                      />
+                    </div>
+                    <div className="form-group form-half">
+                      <label>CVC</label>
+                      <div className="input-with-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="123"
+                          value={cardDetails.cvc}
+                          onChange={(e) => handleCardInputChange('cvc', e.target.value)}
+                          maxLength="3"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>CARDHOLDER NAME</label>
+                    <input
+                      type="text"
+                      placeholder="Name on Card"
+                      value={cardDetails.cardholderName}
+                      onChange={(e) => setCardDetails(prev => ({ ...prev, cardholderName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className="btn-pay-secure"
+                  onClick={handlePaySecurely}
+                  disabled={paymentProcessing}
+                >
+                  {paymentProcessing ? 'Processing...' : 'Pay Securely'}
+                </button>
+
+                <div className="payment-methods">
+                  <div className="payment-method-icon"></div>
+                  <div className="payment-method-icon"></div>
+                  <div className="payment-method-icon"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: OTP Authentication */}
+            {paymentStep === 2 && (
+              <div className="payment-body">
+                <div className="payment-amount">
+                  <span className="amount-label">TOTAL AMOUNT</span>
+                  <span className="amount-value">GH₵{formatCurrency(paymentAmount)}</span>
+                </div>
+
+                <div className="otp-section">
+                  <div className="otp-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.5">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                      <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                  </div>
+                  <h3 className="otp-title">Authentication Required</h3>
+                  <p className="otp-subtitle">
+                    Please enter the OTP sent to your mobile number ending in ****89
+                  </p>
+
+                  <input
+                    type="tel"
+                    className="otp-input"
+                    placeholder="Enter OTP Code"
+                    value={otp}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setOtp(val);
+                    }}
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                  />
+
+                  <button
+                    className="btn-confirm-payment"
+                    onClick={handleConfirmPayment}
+                    disabled={paymentProcessing}
+                  >
+                    {paymentProcessing ? 'Verifying...' : 'Confirm Payment'}
+                  </button>
+
+                  <button className="btn-cancel-transaction" onClick={handleCancelTransaction}>
+                    Cancel Transaction
+                  </button>
+                </div>
+
+                <div className="payment-methods">
+                  <div className="payment-method-icon"></div>
+                  <div className="payment-method-icon"></div>
+                  <div className="payment-method-icon"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Success */}
+            {paymentStep === 3 && (
+              <div className="payment-success">
+                <div className="success-banner">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>
+                    Payment of <strong>GH₵{formatCurrency(paymentAmount)}</strong> processed successfully! Receipt #{receiptNumber}
+                  </span>
+                  <button className="success-close" onClick={handleClosePaymentModal}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
