@@ -27,41 +27,9 @@ const MonitoringDashboard = ({ onLogout }) => {
   const [discoveryError, setDiscoveryError] = useState(null);
   const [showDiscoveryResults, setShowDiscoveryResults] = useState(false);
 
-  const handleEcommerceDiscovery = async () => {
-    setShowDiscoveryResults(true);
-    setDiscoveryLoading(true);
-    setDiscoveryError(null);
-
-    try {
-      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Format the data - API returns { success: true, accounts: [...] }
-      const accounts = data.accounts || [];
-      const formattedData = accounts.map((account, index) => ({
-        id: index + 1,
-        companyName: account['Company Name'] || 'N/A',
-        category: account['Category'] || 'N/A',
-        description: account['Description'] || 'N/A',
-        location: account['Location'] || 'N/A',
-        email: account['Email'] || 'N/A',
-        phone: account['Phone'] || 'N/A',
-        verified: account['Verified'] || false,
-        followers: account['Followers'] || 0
-      }));
-
-      setDiscoveryData(formattedData);
-    } catch (err) {
-      console.error('Error fetching e-commerce sites:', err);
-      setDiscoveryError(err.message || 'Failed to fetch e-commerce sites');
-    } finally {
-      setDiscoveryLoading(false);
-    }
+  const handleEcommerceDiscovery = () => {
+    // Open e-Commerce Discovery in new tab
+    window.open('https://gra-demo.proteantech.in/ecom/', '_blank');
   };
 
   const handleCloseDiscovery = () => {
