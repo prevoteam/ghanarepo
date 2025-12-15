@@ -71,12 +71,12 @@
   text-transform: capitalize;
 }
 
-.role-badge.maker {
+.role-badge.gra_maker {
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   color: white;
 }
 
-.role-badge.checker {
+.role-badge.gra_checker {
   background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   color: white;
 }

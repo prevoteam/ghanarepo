@@ -3,7 +3,7 @@ import './ConfigDashboard.css';
 import { ADMIN_API_BASE_URL } from '../utils/api';
 import sidebar from "../assets/sidebar-bottom.png";
 
-const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
+const ConfigDashboard = ({ onLogout, userRole = 'gra_maker' }) => {
   const [activeMenu, setActiveMenu] = useState('evat-rules');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -22,7 +22,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
   // Fetch notifications for checker role
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`${ADMIN_API_BASE_URL}/notifications?user_role=${userRole === 'checker' ? 'gra_checker' : 'gra_maker'}`);
+      const response = await fetch(`${ADMIN_API_BASE_URL}/notifications?user_role=${userRole}`);
       const data = await response.json();
       if (data.status && data.results) {
         setNotifications(data.results.notifications || []);
@@ -35,7 +35,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
 
   // Fetch notifications on mount and periodically (every 30 seconds) - Only for checker
   useEffect(() => {
-    if (userRole === 'checker') {
+    if (userRole === 'gra_checker') {
       fetchNotifications();
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
@@ -73,7 +73,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
       await fetch(`${ADMIN_API_BASE_URL}/notifications/mark-all-read`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_role: userRole === 'checker' ? 'gra_checker' : 'gra_maker' })
+        body: JSON.stringify({ user_role: userRole })
       });
       // Refresh notifications
       fetchNotifications();
@@ -203,7 +203,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <span>{userRole === 'maker' ? 'Maker' : 'Checker'}</span>
+              <span>{userRole === 'gra_maker' ? 'Maker' : 'Checker'}</span>
             </div>
           </div>
 
@@ -240,7 +240,7 @@ const ConfigDashboard = ({ onLogout, userRole = 'maker' }) => {
               </div>
 
               {/* Bell Notification - Only for Checker */}
-              {userRole === 'checker' && (
+              {userRole === 'gra_checker' && (
                 <div className="notification-bell-container" ref={notificationRef}>
                   <button
                     className="notification-bell-btn"
@@ -391,7 +391,7 @@ const EVATApplicabilityRules = () => {
 };
 
 // VAT Rate Table Component
-const VATRateTable = ({ userRole = 'maker' }) => {
+const VATRateTable = ({ userRole = 'gra_maker' }) => {
   const [rates, setRates] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -541,7 +541,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
     <div className="content-section">
       <div className="section-header">
         <h2 className="section-title">Tax Rates & Levies</h2>
-        {userRole === 'maker' && (
+        {userRole === 'gra_maker' && (
           <button className="save-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -613,7 +613,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
               </span>
             </div>
             <div className="table-cell cell-actions">
-              {userRole === 'maker' && (
+              {userRole === 'gra_maker' && (
                 <>
                   {editingId === rate.id ? (
                     <div className="edit-actions">
@@ -652,7 +652,7 @@ const VATRateTable = ({ userRole = 'maker' }) => {
                   )}
                 </>
               )}
-              {userRole === 'checker' && (
+              {userRole === 'gra_checker' && (
                 <div className="checker-actions">
                   <button
                     className="action-icon-btn approve-icon-btn"
