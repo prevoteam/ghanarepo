@@ -99,7 +99,7 @@ const Header = ({
         )}
         <a
           className="nav-item"
-          href="https://ai.studio/apps/drive/1uF7OJ0XUNseox5CYzs0NgL2afVE0jExD?fullscreenApplet=true"
+          href="https://gra-demo.proteantech.in/developer-portal/#ai-engine"
           target="_blank"
           rel="noopener noreferrer"
         >
