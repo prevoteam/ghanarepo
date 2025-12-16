@@ -1,64 +1,9 @@
-import { useState } from 'react';
 import './DashboardPages.css';
-import EcommerceDiscoveryResults from './EcommerceDiscoveryResults';
-import { GHANA_SITES_API_URL } from '../../utils/api';
 
 const ECommercePortals = () => {
-  const [discoveryData, setDiscoveryData] = useState(null);
-  const [discoveryLoading, setDiscoveryLoading] = useState(false);
-  const [discoveryError, setDiscoveryError] = useState(null);
-  const [showDiscoveryResults, setShowDiscoveryResults] = useState(false);
-
-  const handleDiscoverPortals = async () => {
-    setShowDiscoveryResults(true);
-    setDiscoveryLoading(true);
-    setDiscoveryError(null);
-
-    try {
-      const response = await fetch(`${GHANA_SITES_API_URL}/ghana-sites`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Format the data - API returns { success: true, sites: [...] }
-      const sites = data.sites || [];
-      const formattedData = sites.map((url, index) => ({
-        id: index + 1,
-        url: url
-      }));
-
-      setDiscoveryData(formattedData);
-    } catch (err) {
-      console.error('Error fetching e-commerce sites:', err);
-      setDiscoveryError(err.message || 'Failed to fetch e-commerce sites');
-    } finally {
-      setDiscoveryLoading(false);
-    }
+  const handleDiscoverPortals = () => {
+    window.open('https://gra-demo.proteantech.in/ecom/', '_blank');
   };
-
-  const handleCloseDiscovery = () => {
-    setShowDiscoveryResults(false);
-    setDiscoveryData(null);
-    setDiscoveryError(null);
-  };
-
-  // Show discovery results when active
-  if (showDiscoveryResults) {
-    return (
-      <div className="page-content">
-        <EcommerceDiscoveryResults
-          data={discoveryData}
-          loading={discoveryLoading}
-          error={discoveryError}
-          onClose={handleCloseDiscovery}
-          isInline={true}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="page-content">
