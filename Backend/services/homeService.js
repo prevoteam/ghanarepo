@@ -1599,13 +1599,20 @@ const generateSessionId = () => crypto.randomBytes(32).toString('hex');
 // -------------------------
 const MerchantLogin = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, login_type } = req.body;
 
-    console.log("Merchant Login attempt for username:", username);
+    console.log("Merchant Login attempt for username:", username, "login_type:", login_type);
 
     if (!username || !password) {
       return res.status(400).json(
         success(false, 400, "Username and password are required", null)
+      );
+    }
+
+    // Validate login_type parameter
+    if (!login_type || !['resident', 'nonresident'].includes(login_type)) {
+      return res.status(400).json(
+        success(false, 400, "Invalid login type", null)
       );
     }
 
@@ -1636,6 +1643,13 @@ const MerchantLogin = async (req, res) => {
     if (password !== user.password) {
       return res.status(401).json(
         success(false, 401, "Invalid credentials. Incorrect password.", null)
+      );
+    }
+
+    // Check if user role matches the login type
+    if (user.user_role !== login_type) {
+      return res.status(401).json(
+        success(false, 401, "Invalid credentials.", null)
       );
     }
 

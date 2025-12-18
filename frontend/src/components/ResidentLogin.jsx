@@ -63,8 +63,8 @@ const ResidentLogin = ({ onLoginSuccess, onRegisterNow }) => {
       return;
     }
 
-    // Call resident login API
-    const result = await execute(loginApi.merchantLogin, username, password);
+    // Call resident login API with login_type for resident
+    const result = await execute(loginApi.merchantLogin, username, password, 'resident');
 
     if (result && result.success) {
       setSessionId(result.data?.results?.session_id || '');
