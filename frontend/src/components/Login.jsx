@@ -63,8 +63,8 @@ const Login = ({ onLoginSuccess, onRegisterNow }) => {
       return;
     }
 
-    // Call merchant login API
-    const result = await execute(loginApi.merchantLogin, username, password);
+    // Call merchant login API with login_type for non-resident
+    const result = await execute(loginApi.merchantLogin, username, password, 'nonresident');
 
     if (result && result.success) {
       setSessionId(result.data?.results?.session_id || '');

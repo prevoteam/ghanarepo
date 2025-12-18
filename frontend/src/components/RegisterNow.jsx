@@ -114,12 +114,10 @@ const RegisterNow = ({ onLoginClick, onNonResidentLoginClick, onDashboardStateCh
   }
 
   if (showConfigDashboard) {
-    // Normalize role: convert 'gra_maker' -> 'maker' and 'gra_checker' -> 'checker'
-    const normalizedRole = userRole?.replace('gra_', '') || 'maker';
     return (
       <ConfigDashboard
         onLogout={handleLogout}
-        userRole={normalizedRole}   
+        userRole={userRole}
       />
     );
   }

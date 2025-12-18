@@ -190,10 +190,10 @@ export const loginApi = {
   },
 
   // Merchant Login (Username + Password) - sends OTP
-  merchantLogin: async (username, password) => {
+  merchantLogin: async (username, password, login_type) => {
     return apiRequest('/merchant-login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, login_type }),
     });
   },
 
