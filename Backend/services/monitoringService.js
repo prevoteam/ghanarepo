@@ -1062,7 +1062,7 @@ const SubmitVATRateChange = async (req, res) => {
 
         console.log("VAT Rate change request:", { rate_id, new_rate, submitted_by });
 
-        if (!rate_id || !new_rate) {
+        if (!rate_id ) {
             return res.status(400).json(
                 success(false, 400, "Rate ID and new rate are required", null)
             );
