@@ -31,13 +31,15 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
     est_vat_liability: '10,950.00'
   });
 
-  // VAT Rates from database (dynamic)
+  // VAT Rates from database (dynamic) - defaults used until API response
   const [vatRates, setVatRates] = useState({
     getfund_levy: { name: 'GETFund Levy', rate: 2.5 },
     nhil: { name: 'NHIL', rate: 2.5 },
     covid_19_health_recovery_levy: { name: 'Covid-19 Levy', rate: 1.0 },
-    standard_vat: { name: 'VAT', rate: 15 }
+    standard_vat: { name: 'VAT', rate: 15.0 }
   });
+
+  // console.log('VAT Rates:', vatRates);
   const [ratesLoading, setRatesLoading] = useState(true);
 
   // Fetch VAT rates from database
@@ -45,11 +47,20 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
     const fetchVATRates = async () => {
       try {
         const response = await dashboardApi.getVATRates();
+        console.log('VAT Rates API Response:', response);
         if (response && response.results && response.results.ratesMap) {
-          setVatRates(response.results.ratesMap);
+          const ratesMap = response.results.ratesMap;
+          console.log('Fetched VAT Rates Map:', ratesMap);
+          // Map API keys to our expected keys
+          setVatRates({
+            getfund_levy: ratesMap.getfund_levy || { name: 'GETFund Levy', rate: 2.5 },
+            nhil: ratesMap.nhil || { name: 'NHIL', rate: 2.5 },
+            covid_19_health_recovery_levy: ratesMap.covid_19_health_recovery_levy || { name: 'Covid-19 Levy', rate: 1.0 },
+            standard_vat: ratesMap.standard_vat || { name: 'VAT', rate: 15.0 }
+          });
         }
       } catch (err) {
-        console.log('Using default VAT rates');
+        console.error('Failed to fetch VAT rates:', err);
       } finally {
         setRatesLoading(false);
       }
@@ -59,11 +70,12 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
   }, []);
 
   // Calculate VAT components using dynamic rates
+  // Note: Using ?? (nullish coalescing) instead of || to handle rate: 0 correctly
   const calculateVAT = (sales) => {
-    const getfundRate = (vatRates.getfund_levy?.rate || 2.5) / 100;
-    const nhilRate = (vatRates.nhil?.rate || 2.5) / 100;
-    const covidRate = (vatRates.covid_19_health_recovery_levy?.rate || 1.0) / 100;
-    const vatRate = (vatRates.standard_vat?.rate || 15) / 100;
+    const getfundRate = (vatRates.getfund_levy?.rate ?? 2.5) / 100;
+    const nhilRate = (vatRates.nhil?.rate ?? 2.5) / 100;
+    const covidRate = (vatRates.covid_19_health_recovery_levy?.rate ?? 1.0) / 100;
+    const vatRate = (vatRates.standard_vat?.rate ?? 15) / 100;
 
     const getfundLevy = sales * getfundRate;
     const nhil = sales * nhilRate;
@@ -74,14 +86,14 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
 
     return {
       getfundLevy,
-      getfundRate: vatRates.getfund_levy?.rate || 2.5,
+      getfundRate: vatRates.getfund_levy?.rate ?? 2.5,
       nhil,
-      nhilRate: vatRates.nhil?.rate || 2.5,
+      nhilRate: vatRates.nhil?.rate ?? 2.5,
       covidLevy,
-      covidRate: vatRates.covid_19_health_recovery_levy?.rate || 1.0,
+      covidRate: vatRates.covid_19_health_recovery_levy?.rate ?? 1.0,
       taxableValue,
       vat,
-      vatRate: vatRates.standard_vat?.rate || 15,
+      vatRate: vatRates.standard_vat?.rate ?? 15,
       totalPayable
     };
   };
@@ -397,6 +409,23 @@ const Dashboard = ({ uniqueId, onLogout, userRole = 'resident', onLogoClick, onA
                   />
                 </div>
               </div>
+
+              {ratesLoading && (
+                <div className="rates-loading-banner" style={{
+                  background: '#FEF3C7',
+                  padding: '10px 15px',
+                  borderRadius: '6px',
+                  marginBottom: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12"/>
+                  </svg>
+                  <span style={{ color: '#92400E', fontSize: '14px' }}>Loading VAT rates from server...</span>
+                </div>
+              )}
 
               <table className="vat-table">
                 <thead>
